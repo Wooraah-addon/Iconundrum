@@ -25,13 +25,16 @@ let unsub = null;
 export async function enterLobby({ cfg, playerName, isHost, onStart }) {
   let sync = null;
   let counting = false;
+  let readyAtSeen = null;
   const roster = document.getElementById('lobby-roster');
   const status = document.getElementById('lobby-status');
   const actions = document.getElementById('lobby-actions');
+  const readyBox = document.getElementById('lobby-ready');
 
   document.getElementById('lobby-code').textContent = cfg.seed;
   roster.innerHTML = '';
   actions.innerHTML = '';
+  readyBox.hidden = true;
   status.textContent = isHost ? 'Share the link, then launch when everyone’s in.' : 'Waiting for the host to launch…';
 
   document.getElementById('lobby-copy').onclick = async () => {
@@ -40,6 +43,14 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
   };
 
   if (isHost) {
+    actions.append(el('button', {
+      class: 'btn secondary',
+      onclick: async () => {
+        play('click');
+        const ok = await fire.startReadyCheck(cfg.seed, playerName);
+        if (!ok) toast('Ready check failed — check your connection');
+      },
+    }, '📣 Ready check'));
     actions.append(el('button', {
       class: 'btn',
       onclick: async () => {
@@ -50,14 +61,47 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
     }, '🚀 Launch game'));
   }
 
+  // WoW-style ready check: chime on the host's ping, prompt anyone who
+  // hasn't answered this round, count answers in the status line. The
+  // ready map resets on every fresh ping (the host's write replaces it).
+  function handleReadyCheck(doc) {
+    if (!doc.readyAt || doc.state !== 'open') return;
+    if (doc.readyAt !== readyAtSeen) {
+      readyAtSeen = doc.readyAt;
+      play('readycheck');
+      if (!isHost && !(doc.ready && playerName in doc.ready)) {
+        readyBox.innerHTML = '';
+        readyBox.append(
+          el('span', {}, 'Ready check!'),
+          el('button', {
+            class: 'btn small',
+            onclick: () => { play('click'); fire.setReady(cfg.seed, playerName, true); readyBox.hidden = true; },
+          }, '✓ Ready'),
+          el('button', {
+            class: 'btn secondary small',
+            onclick: () => { play('click'); fire.setReady(cfg.seed, playerName, false); readyBox.hidden = true; },
+          }, '✗ Not ready'),
+        );
+        readyBox.hidden = false;
+      }
+    }
+    const players = doc.players || [];
+    const yes = players.filter(p => doc.ready && doc.ready[p] === true).length;
+    status.textContent = yes >= players.length
+      ? `Everyone's ready! ${isHost ? 'Launch when you are.' : ''}`.trim()
+      : `Ready: ${yes} / ${players.length}`;
+  }
+
   showScreen('screen-lobby');
 
   cleanup();
   unsub = await fire.watchLobby(cfg.seed, doc => {
     if (sync) { sync.handleDoc(doc); return; }
     renderRoster(roster, doc, playerName);
+    handleReadyCheck(doc);
     if (doc.state === 'launching' && doc.launchAt && !counting) {
       counting = true;
+      readyBox.hidden = true;
       sync = makeSync({ cfg, playerName, isHost, launchAt: doc.launchAt });
       runCountdown(doc.launchAt, () => onStart(sync));
     }
@@ -189,9 +233,13 @@ export function buildSyncFooter(sync, { last, onHostNext, onLocalNext }) {
 
 function renderRoster(rosterEl, lobby, playerName) {
   rosterEl.innerHTML = '';
+  const ready = lobby.ready || {};
   for (const name of lobby.players || []) {
     rosterEl.append(el('li', { class: name === playerName ? 'me' : '' },
-      name === lobby.host ? `👑 ${name}` : name));
+      name === lobby.host ? `👑 ${name}` : name,
+      name in ready
+        ? el('span', { class: ready[name] ? 'ready-yes' : 'ready-no' }, ready[name] ? ' ✓' : ' ✗')
+        : null));
   }
   const n = (lobby.players || []).length;
   document.getElementById('lobby-count').textContent = `${n} player${n === 1 ? '' : 's'}`;

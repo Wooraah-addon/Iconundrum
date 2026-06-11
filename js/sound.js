@@ -4,7 +4,7 @@
 // in later with zero code changes. Mute toggle persisted in localStorage.
 
 const MUTE_KEY = 'iconundrum_muted';
-const NAMES = ['click', 'coin', 'correct', 'wrong', 'jackpot', 'tick', 'gameover', 'fanfare'];
+const NAMES = ['click', 'coin', 'correct', 'wrong', 'jackpot', 'tick', 'gameover', 'fanfare', 'readycheck'];
 
 let ctx = null;
 let muted = typeof localStorage !== 'undefined' && localStorage.getItem(MUTE_KEY) === '1';
@@ -97,4 +97,7 @@ const SYNTH = {
     [523, 659, 784].forEach(f => tone(f, 0, 0.55, 'triangle', 0.08));
     [659, 784, 1046].forEach(f => tone(f, 0.28, 0.7, 'triangle', 0.08));
   },
+  // raid ready check — the real sample (levelup2) ships in assets/sounds;
+  // this two-note chime only covers a failed fetch
+  readycheck: () => { tone(587, 0, 0.12, 'triangle', 0.15); tone(880, 0.1, 0.4, 'triangle', 0.15); },
 };

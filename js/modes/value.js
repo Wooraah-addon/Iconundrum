@@ -71,11 +71,30 @@ export function start(ctx) {
 
     const lockBtn = el('button', { class: 'btn', onclick: () => settle() }, 'Lock in');
 
+    // Quick-entry magnitude buttons — build a guess by tapping, no keyboard
+    // needed on mobile (shorthand like "25k" still works in the input).
+    const bump = step => {
+      play('click');
+      const g = parseGold(input.value) + step;
+      input.value = String(g);
+      input.classList.remove('invalid');
+      preview.textContent = `= ${fmtGoldLong(g)}`;
+    };
+    const chips = el('div', { class: 'value-chips' },
+      ...[[1e3, '+1k'], [1e4, '+10k'], [1e5, '+100k'], [1e6, '+1m']].map(([step, label]) =>
+        el('button', { class: 'chip-btn', onclick: () => bump(step) }, label)),
+      el('button', {
+        class: 'chip-btn clear',
+        onclick: () => { play('click'); input.value = ''; input.classList.remove('invalid'); preview.textContent = ''; },
+      }, 'Clear'),
+    );
+
     ctx.content.append(el('div', {},
       el('div', { class: 'question-icon-wrap' },
         el('img', { class: 'question-icon', src: iconUrl(item), alt: '' })),
       el('div', { class: 'question-prompt', html: `What does <strong class="q-${item.q}">${item.n}</strong> go for on the AH?` }),
       el('div', { class: 'value-entry' }, input, el('span', { class: 'g' }, 'g'), lockBtn),
+      chips,
       preview,
     ));
     input.focus();
@@ -95,6 +114,7 @@ export function start(ctx) {
       timer.stop();
       input.disabled = true;
       lockBtn.disabled = true;
+      chips.querySelectorAll('button').forEach(b => (b.disabled = true));
 
       const earned = scoreGuess(guess, actual, cfg.curve);
       total += earned;

@@ -88,6 +88,31 @@ function setupHome() {
       if (!muted) sound.play('coin');
     });
   });
+
+  renderHomeStats();
+}
+
+// Your local record on the home screen — games played, per-mode bests,
+// favourite mode. localStorage only; hidden until the first game.
+function renderHomeStats() {
+  const wrap = document.getElementById('home-stats');
+  const stats = profile.getStats();
+  const entries = Object.entries(stats).filter(([m]) => MODE_LABELS[m]);
+  const played = entries.reduce((n, [, s]) => n + (s.played || 0), 0);
+  if (!played) { wrap.hidden = true; return; }
+
+  const bits = [`<b>${played}</b> game${played === 1 ? '' : 's'} played`];
+  for (const m of ['icon', 'value', 'hl']) {
+    if (stats[m] && stats[m].best > 0) {
+      bits.push(`${MODE_LABELS[m]} <b>${m === 'hl' ? `streak ${stats[m].best}` : stats[m].best.toLocaleString()}</b>`);
+    }
+  }
+  if (entries.length > 1) {
+    const fav = entries.reduce((a, b) => (b[1].played > a[1].played ? b : a));
+    bits.push(`favourite: <b>${MODE_LABELS[fav[0]]}</b>`);
+  }
+  wrap.innerHTML = bits.map(b => `<span class="chip">${b}</span>`).join('');
+  wrap.hidden = false;
 }
 
 // "What's new" strip on the home screen: latest entry lifted from
@@ -259,6 +284,7 @@ function wireSummaryActions() {
   document.getElementById('btn-home').onclick = () => {
     sound.play('click');
     history.replaceState(null, '', location.pathname);
+    renderHomeStats();
     showScreen('screen-home');
   };
 

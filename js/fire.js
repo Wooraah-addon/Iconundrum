@@ -189,6 +189,32 @@ export async function advanceRound(code, round, roundAtMs) {
   }
 }
 
+// Host pings a ready check: stamps readyAt (clients chime + prompt on the
+// change) and resets responses — the host counts as ready, they pressed it.
+// These fields are NOT written at create, so lobbies stay compatible with
+// pre-readycheck rules; this update needs the v0.6 rules deployed.
+export async function startReadyCheck(code, host) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), { readyAt: Date.now(), ready: { [host]: true } });
+    return true;
+  } catch (e) {
+    console.warn('startReadyCheck failed (v0.6 rules deployed?):', e);
+    return false;
+  }
+}
+
+export async function setReady(code, player, isReady) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), new fs.FieldPath('ready', player), !!isReady);
+    return true;
+  } catch (e) {
+    console.warn('setReady failed:', e);
+    return false;
+  }
+}
+
 // Player's running total for the rolling standings (FieldPath handles
 // names with spaces). One write per player per round — bounded and cheap.
 export async function updateLobbyScore(code, player, total) {

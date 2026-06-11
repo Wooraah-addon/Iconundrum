@@ -186,6 +186,20 @@ input.invalid { border-color: var(--red); }
 .value-entry input { width: 200px; text-align: right; font-size: 1.2rem; }
 .value-entry .g { color: var(--gold); font-weight: 700; font-size: 1.2rem; }
 .value-preview { text-align: center; color: var(--text-dim); min-height: 1.4em; margin-top: 8px; font-size: .9rem; }
+@media (max-width: 440px) {
+  .value-entry { flex-wrap: wrap; }
+  .value-entry input { width: 0; flex: 1 1 130px; }
+}
+
+.value-chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+.chip-btn {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+  color: var(--text); padding: 8px 14px; font-size: .9rem; cursor: pointer;
+  transition: border-color .1s ease, background .1s ease;
+}
+.chip-btn:hover { border-color: var(--gold-dim); background: var(--bg-card-hover); }
+.chip-btn:disabled { opacity: .5; cursor: default; }
+.chip-btn.clear { color: var(--text-dim); }
 
 /* ---- Higher/Lower ---- */
 .hl-cards { display: flex; gap: 14px; justify-content: center; align-items: stretch; margin: 14px 0; }
@@ -205,9 +219,17 @@ input.invalid { border-color: var(--red); }
 .hl-vs { align-self: center; color: var(--text-dim); font-weight: 800; }
 .hl-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
 .hl-streak { text-align: center; color: var(--gold); font-size: 1.05rem; font-weight: 700; margin-top: 4px; }
+/* Small screens: compact horizontal cards — icon | name | price — so both
+   cards, the VS, and the call buttons all fit without scrolling. */
 @media (max-width: 540px) {
-  .hl-cards { flex-direction: column; align-items: center; }
-  .hl-card { width: 100%; max-width: 300px; }
+  .hl-cards { flex-direction: column; align-items: stretch; gap: 8px; margin: 10px 0; }
+  .hl-card {
+    width: 100%; max-width: 360px; margin: 0 auto;
+    flex-direction: row; text-align: left; gap: 12px; padding: 10px 14px;
+  }
+  .hl-card img { width: 52px; height: 52px; }
+  .hl-card .iname { min-height: 0; flex: 1; }
+  .hl-card .ihidden { font-size: 1.1rem; }
 }
 
 /* ---- Reveal ---- */
@@ -341,6 +363,14 @@ input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
   animation: fadein .25s ease;
 }
 .lobby-roster li.me { color: var(--gold); font-weight: 600; }
+.lobby-roster .ready-yes { color: var(--green); font-weight: 700; }
+.lobby-roster .ready-no { color: var(--red); font-weight: 700; }
+
+.ready-prompt {
+  display: flex; gap: 10px; align-items: center; justify-content: center;
+  flex-wrap: wrap; margin: 12px 0; color: var(--gold); font-weight: 600;
+}
+.ready-prompt[hidden] { display: none; }
 
 /* ---- Countdown overlay ---- */
 #countdown-overlay {
@@ -376,6 +406,9 @@ a.btn { text-decoration: none; display: inline-block; }
   letter-spacing: .08em; margin-bottom: 6px;
 }
 table.standings { max-width: 340px; margin: 0 auto; }
+
+/* ---- Home stats strip ---- */
+.home-stats { margin: -4px 0 16px; }
 
 /* ---- What's new strip (home) ---- */
 .whatsnew { font-size: .85rem; padding: 10px 16px; margin-top: 14px; }
