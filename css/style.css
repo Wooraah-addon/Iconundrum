@@ -1,7 +1,8 @@
 /* Iconundrum — dark purple & gold house style */
 
 :root {
-  --bg: #16101f;
+  /* --bg matches the logo PNG's baked background exactly — keep in sync */
+  --bg: #150d1f;
   --bg-panel: #221733;
   --bg-card: #2c1f42;
   --bg-card-hover: #3a2a56;
@@ -24,7 +25,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: radial-gradient(ellipse at top, #1d1430 0%, var(--bg) 60%);
+  /* flat — the logo ships with this exact background baked in */
+  background: var(--bg);
   min-height: 100vh;
   color: var(--text);
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
