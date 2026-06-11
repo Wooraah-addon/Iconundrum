@@ -115,7 +115,7 @@ async function hostLobby(cfg) {
     toast('Couldn’t create the lobby — is the backend set up? Playing solo works regardless.');
     return;
   }
-  lobby.enterLobby({ cfg, playerName: player, isHost: true, onStart: () => startGame(cfg) });
+  lobby.enterLobby({ cfg, playerName: player, isHost: true, onStart: sync => startGame(cfg, sync) });
 }
 
 function showLobbyJoinBanner(lob) {
@@ -138,7 +138,7 @@ function showLobbyJoinBanner(lob) {
             return;
           }
           if (await fire.joinLobby(cfg.seed, player)) {
-            lobby.enterLobby({ cfg, playerName: player, isHost: player === fresh.host, onStart: () => startGame(cfg) });
+            lobby.enterLobby({ cfg, playerName: player, isHost: player === fresh.host, onStart: sync => startGame(cfg, sync) });
           } else {
             toast('Couldn’t join — check your connection.');
           }
@@ -160,7 +160,7 @@ function requireName() {
   return false;
 }
 
-function startGame(cfg) {
+function startGame(cfg, sync = null) {
   if (!requireName()) return;
   game = { cfg };
 
@@ -171,7 +171,7 @@ function startGame(cfg) {
   showScreen('screen-game');
 
   MODES[cfg.mode].start({
-    bundle, cfg,
+    bundle, cfg, sync,
     content: document.getElementById('game-content'),
     timerBar: document.getElementById('timer-bar'),
     setMeta: t => (document.getElementById('game-meta').textContent = t),
@@ -184,6 +184,7 @@ function startGame(cfg) {
 // ---------------------------------------------------------------- summary
 
 async function onFinish(result) {
+  lobby.cleanup(); // stop any lobby snapshot listener
   game.result = result;
   const { cfg } = game;
   const player = profile.getName();

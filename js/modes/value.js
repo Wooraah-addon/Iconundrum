@@ -8,6 +8,7 @@ import { rngFor, sample } from '../rng.js';
 import { iconUrl, fmtGoldLong, catItems } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
+import { buildSyncFooter } from '../lobby.js';
 
 export function buildRounds(bundle, cfg) {
   const rng = rngFor(['value', cfg.seed, `v${cfg.v}`]);
@@ -27,8 +28,27 @@ export function start(ctx) {
   const log = [];
   let total = 0;
   let idx = 0;
+  let roundToken = 0;
+  let forceSettle = null;
+  const synced = () => ctx.sync && !ctx.sync.detached;
+
+  // Host-paced multiplayer (see icon.js) — locks in whatever's typed.
+  if (ctx.sync) {
+    ctx.sync.onAdvance(n => {
+      if (forceSettle) forceSettle();
+      proceed(n);
+    });
+  }
+
+  function proceed(n) {
+    idx = n;
+    if (idx < rounds.length) playRound();
+    else ctx.finish({ score: total, rounds: log });
+  }
 
   function playRound() {
+    roundToken++;
+    const token = roundToken;
     const item = rounds[idx];
     ctx.setMeta(`Round ${idx + 1} / ${rounds.length}`);
     ctx.setScore(total);
@@ -61,7 +81,9 @@ export function start(ctx) {
       sec => { if (sec <= 3 && sec > 0) play('tick'); });
 
     let settled = false;
-    function settle(expired = false) {
+    forceSettle = () => settle(true, true);
+
+    function settle(expired = false, forced = false) {
       if (settled) return;
       const guess = parseInt(input.value, 10) || 0;
       if (!expired && guess <= 0) { input.classList.add('invalid'); return; }
@@ -73,8 +95,10 @@ export function start(ctx) {
       const earned = scoreGuess(guess, item.mv, cfg.curve);
       total += earned;
       log.push({ id: item.id, a: guess, ok: earned > 0, s: earned, t: Math.round(timer.elapsedMs()) });
-      play(earned === 5000 ? 'jackpot' : earned >= 2500 ? 'correct' : earned > 0 ? 'coin' : 'wrong');
       ctx.setScore(total);
+      if (ctx.sync) ctx.sync.reportScore(total);
+      if (forced) return; // advancing right now — skip the reveal
+      play(earned === 5000 ? 'jackpot' : earned >= 2500 ? 'correct' : earned > 0 ? 'coin' : 'wrong');
 
       const headline = earned === 5000
         ? `JACKPOT! +5,000 pts`
@@ -83,12 +107,18 @@ export function start(ctx) {
         ? `You said <b>${fmtGoldLong(guess)}</b> — market average is <b>${fmtGoldLong(item.mv)}</b>`
         : `Market average is <b>${fmtGoldLong(item.mv)}</b>`;
       const last = idx === rounds.length - 1;
-      renderReveal(ctx.content, item, headline, detail, last ? 'See results' : 'Next round', () => {
-        play('click');
-        idx += 1;
-        if (idx < rounds.length) playRound();
-        else ctx.finish({ score: total, rounds: log });
-      });
+      setTimeout(() => {
+        if (token !== roundToken) return; // already advanced past this round
+        const footer = synced()
+          ? buildSyncFooter(ctx.sync, {
+              last,
+              onHostNext: () => ctx.sync.hostAdvance(idx + 1),
+              onLocalNext: () => proceed(idx + 1),
+            })
+          : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
+              last ? 'See results' : 'Next round');
+        renderReveal(ctx.content, item, headline, detail, footer);
+      }, 500);
     }
   }
 

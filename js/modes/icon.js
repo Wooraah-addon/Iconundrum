@@ -13,6 +13,7 @@ import { rngFor, sample, shuffled } from '../rng.js';
 import { iconUrl, catItems } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
+import { buildSyncFooter } from '../lobby.js';
 
 const TOP_K = 12;
 
@@ -62,8 +63,29 @@ export function start(ctx) {
   const log = [];
   let total = 0;
   let idx = 0;
+  let roundToken = 0;
+  let forceSettle = null;
+  const synced = () => ctx.sync && !ctx.sync.detached;
+
+  // Host-paced multiplayer: the lobby driver advances everyone together.
+  // If this client is somehow still mid-question (clock skew), settle it
+  // silently and move on — the host's gate means their timer is long done.
+  if (ctx.sync) {
+    ctx.sync.onAdvance(n => {
+      if (forceSettle) forceSettle();
+      proceed(n);
+    });
+  }
+
+  function proceed(n) {
+    idx = n;
+    if (idx < rounds.length) playRound();
+    else ctx.finish({ score: total, rounds: log });
+  }
 
   function playRound() {
+    roundToken++;
+    const token = roundToken;
     const { item, choices } = rounds[idx];
     ctx.setMeta(`Round ${idx + 1} / ${rounds.length}`);
     ctx.setScore(total);
@@ -90,7 +112,9 @@ export function start(ctx) {
     }
 
     let settled = false;
-    function settle(chosen) {
+    forceSettle = () => settle(null, true);
+
+    function settle(chosen, forced = false) {
       if (settled) return;
       settled = true;
       timer.stop();
@@ -98,6 +122,9 @@ export function start(ctx) {
       const earned = ok ? (cfg.speed ? 500 + Math.round(500 * timer.leftFrac()) : 1000) : 0;
       total += earned;
       log.push({ id: item.id, a: chosen ? chosen.id : null, ok: !!ok, s: earned, t: Math.round(timer.elapsedMs()) });
+      ctx.setScore(total);
+      if (ctx.sync) ctx.sync.reportScore(total);
+      if (forced) return; // advancing right now — skip the reveal
       play(ok ? 'correct' : 'wrong');
 
       for (const b of buttons) {
@@ -107,19 +134,22 @@ export function start(ctx) {
         else if (chosen && name === chosen.n) b.classList.add('wrong');
         else b.classList.add('dim');
       }
-      ctx.setScore(total);
 
       setTimeout(() => {
+        if (token !== roundToken) return; // already advanced past this round
         const headline = ok
           ? `+${earned.toLocaleString()} pts`
           : (chosen ? 'Wrong — +0 pts' : 'Time’s up — +0 pts');
         const last = idx === rounds.length - 1;
-        renderReveal(ctx.content, item, headline, null, last ? 'See results' : 'Next round', () => {
-          play('click');
-          idx += 1;
-          if (idx < rounds.length) playRound();
-          else ctx.finish({ score: total, rounds: log });
-        });
+        const footer = synced()
+          ? buildSyncFooter(ctx.sync, {
+              last,
+              onHostNext: () => ctx.sync.hostAdvance(idx + 1),
+              onLocalNext: () => proceed(idx + 1),
+            })
+          : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
+              last ? 'See results' : 'Next round');
+        renderReveal(ctx.content, item, headline, null, footer);
       }, 900);
     }
   }

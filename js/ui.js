@@ -55,8 +55,10 @@ export function startTimer(seconds, barEl, onExpire, onSecond) {
   };
 }
 
-// Between-round reveal: item, what you earned, market-data chips, next button.
-export function renderReveal(container, item, earnedHtml, extraHtml, nextLabel, onNext) {
+// Between-round reveal: item, what you earned, market-data chips, plus a
+// caller-supplied footer (solo: next button; multiplayer: standings + the
+// host's gated next-round control).
+export function renderReveal(container, item, earnedHtml, extraHtml, footer) {
   container.innerHTML = '';
   const chips = statChips(item).map(c => `<span class="chip">${c}</span>`).join('');
   const panel = el('div', { class: 'reveal panel' },
@@ -66,12 +68,13 @@ export function renderReveal(container, item, earnedHtml, extraHtml, nextLabel, 
     el('div', { class: 'earned', html: earnedHtml }),
     el('div', { class: 'statchips', html: chips }),
     extraHtml ? el('div', { class: 'question-prompt', html: extraHtml }) : null,
-    el('button', { class: 'btn', onclick: onNext }, nextLabel),
+    footer,
   );
   const earnedEl = panel.querySelector('.earned');
   earnedEl.classList.add(earnedHtml.includes('+0') || earnedHtml.includes('Wrong') ? 'bad' : 'good');
   container.append(panel);
-  panel.querySelector('.btn').focus();
+  const focusBtn = panel.querySelector('button.btn:not([disabled])');
+  if (focusBtn) focusBtn.focus();
 }
 
 let toastTimer;

@@ -129,6 +129,9 @@ export async function createLobby(cfg, host) {
       players: [host],
       state: 'open',
       launchAt: null,
+      round: 0,
+      roundAt: null,
+      scores: {},
       created: fs.serverTimestamp(),
     });
     return true;
@@ -169,6 +172,32 @@ export async function launchLobby(code, launchAtMs) {
     return true;
   } catch (e) {
     console.warn('launchLobby failed:', e);
+    return false;
+  }
+}
+
+// Host advances the synced game to round n (0-based); roundAt is the shared
+// start-of-round timestamp every client gates its timers on.
+export async function advanceRound(code, round, roundAtMs) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), { round, roundAt: roundAtMs });
+    return true;
+  } catch (e) {
+    console.warn('advanceRound failed:', e);
+    return false;
+  }
+}
+
+// Player's running total for the rolling standings (FieldPath handles
+// names with spaces). One write per player per round — bounded and cheap.
+export async function updateLobbyScore(code, player, total) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), new fs.FieldPath('scores', player), Math.round(total));
+    return true;
+  } catch (e) {
+    console.warn('updateLobbyScore failed:', e);
     return false;
   }
 }
