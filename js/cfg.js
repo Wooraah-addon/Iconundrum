@@ -4,10 +4,15 @@
 // are only comparable within identical configs).
 
 export const DEFAULTS = {
-  icon: { rounds: 5, timer: 10, speed: 1 },
-  value: { rounds: 5, timer: 20, curve: 2 },
+  icon: { rounds: 10, timer: 10, speed: 1 },
+  value: { rounds: 10, timer: 20, curve: 2 },
   hl: { sep: 125 },
 };
+// 2026-06-11: default rounds 5 → 10 (user request). NOTE: the ranked ruleset
+// is derived from these defaults (isRankedSig), so the all-time icon/value
+// boards restarted on the r10 ruleset that day — day-one r5 games keep their
+// challenge boards but no longer rank all-time (r5 vs r10 scores aren't
+// comparable on one board anyway).
 // Price basis ('mv' posted market avg / 'sa' TSM sale avg) is NOT in DEFAULTS:
 // links without ?b= must decode as 'mv' so pre-basis links and leaderboards
 // stay valid, while the setup modal defaults NEW games to 'sa' (see setup.js).
