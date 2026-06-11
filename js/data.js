@@ -42,13 +42,17 @@ export function iconFamily(stem) {
 
 // Item categories within the items pack, by item class ID.
 // (True Pets pack — caged battle pets — is a separate full-launch pack.)
+// `face` = the icon stem on the category's setup tile (user-picked
+// 2026-06-11; stems verified live on render.worldofwarcraft.com).
+// `hidden` keeps a category resolvable for OLD challenge links while
+// removing it from the setup picker (recipes: gutted by the F2 cull).
 export const CATEGORIES = [
-  { id: 'all', label: 'Everything', classes: null },
-  { id: 'gear', label: 'Transmog — Weapons & Armor', classes: [2, 4] },
-  { id: 'trade', label: 'Trade Goods & Gems', classes: [1, 3, 7] },
-  { id: 'consume', label: 'Consumables & Enchants', classes: [0, 8] },
-  { id: 'recipes', label: 'Recipes & Patterns', classes: [9] },
-  { id: 'curios', label: 'Mounts, Pets & Curios', classes: [12, 13, 15, 20] },
+  { id: 'all', label: 'Everything', classes: null, face: 'inv_misc_coin_01' },
+  { id: 'gear', label: 'Weapons & Armor', classes: [2, 4], face: 'inv_sword_22' },
+  { id: 'trade', label: 'Trade Goods & Gems', classes: [1, 3, 7], face: 'inv_misc_flower_02' },
+  { id: 'consume', label: 'Consumables & Enchants', classes: [0, 8], face: 'inv_potion_95' },
+  { id: 'recipes', label: 'Recipes & Patterns', classes: [9], face: 'inv_scroll_03', hidden: true },
+  { id: 'curios', label: 'Mounts, Pets & Toys', classes: [12, 13, 15, 20], face: 'ability_mount_ridinghorse' },
 ];
 
 export function catLabel(catId) {

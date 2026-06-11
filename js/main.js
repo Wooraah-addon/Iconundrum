@@ -441,7 +441,20 @@ async function loadBoards(which) {
   tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-dim)">Loading…</td></tr>';
 
   const { cfg } = game;
-  const rows = which === 'challenge'
+  const ranked = isRanked(cfg);
+
+  // Custom rules never post to the ranked all-time board — say so instead
+  // of the misleading "no scores yet" (the board isn't empty because nobody
+  // played; YOUR game just doesn't qualify).
+  if (which === 'alltime' && !ranked) {
+    tbody.innerHTML = '';
+    tbody.append(el('tr', {}, el('td', { colspan: '3', style: 'color:var(--text-dim)' },
+      'Custom rules — this game competes on its challenge link only. ' +
+      'Only default-settings games post to the ranked all-time board.')));
+    return;
+  }
+
+  let rows = which === 'challenge'
     ? await fire.challengeBoard(fire.challengeKey(cfg))
     : await fire.allTimeBoard(cfg.mode);
 
@@ -449,12 +462,23 @@ async function loadBoards(which) {
     tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-dim)">Leaderboard unavailable.</td></tr>';
     return;
   }
+
+  const myName = profile.getName();
+  // Read-after-write lag: if this game's own (just-saved) score hasn't shown
+  // up in the fetch yet, merge it locally so the player always sees
+  // themselves on their challenge board.
+  if (which === 'challenge' && game.result
+      && profile.hasPlayedChallenge(fire.challengeKey(cfg))
+      && !rows.some(r => r.player === myName)) {
+    rows = [...rows, { player: myName, score: game.result.score }]
+      .sort((a, b) => b.score - a.score);
+  }
+
   if (!rows.length) {
     tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text-dim)">No scores yet — be the first!</td></tr>';
     return;
   }
   tbody.innerHTML = '';
-  const myName = profile.getName();
   rows.forEach((r, i) => {
     tbody.append(el('tr', { class: r.player === myName ? 'me' : '' },
       el('td', {}, String(i + 1)),

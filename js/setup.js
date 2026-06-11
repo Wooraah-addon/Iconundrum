@@ -2,7 +2,7 @@
 // shareable game code. Copying the link BEFORE playing lets a host drop the
 // challenge in discord and then play the same board themselves.
 
-import { CATEGORIES, catItems, iconUrl } from './data.js';
+import { CATEGORIES, catItems } from './data.js';
 import { makeCfg, buildUrl, DEFAULTS, LIMITS } from './cfg.js';
 import { newSeed } from './rng.js';
 import { el, toast, copyText } from './ui.js';
@@ -34,14 +34,11 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   function fillCats() {
     catGrid.innerHTML = '';
     for (const c of CATEGORIES) {
+      if (c.hidden) continue; // resolvable for old links, not offered for new games
       const items = catItems(bundle, c.id, priceMode ? state.basis : false);
       const n = items.length;
       const viable = n >= (priceMode ? MIN_PRICE : MIN_ICON);
       if (!viable && state.cat === c.id) state.cat = 'all';
-      // Face from the UNFILTERED category: the tile's identity shouldn't
-      // change between modes just because the price floor drops an iconic
-      // cheap item (Peacebloom is the Trade Goods face even in Value games).
-      const face = pickFace(c.id, catItems(bundle, c.id, false));
       const attrs = {
         type: 'button',
         class: `cat-tile${state.cat === c.id ? ' active' : ''}`,
@@ -49,7 +46,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
       };
       if (!viable) attrs.disabled = 'disabled';
       catGrid.append(el('button', attrs,
-        face ? el('img', { src: iconUrl(face), alt: '' }) : null,
+        el('img', { src: bundle.iconBase + c.face + '.jpg', alt: '' }),
         el('span', { class: 'cat-name' }, c.label),
         el('span', { class: 'cat-count' }, `${n} items`),
       ));
@@ -156,28 +153,6 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   );
   overlay.append(modal);
   document.body.append(overlay);
-}
-
-// Hand-picked tile faces — the most iconic item in each bucket, not the
-// priciest (which gave "Everything" and "Transmog" the same boots). Names
-// resolve against the live pool; a missing name just tries the next, and
-// the final fallback is the category's priciest item, so pool rebuilds and
-// future categories can never break the picker.
-const FACE_PREFS = {
-  all: ['Orb of Deception', 'Sky Golem'],
-  gear: ["Teebu's Blazing Longsword", 'Pendulum of Doom'],
-  trade: ['Peacebloom', 'Copper Ore'],
-  consume: ['Savory Deviate Delight', 'Void-Touched Augment Rune'],
-  recipes: ['Formula: Smoking Heart of the Mountain'],
-  curios: ['Sky Golem', "Mekgineer's Chopper", 'Reins of Poseidus'],
-};
-
-function pickFace(catId, items) {
-  for (const name of FACE_PREFS[catId] || []) {
-    const hit = items.find(it => it.n === name);
-    if (hit) return hit;
-  }
-  return items.length ? items.reduce((m, it) => (it.mv > m.mv ? it : m), items[0]) : null;
 }
 
 function row(label, control) {
