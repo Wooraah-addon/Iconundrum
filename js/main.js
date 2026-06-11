@@ -92,7 +92,7 @@ function setupHome() {
   });
 
   // Interactive home toy: a tumbling gold coin that drifts, dodges the cursor,
-  // and can be clicked to "pocket" it (count saved for a future achievement).
+  // and can be clicked to "pocket" it. Not counted (see coin.js).
   initCoin();
 
   // Join by game code — a viewer who sees the host's code on stream can type

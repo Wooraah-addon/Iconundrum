@@ -7,7 +7,7 @@
 
 import { play } from './sound.js';
 
-const HIDE_MS = 20000;     // how long a pocketed coin stays gone
+const HIDE_MS = 50000;     // how long a pocketed coin stays gone
 const REPEL_R = 140;       // cursor influence radius (px)
 const REPEL_STR = 1.6;     // repulsion strength — higher = harder to catch
 

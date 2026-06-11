@@ -567,7 +567,7 @@ table.standings td, table.standings th { padding: 6px 6px; }
 /* Home-screen gold coin — tumbling 3D disc, physics-driven in coin.js.
    transform is owned by JS (translate + rotateX/rotateY); keep none here. */
 .coin {
-  position: fixed; top: 0; left: 0; width: 46px; height: 46px;
+  position: fixed; top: 0; left: 0; width: 28px; height: 28px;
   z-index: 6; cursor: pointer; transform-style: preserve-3d;
   will-change: transform; pointer-events: auto; scale: 1;
 }
@@ -575,7 +575,7 @@ table.standings td, table.standings th { padding: 6px 6px; }
   position: absolute; inset: 0; border-radius: 50%;
   backface-visibility: hidden;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: #7a5512;
+  font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: #7a5512;
   background: radial-gradient(circle at 36% 30%, #fff3c4 0%, #f4cf57 32%, #d4a72c 66%, #9c7820 100%);
   border: 2px solid #b8863a;
   box-shadow: inset 0 0 7px rgba(120, 80, 10, .55), 0 3px 9px rgba(0, 0, 0, .5);
@@ -586,42 +586,7 @@ table.standings td, table.standings th { padding: 6px 6px; }
    transform, so the coin grows + fades in place without losing its position. */
 .coin.pocketed { opacity: 0; transition: opacity .4s ease, scale .4s ease; scale: 1.7; }
 
-/* Drifting gold motes behind the home screen — two layers, different
-   speeds. Each layer's dots are duplicated 100vh apart so the loop is
-   seamless. Decorative only: no pointer events, gone for reduced-motion. */
-.motes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
-.motes::before, .motes::after {
-  content: ''; position: absolute; top: 0; left: 0;
-  width: 4px; height: 4px; border-radius: 50%; background: transparent;
-}
-.motes::before {
-  box-shadow:
-    8vw 12vh 0 0 rgba(240,198,64,.30), 31vw 67vh 0 0 rgba(240,198,64,.22),
-    57vw 34vh 0 0 rgba(240,198,64,.28), 79vw 81vh 0 0 rgba(240,198,64,.20),
-    91vw 22vh 0 0 rgba(240,198,64,.26), 17vw 91vh 0 0 rgba(240,198,64,.22),
-    44vw 8vh  0 0 rgba(240,198,64,.18), 67vw 55vh 0 0 rgba(240,198,64,.24),
-    8vw 112vh 0 0 rgba(240,198,64,.30), 31vw 167vh 0 0 rgba(240,198,64,.22),
-    57vw 134vh 0 0 rgba(240,198,64,.28), 79vw 181vh 0 0 rgba(240,198,64,.20),
-    91vw 122vh 0 0 rgba(240,198,64,.26), 17vw 191vh 0 0 rgba(240,198,64,.22),
-    44vw 108vh 0 0 rgba(240,198,64,.18), 67vw 155vh 0 0 rgba(240,198,64,.24);
-}
-.motes::after {
-  width: 3px; height: 3px;
-  box-shadow:
-    13vw 45vh 0 0 rgba(240,198,64,.16), 50vw 72vh 0 0 rgba(240,198,64,.14),
-    72vw 15vh 0 0 rgba(240,198,64,.18), 86vw 58vh 0 0 rgba(240,198,64,.12),
-    25vw 28vh 0 0 rgba(240,198,64,.14), 38vw 88vh 0 0 rgba(240,198,64,.16),
-    13vw 145vh 0 0 rgba(240,198,64,.16), 50vw 172vh 0 0 rgba(240,198,64,.14),
-    72vw 115vh 0 0 rgba(240,198,64,.18), 86vw 158vh 0 0 rgba(240,198,64,.12),
-    25vw 128vh 0 0 rgba(240,198,64,.14), 38vw 188vh 0 0 rgba(240,198,64,.16);
-}
 @media (prefers-reduced-motion: no-preference) {
-  /* translate (parallax, follows --mx/--my from JS) composes with the drift
-     animation's transform — independent properties, so they don't clobber. */
-  .motes::before { animation: drift 80s linear infinite; }
-  .motes::after { animation: drift 130s linear infinite; }
-  @keyframes drift { to { transform: translateY(-100vh); } }
-
   .btn:hover { transform: translateY(-1px); }
   .btn:active { transform: scale(.97); }
   .chip-btn:active, .choice:active { transform: scale(.96); }
@@ -633,7 +598,6 @@ table.standings td, table.standings th { padding: 6px 6px; }
   .pb-banner { animation: popin .3s ease; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .motes { display: none; }
   /* Cut the remaining one-shot animations that live outside the
      no-preference gate — screen/toast fade-ins and the countdown pop. */
   .screen.active, .toast, .count-num.pop { animation: none; }
