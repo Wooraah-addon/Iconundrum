@@ -224,6 +224,9 @@ input.invalid { border-color: var(--red); }
 .hl-vs { align-self: center; color: var(--text-dim); font-weight: 800; }
 .hl-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
 .hl-streak { text-align: center; color: var(--gold); font-size: 1.05rem; font-weight: 700; margin-top: 4px; }
+.hl-hearts { text-align: center; font-size: 1.3rem; letter-spacing: .18em; margin-top: 10px; line-height: 1; }
+.hl-hearts .full { color: var(--red); text-shadow: 0 0 8px rgba(224, 82, 82, .5); }
+.hl-hearts .spent { color: #3a2a4a; }
 /* Small screens: compact horizontal cards — icon | name | price — so both
    cards, the VS, and the call buttons all fit without scrolling. */
 @media (max-width: 540px) {

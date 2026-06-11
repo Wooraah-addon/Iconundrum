@@ -96,6 +96,15 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
     sepSelect.value = '125';
     sepSelect.addEventListener('change', () => (state.sep = parseInt(sepSelect.value, 10)));
     rows.push(row('Difficulty', sepSelect));
+    const livesSelect = el('select', { class: 'setup-select' },
+      el('option', { value: '1' }, '1 — sudden death (ranked)'),
+      el('option', { value: '2' }, '2 ♥ — one mistake forgiven'),
+      el('option', { value: '3' }, '3 ♥'),
+      el('option', { value: '4' }, '4 ♥'),
+    );
+    livesSelect.value = '1';
+    livesSelect.addEventListener('change', () => (state.lives = parseInt(livesSelect.value, 10)));
+    rows.push(row('Lives', livesSelect));
   }
 
   const cfgNow = () => makeCfg(modeId, { ...state, seed, v: bundle.version });

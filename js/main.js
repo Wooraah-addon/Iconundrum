@@ -147,7 +147,10 @@ function cfgSummary(cfg) {
     if (cfg.hard) bits.push('hard mode — type it');
   }
   if (cfg.mode === 'value') bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, { 1: 'casual', 2: 'goblin', 4: 'tycoon' }[cfg.curve] + ' scoring', BASIS_SHORT[cfg.basis || 'mv']);
-  if (cfg.mode === 'hl') bits.push(cfg.sep === 110 ? 'tycoon calls' : 'goblin calls', BASIS_SHORT[cfg.basis || 'mv']);
+  if (cfg.mode === 'hl') {
+    bits.push(cfg.sep === 110 ? 'tycoon calls' : 'goblin calls', BASIS_SHORT[cfg.basis || 'mv']);
+    if (cfg.lives > 1) bits.push(`${cfg.lives} lives`);
+  }
   return bits.join(' · ');
 }
 

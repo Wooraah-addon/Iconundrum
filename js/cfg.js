@@ -48,6 +48,9 @@ export function makeCfg(mode, opts = {}) {
   } else if (mode === 'hl') {
     cfg.sep = LIMITS.seps.includes(opts.sep) ? opts.sep : d.sep;
     cfg.basis = opts.basis === 'sa' ? 'sa' : 'mv';
+    // Extra lives (2-4 total) survive wrong calls. Default 1 = the only
+    // ranked variant; absent from pre-lives links so old sigs are untouched.
+    cfg.lives = Number.isInteger(opts.lives) && opts.lives >= 2 && opts.lives <= 4 ? opts.lives : 1;
   }
   return cfg;
 }
@@ -59,7 +62,7 @@ export function cfgSig(cfg) {
   if (cfg.mode === 'icon') return `r${cfg.rounds}t${cfg.timer}sp${cfg.speed}${cfg.hard ? 'h1' : ''}`;
   const b = cfg.basis === 'sa' ? 'bsa' : '';
   if (cfg.mode === 'value') return `r${cfg.rounds}t${cfg.timer}k${cfg.curve}${b}`;
-  return `sep${cfg.sep}${b}`;
+  return `sep${cfg.sep}${cfg.lives > 1 ? `hp${cfg.lives}` : ''}${b}`;
 }
 
 // The all-time board is RANKED: it only admits the mode's default
@@ -81,7 +84,7 @@ export function buildUrl(cfg, absolute = true) {
   const p = new URLSearchParams({ mode: cfg.mode, pack: cfg.pack, cat: cfg.cat, seed: cfg.seed, v: String(cfg.v) });
   if (cfg.mode === 'icon') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('sp', cfg.speed); if (cfg.hard) p.set('h', 1); }
   else if (cfg.mode === 'value') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('k', cfg.curve); p.set('b', cfg.basis); }
-  else { p.set('sep', cfg.sep); p.set('b', cfg.basis); }
+  else { p.set('sep', cfg.sep); p.set('b', cfg.basis); if (cfg.lives > 1) p.set('hp', cfg.lives); }
   const path = `${location.pathname}?${p}`;
   return absolute ? `${location.origin}${path}` : path;
 }
@@ -104,5 +107,6 @@ export function cfgFromParams(params) {
     curve: int('k'),
     sep: int('sep'),
     basis: params.get('b'),
+    lives: int('hp'),
   });
 }

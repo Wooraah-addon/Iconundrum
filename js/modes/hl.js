@@ -47,10 +47,21 @@ export function start(ctx) {
   const stream = makeStream(ctx.bundle, ctx.cfg);
   const log = [];
   let streak = 0;
+  let lives = ctx.cfg.lives || 1; // extra lives survive wrong calls (unranked variant)
+  const maxLives = lives;
   let current = stream.next();
   let challenger = stream.next();
 
   ctx.timerBar.parentElement.style.display = 'none'; // untimed — zero friction
+
+  function heartsEl() {
+    if (maxLives <= 1) return null;
+    const h = el('div', { class: 'hl-hearts' });
+    for (let i = 0; i < maxLives; i++) {
+      h.append(el('span', { class: i < lives ? 'full' : 'spent' }, '♥'));
+    }
+    return h;
+  }
 
   function cardEl(item, hidePrice) {
     return el('div', { class: 'hl-card' },
@@ -77,6 +88,7 @@ export function start(ctx) {
         el('button', { class: 'btn', onclick: () => call(true) }, '▲ Higher'),
         el('button', { class: 'btn secondary', onclick: () => call(false) }, '▼ Lower'),
       ),
+      heartsEl(),
       el('div', { class: 'hl-streak' }, streak > 0 ? `Streak: ${streak}` : ' '),
     );
   }
@@ -108,6 +120,21 @@ export function start(ctx) {
         challenger = stream.next();
         render();
       }, 1100);
+    } else if (lives > 1) {
+      // A heart absorbs the miss — streak survives, chain rolls on.
+      lives -= 1;
+      play('wrong');
+      const hearts = ctx.content.querySelector('.hl-hearts');
+      if (hearts) {
+        const full = hearts.querySelectorAll('.full');
+        full[full.length - 1].className = 'spent';
+      }
+      streakEl.innerHTML = `<span style="color:var(--red)">Wrong — it was ${gapTxt}.</span> −1 ♥`;
+      setTimeout(() => {
+        current = challenger;
+        challenger = stream.next();
+        render();
+      }, 1500);
     } else {
       play('wrong');
       streakEl.innerHTML = `<span style="color:var(--red)">Wrong — it was ${gapTxt}.</span> Final streak: ${streak}`;
