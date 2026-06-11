@@ -90,6 +90,26 @@ function setupHome() {
     });
   });
 
+  // Gold-mote parallax: nudge the two mote layers against the cursor (opposite
+  // depths) for a faint "fluid" home background. Pointer devices only, and
+  // skipped entirely under reduced-motion. The CSS reads --mx/--my.
+  const home = document.getElementById('screen-home');
+  if (home && matchMedia('(hover: hover) and (pointer: fine)').matches
+      && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    let pending = false, px = 0, py = 0;
+    window.addEventListener('pointermove', e => {
+      px = (e.clientX / window.innerWidth - .5) * 2;
+      py = (e.clientY / window.innerHeight - .5) * 2;
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        home.style.setProperty('--mx', px.toFixed(3));
+        home.style.setProperty('--my', py.toFixed(3));
+        pending = false;
+      });
+    }, { passive: true });
+  }
+
   // Join by game code — a viewer who sees the host's code on stream can type
   // it here instead of needing the full link. Resolves to the live lobby's
   // own config; a launched/stale code falls back to the async challenge.

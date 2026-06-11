@@ -36,8 +36,11 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  /* flat — the logo ships with this exact background baked in */
+  /* Centre stays exactly --bg (matches the logo's baked-in background, so no
+     seam shows around the PNG); only the edges darken for a subtle vignette. */
   background: var(--bg);
+  background-image: radial-gradient(ellipse 120% 85% at 50% 20%, transparent 0%, transparent 46%, rgba(0, 0, 0, .38) 100%);
+  background-attachment: fixed;
   min-height: 100vh;
   color: var(--text);
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -591,8 +594,11 @@ table.standings td, table.standings th { padding: 6px 6px; }
     25vw 128vh 0 0 rgba(240,198,64,.14), 38vw 188vh 0 0 rgba(240,198,64,.16);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .motes::before { animation: drift 80s linear infinite; }
-  .motes::after { animation: drift 130s linear infinite; }
+  /* translate (parallax, follows --mx/--my from JS) composes with the drift
+     animation's transform — independent properties, so they don't clobber. */
+  .motes::before, .motes::after { transition: translate .45s ease-out; }
+  .motes::before { animation: drift 80s linear infinite; translate: calc(var(--mx, 0) * 9px) calc(var(--my, 0) * 9px); }
+  .motes::after { animation: drift 130s linear infinite; translate: calc(var(--mx, 0) * -6px) calc(var(--my, 0) * -6px); }
   @keyframes drift { to { transform: translateY(-100vh); } }
 
   .btn:hover { transform: translateY(-1px); }
