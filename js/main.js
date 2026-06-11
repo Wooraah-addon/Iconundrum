@@ -39,6 +39,7 @@ async function boot() {
 
   document.getElementById('price-date').textContent = bundle.priceDate;
   setupHome();
+  loadWhatsNew(); // fire-and-forget — home shouldn't wait on it
 
   const linkCfg = cfgFromParams(params);
   if (linkCfg) {
@@ -87,6 +88,22 @@ function setupHome() {
       if (!muted) sound.play('coin');
     });
   });
+}
+
+// "What's new" strip on the home screen: latest entry lifted from
+// changelog.html so there's one source of truth. Quietly absent if the
+// fetch or parse fails (offline, file://).
+async function loadWhatsNew() {
+  try {
+    const html = await (await fetch('changelog.html')).text();
+    const entry = new DOMParser().parseFromString(html, 'text/html').querySelector('.cl-entry');
+    if (!entry) return;
+    document.getElementById('wn-summary').textContent =
+      `What's new — ${entry.querySelector('h3').textContent.replace(/\s+/g, ' ').trim()}`;
+    const list = document.getElementById('wn-list');
+    entry.querySelectorAll('li').forEach(li => list.append(el('li', { html: li.innerHTML })));
+    document.getElementById('whats-new').hidden = false;
+  } catch { /* no strip is fine */ }
 }
 
 function cfgSummary(cfg) {

@@ -376,3 +376,11 @@ a.btn { text-decoration: none; display: inline-block; }
   letter-spacing: .08em; margin-bottom: 6px;
 }
 table.standings { max-width: 340px; margin: 0 auto; }
+
+/* ---- What's new strip (home) ---- */
+.whatsnew { font-size: .85rem; padding: 10px 16px; margin-top: 14px; }
+.whatsnew summary { cursor: pointer; color: var(--gold); font-weight: 600; }
+.whatsnew summary:hover { filter: brightness(1.15); }
+.whatsnew ul { margin: 10px 0 8px 20px; color: var(--text-dim); line-height: 1.55; }
+.whatsnew li { margin-bottom: 5px; }
+.whatsnew a { color: var(--gold); font-size: .8rem; }
