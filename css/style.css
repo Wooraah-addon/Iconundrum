@@ -414,6 +414,60 @@ table.standings { max-width: 340px; margin: 0 auto; }
 
 /* ---- Home stats strip ---- */
 .home-stats { margin: -4px 0 16px; }
+.home-stats .statchips { margin: 8px 0; }
+.stats-label {
+  text-align: center; color: var(--text-dim); font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .08em; margin-top: 12px;
+}
+
+/* ---- Subtle motion pass (tracker F25) ---- */
+/* Drifting gold motes behind the home screen — two layers, different
+   speeds. Each layer's dots are duplicated 100vh apart so the loop is
+   seamless. Decorative only: no pointer events, gone for reduced-motion. */
+.motes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
+.motes::before, .motes::after {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 3px; height: 3px; border-radius: 50%; background: transparent;
+}
+.motes::before {
+  box-shadow:
+    8vw 12vh 0 0 rgba(240,198,64,.30), 31vw 67vh 0 0 rgba(240,198,64,.22),
+    57vw 34vh 0 0 rgba(240,198,64,.28), 79vw 81vh 0 0 rgba(240,198,64,.20),
+    91vw 22vh 0 0 rgba(240,198,64,.26), 17vw 91vh 0 0 rgba(240,198,64,.22),
+    44vw 8vh  0 0 rgba(240,198,64,.18), 67vw 55vh 0 0 rgba(240,198,64,.24),
+    8vw 112vh 0 0 rgba(240,198,64,.30), 31vw 167vh 0 0 rgba(240,198,64,.22),
+    57vw 134vh 0 0 rgba(240,198,64,.28), 79vw 181vh 0 0 rgba(240,198,64,.20),
+    91vw 122vh 0 0 rgba(240,198,64,.26), 17vw 191vh 0 0 rgba(240,198,64,.22),
+    44vw 108vh 0 0 rgba(240,198,64,.18), 67vw 155vh 0 0 rgba(240,198,64,.24);
+}
+.motes::after {
+  width: 2px; height: 2px;
+  box-shadow:
+    13vw 45vh 0 0 rgba(240,198,64,.16), 50vw 72vh 0 0 rgba(240,198,64,.14),
+    72vw 15vh 0 0 rgba(240,198,64,.18), 86vw 58vh 0 0 rgba(240,198,64,.12),
+    25vw 28vh 0 0 rgba(240,198,64,.14), 38vw 88vh 0 0 rgba(240,198,64,.16),
+    13vw 145vh 0 0 rgba(240,198,64,.16), 50vw 172vh 0 0 rgba(240,198,64,.14),
+    72vw 115vh 0 0 rgba(240,198,64,.18), 86vw 158vh 0 0 rgba(240,198,64,.12),
+    25vw 128vh 0 0 rgba(240,198,64,.14), 38vw 188vh 0 0 rgba(240,198,64,.16);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .motes::before { animation: drift 80s linear infinite; }
+  .motes::after { animation: drift 130s linear infinite; }
+  @keyframes drift { to { transform: translateY(-100vh); } }
+
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: scale(.97); }
+  .chip-btn:active, .choice:active { transform: scale(.96); }
+  .chip-btn, .choice { transition: border-color .1s ease, background .1s ease, transform .08s ease; }
+  .reveal { animation: popin .22s ease; }
+  @keyframes popin { from { opacity: 0; transform: scale(.96); } }
+  .timer-bar.urgent { animation: urgentpulse 1s ease-in-out infinite; }
+  @keyframes urgentpulse { 50% { filter: brightness(1.4); } }
+  .pb-banner { animation: popin .3s ease; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motes { display: none; }
+}
 
 /* ---- What's new strip (home) ---- */
 .whatsnew { font-size: .85rem; padding: 10px 16px; margin-top: 14px; }

@@ -92,8 +92,11 @@ function setupHome() {
   renderHomeStats();
 }
 
-// Your local record on the home screen — games played, per-mode bests,
-// favourite mode. localStorage only; hidden until the first game.
+// Your local record on the home screen — totals + favourite on one line,
+// ranked (default-settings) high scores on the next, mirroring what the
+// ranked all-time board counts. localStorage only; hidden until the
+// first game. ("Most active player" needs cross-player aggregation the
+// backend doesn't keep — see tracker F24.)
 function renderHomeStats() {
   const wrap = document.getElementById('home-stats');
   const stats = profile.getStats();
@@ -101,17 +104,23 @@ function renderHomeStats() {
   const played = entries.reduce((n, [, s]) => n + (s.played || 0), 0);
   if (!played) { wrap.hidden = true; return; }
 
-  const bits = [`<b>${played}</b> game${played === 1 ? '' : 's'} played`];
+  const fav = entries.reduce((a, b) => (b[1].played > a[1].played ? b : a));
+  const row1 = [`Total games played: <b>${played}</b>`];
+  if (entries.length > 1) row1.push(`Favourite game: <b>${MODE_LABELS[fav[0]]}</b>`);
+
+  const row2 = [];
   for (const m of ['icon', 'value', 'hl']) {
-    if (stats[m] && stats[m].best > 0) {
-      bits.push(`${MODE_LABELS[m]} <b>${m === 'hl' ? `streak ${stats[m].best}` : stats[m].best.toLocaleString()}</b>`);
+    const s = stats[m];
+    const rbest = s ? (s.rbest !== undefined ? s.rbest : s.best) : 0;
+    if (rbest > 0) {
+      row2.push(`${MODE_LABELS[m]}${m === 'hl' ? ' (streak)' : ''}: <b>${rbest.toLocaleString()}</b>`);
     }
   }
-  if (entries.length > 1) {
-    const fav = entries.reduce((a, b) => (b[1].played > a[1].played ? b : a));
-    bits.push(`favourite: <b>${MODE_LABELS[fav[0]]}</b>`);
-  }
-  wrap.innerHTML = bits.map(b => `<span class="chip">${b}</span>`).join('');
+
+  const chips = row => row.map(x => `<span class="chip">${x}</span>`).join('');
+  wrap.innerHTML = `<div class="statchips">${chips(row1)}</div>` + (row2.length
+    ? `<div class="stats-label">High scores — default settings</div><div class="statchips">${chips(row2)}</div>`
+    : '');
   wrap.hidden = false;
 }
 
@@ -241,7 +250,7 @@ async function onFinish(result) {
   game.result = result;
   const { cfg } = game;
   const player = profile.getName();
-  const { pb, best } = profile.recordGame(cfg.mode, result.score);
+  const { pb, best } = profile.recordGame(cfg.mode, result.score, isRanked(cfg));
   if (pb) sound.play('fanfare');
 
   document.getElementById('summary-mode').textContent =

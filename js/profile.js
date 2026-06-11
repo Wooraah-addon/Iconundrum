@@ -29,14 +29,20 @@ export function setName(raw) {
 }
 
 // Returns { pb: bool, best: number } — records the result and reports
-// whether it's a new personal best for that mode.
-export function recordGame(mode, score) {
+// whether it's a new personal best for that mode. `best` covers any
+// settings (feeds the PB banner); `rbest` only default-ruleset games
+// (feeds the home high-scores line, mirroring the ranked board).
+export function recordGame(mode, score, ranked = false) {
   const p = load();
   p.stats = p.stats || {};
   const s = p.stats[mode] = p.stats[mode] || { played: 0, best: 0 };
+  // One-time migration for pre-ranked profiles (day-1 bests were
+  // overwhelmingly default-settings games).
+  if (s.rbest === undefined) s.rbest = s.best;
   s.played += 1;
   const pb = score > s.best && s.played > 1;
   if (score > s.best) s.best = score;
+  if (ranked && score > s.rbest) s.rbest = score;
   save(p);
   return { pb, best: s.best, played: s.played };
 }
