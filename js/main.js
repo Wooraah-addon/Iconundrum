@@ -106,7 +106,7 @@ function renderHomeStats() {
 
   const fav = entries.reduce((a, b) => (b[1].played > a[1].played ? b : a));
   const row1 = [`Total games played: <b>${played}</b>`];
-  if (entries.length > 1) row1.push(`Favourite game: <b>${MODE_LABELS[fav[0]]}</b>`);
+  if (entries.length > 1) row1.push(`Your favourite game: <b>${MODE_LABELS[fav[0]]}</b>`);
 
   const row2 = [];
   for (const m of ['icon', 'value', 'hl']) {
