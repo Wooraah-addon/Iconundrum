@@ -605,6 +605,22 @@ table.standings td, table.standings th { padding: 6px 6px; }
    transform, so the coin grows + fades in place without losing its position. */
 .coin.pocketed { opacity: 0; transition: opacity .4s ease, scale .4s ease; scale: 1.7; }
 
+/* ---- Celebration burst (fx.js) ---- */
+/* A fixed zero-size anchor at the burst's centre; coins/ring position off it.
+   z above the countdown overlay (60) so a jackpot reads over everything. */
+.fx-burst { position: fixed; z-index: 70; width: 0; height: 0; pointer-events: none; }
+.fx-ring {
+  position: absolute; left: 0; top: 0; width: 84px; height: 84px;
+  border-radius: 50%; border: 3px solid var(--gold);
+  box-shadow: 0 0 24px rgba(240, 198, 64, .6), inset 0 0 12px rgba(240, 198, 64, .4);
+}
+.fx-coin {
+  position: absolute; left: 0; top: 0; width: 15px; height: 15px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #f9e79a 0%, #f0c640 44%, #b8860f 100%);
+  border: 1px solid #d4a72c;
+  box-shadow: 0 0 7px rgba(240, 198, 64, .55);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .btn:hover { transform: translateY(-1px); }
   .btn:active { transform: scale(.97); }

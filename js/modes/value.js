@@ -9,6 +9,7 @@ import { rngFor, sample } from '../rng.js';
 import { iconUrl, fmtGoldLong, catItems, priceOf, parseGold, preloadIcons, BASIS_LABELS } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
+import { celebrate } from '../fx.js';
 import { buildSyncFooter, revealHoldMs } from '../lobby.js';
 
 export function buildRounds(bundle, cfg) {
@@ -318,6 +319,10 @@ export function start(ctx) {
             : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
                 last ? 'See results' : 'Next round');
           renderReveal(ctx.content, item, headline, detail, footer);
+          // Jackpot is the mode's peak — and visually identical to a normal
+          // correct answer without it (the jackpot jingle is still synth-only).
+          // Burst on the revealed icon. Sync-fair: we're inside the held reveal.
+          if (earned === 5000) celebrate(ctx.content.querySelector('.reveal img'), 1.5);
         }, 500);
       }, hold);
     }

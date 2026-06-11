@@ -8,6 +8,7 @@ import { loadBundle, catLabel, BASIS_SHORT } from './data.js';
 import { newSeed } from './rng.js';
 import { makeCfg, cfgFromParams, buildUrl, isRanked } from './cfg.js';
 import { showScreen, el, toast, copyText, escapeHtml } from './ui.js';
+import { celebrate } from './fx.js';
 import { openSetup } from './setup.js';
 import { openFeedback } from './feedback.js';
 import * as lobby from './lobby.js';
@@ -378,6 +379,9 @@ async function onFinish(result) {
   }
 
   showScreen('screen-summary');
+  // A personal best is the strongest intrinsic reward in a no-account game —
+  // celebrate the hero number (the fanfare is parked, so the visual carries it).
+  if (pb) setTimeout(() => celebrate(document.getElementById('summary-score'), 1.7), 350);
   wireSummaryActions();
 
   // Anti-grind: only this device's FIRST run on a board posts — replaying

@@ -14,6 +14,11 @@ import { rngFor, shuffled } from '../rng.js';
 import { iconUrl, fmtGoldLong, catItems, priceOf, preloadIcons } from '../data.js';
 import { el } from '../ui.js';
 import { play } from '../sound.js';
+import { celebrate } from '../fx.js';
+
+// Streak landmarks worth a coin-burst — early ones close together for a quick
+// first taste, then every 5 so a long run keeps punctuating without spamming.
+const isMilestone = s => s === 3 || (s >= 5 && s % 5 === 0);
 
 // Deterministic card stream for a seed: walk a seeded shuffle, only accepting
 // cards that clear the separation ratio vs the card before them; reshuffle
@@ -151,6 +156,7 @@ export function start(ctx) {
       ctx.setScore(streak);
       if (synced()) ctx.sync.reportScore(streak);
       streakEl.textContent = `Streak: ${streak} — it was ${gapTxt}`;
+      if (isMilestone(streak)) celebrate(streakEl, 1 + streak / 25);
       setTimeout(() => {
         current = challenger;
         challenger = stream.next();
