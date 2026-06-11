@@ -361,3 +361,18 @@ input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
   0% { transform: scale(1.35); opacity: .4; }
   30% { transform: scale(1); opacity: 1; }
 }
+
+/* ---- Changelog page ---- */
+.cl-entry { margin-bottom: 22px; }
+.cl-entry h3 { color: var(--text); font-size: 1rem; margin-bottom: 8px; }
+.cl-date { color: var(--text-dim); font-weight: 400; font-size: .8rem; margin-left: 8px; }
+.cl-entry ul { margin-left: 20px; color: var(--text-dim); font-size: .9rem; line-height: 1.6; }
+a.btn { text-decoration: none; display: inline-block; }
+
+/* ---- Sync footer (multiplayer reveal) ---- */
+.sync-footer { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.standings-head {
+  color: var(--text-dim); font-size: .85rem; text-transform: uppercase;
+  letter-spacing: .08em; margin-bottom: 6px;
+}
+table.standings { max-width: 340px; margin: 0 auto; }
