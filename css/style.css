@@ -297,7 +297,13 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .hl-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
 .hl-keyhint { text-align: center; color: var(--text-dim); font-size: .75rem; margin-top: 8px; }
 @media (hover: none) { .hl-keyhint { display: none; } }
-.hl-streak { text-align: center; color: var(--gold); font-size: 1.05rem; font-weight: 700; margin-top: 4px; }
+/* Streak grows with you: --streak (0–20, set in hl.js) drives a bigger,
+   hotter-glowing number the longer you ride — celebrating what's earned, no
+   pressure copy. Plain colour/size baseline; the glow is motion-gated below. */
+.hl-streak {
+  --streak: 0; text-align: center; color: var(--gold); font-weight: 700; margin-top: 4px;
+  font-size: calc(1.05rem + var(--streak) * 0.035rem);
+}
 .hl-race { max-width: 420px; margin: 18px auto 0; }
 .hl-race .race-state { width: 2em; text-align: center; }
 .hl-hearts { text-align: center; font-size: 1.3rem; letter-spacing: .18em; margin-top: 10px; line-height: 1; }
@@ -644,6 +650,11 @@ table.standings td, table.standings th { padding: 6px 6px; }
     60% { transform: translateX(-3px); }
     80% { transform: translateX(2px); }
   }
+  /* Streak heat: glow intensifies with --streak; the number pops on each
+     increment (hl.js re-triggers .bump). */
+  .hl-streak { text-shadow: 0 0 calc(var(--streak) * 1px) rgba(240, 198, 64, calc(.12 + var(--streak) * .03)); }
+  .hl-streak.bump { animation: streakbump .36s ease; }
+  @keyframes streakbump { 0% { transform: scale(1); } 38% { transform: scale(1.22); } 100% { transform: scale(1); } }
   .timer-bar.urgent { animation: urgentpulse 1s ease-in-out infinite; }
   @keyframes urgentpulse { 50% { filter: brightness(1.4); } }
   .pb-banner { animation: popin .3s ease; }

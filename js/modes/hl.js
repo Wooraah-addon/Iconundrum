@@ -20,6 +20,18 @@ import { celebrate } from '../fx.js';
 // first taste, then every 5 so a long run keeps punctuating without spamming.
 const isMilestone = s => s === 3 || (s >= 5 && s % 5 === 0);
 
+// Where the streak heat tops out (font/glow stop growing) — keeps a 50-run
+// from swallowing the screen. Mirrors the .hl-streak calc in style.css.
+const STREAK_CAP = 20;
+
+// Re-trigger the increment pop on the (persistent) streak element.
+function popStreak(streakEl, streak) {
+  streakEl.style.setProperty('--streak', Math.min(streak, STREAK_CAP));
+  streakEl.classList.remove('bump');
+  void streakEl.offsetWidth; // restart the animation
+  streakEl.classList.add('bump');
+}
+
 // Deterministic card stream for a seed: walk a seeded shuffle, only accepting
 // cards that clear the separation ratio vs the card before them; reshuffle
 // (continuing the same rng) when the walk runs dry.
@@ -124,7 +136,7 @@ export function start(ctx) {
       ),
       el('div', { class: 'hl-keyhint' }, 'Tip: press H for higher, L for lower'),
       heartsEl(),
-      el('div', { class: 'hl-streak' }, streak > 0 ? `Streak: ${streak}` : ' '),
+      el('div', { class: 'hl-streak', style: `--streak:${Math.min(streak, STREAK_CAP)}` }, streak > 0 ? `Streak: ${streak}` : ' '),
     );
     if (synced()) {
       raceEl = el('div', { class: 'hl-race' });
@@ -156,6 +168,7 @@ export function start(ctx) {
       ctx.setScore(streak);
       if (synced()) ctx.sync.reportScore(streak);
       streakEl.textContent = `Streak: ${streak} — it was ${gapTxt}`;
+      popStreak(streakEl, streak);
       if (isMilestone(streak)) celebrate(streakEl, 1 + streak / 25);
       setTimeout(() => {
         current = challenger;
