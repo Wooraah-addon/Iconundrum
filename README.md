@@ -4,7 +4,7 @@
 ride the higher-lower chain. One link, no sign-up. Built for friends, guilds, and
 community game nights.
 
-**Play:** https://wooraah.github.io/iconundrum/
+**Play:** https://wooraah-addon.github.io/Iconundrum/
 
 ## Modes (v0)
 
