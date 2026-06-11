@@ -169,6 +169,19 @@ export async function joinLobby(code, name) {
   }
 }
 
+// Leaving tidies the roster. Only possible while the lobby is open (the
+// rules freeze players after launch) — best-effort, never blocks leaving.
+export async function leaveLobby(code, name) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), { players: fs.arrayRemove(name) });
+    return true;
+  } catch (e) {
+    console.warn('leaveLobby failed:', e);
+    return false;
+  }
+}
+
 // cb fires on every lobby change; returns an unsubscribe fn (or null).
 export async function watchLobby(code, cb) {
   if (!(await ensureInit())) return null;

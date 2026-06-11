@@ -61,6 +61,20 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
     }, '🚀 Launch game'));
   }
 
+  // Everyone can walk: unsubscribe, drop off the roster (best-effort,
+  // not awaited), clear the challenge params, go home. Remaining players
+  // see the host-left notice via the roster check in the watcher.
+  actions.append(el('button', {
+    class: 'btn secondary',
+    onclick: () => {
+      play('click');
+      cleanup();
+      fire.leaveLobby(cfg.seed, playerName);
+      history.replaceState(null, '', location.pathname);
+      showScreen('screen-home');
+    },
+  }, 'Main Menu'));
+
   // WoW-style ready check: chime on the host's ping, prompt anyone who
   // hasn't answered this round, count answers in the status line. The
   // ready map resets on every fresh ping (the host's write replaces it).
@@ -99,6 +113,9 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
     if (sync) { sync.handleDoc(doc); return; }
     renderRoster(roster, doc, playerName);
     handleReadyCheck(doc);
+    if (doc.state === 'open' && doc.host && (doc.players || []).length && !(doc.players || []).includes(doc.host)) {
+      status.textContent = 'The host left — this lobby won’t launch. Head back to the main menu.';
+    }
     if (doc.state === 'launching' && doc.launchAt && !counting) {
       counting = true;
       readyBox.hidden = true;
