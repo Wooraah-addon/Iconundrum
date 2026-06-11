@@ -15,6 +15,13 @@ export function initCoin() {
   const home = document.getElementById('screen-home');
   const coin = document.getElementById('home-coin');
   if (!home || !coin) return;
+
+  // BENCHED until the coin-catch achievement system (tracker F54) ships, so
+  // nobody pre-banks catches. Flip to true to bring the toy back — all the
+  // physics/3D machinery below stays intact.
+  const COIN_ENABLED = false;
+  if (!COIN_ENABLED) { coin.remove(); return; }
+
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { coin.remove(); return; }
 
   // Build the cylindrical rim: N flat segments around the Z axis bridge the two
