@@ -283,7 +283,7 @@ footer a { color: var(--gold-dim); }
 
 /* ---- Logo ---- */
 .logo-wrap { text-align: center; margin: 14px 0 20px; }
-.logo { max-width: min(440px, 92%); height: auto; display: inline-block; }
+.logo { max-width: min(550px, 96%); height: auto; display: inline-block; }
 .logo-small { max-width: min(280px, 70%); display: block; margin: 0 auto 10px; }
 
 /* ---- Sound toggle ---- */
