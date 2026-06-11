@@ -32,38 +32,140 @@ export const HECKLES = {
     'Alright, who leaked my ledger?!',
     'Spot on. I don’t like it. I don’t like YOU.',
     'An appraisal like that, you’re after my job.',
+    'That close? My ledgers just broke out in sweat.',
+    'Who sold you my price list, rat?',
+    'Insider trading looks good on you, thief.',
+    'That smells like a cartel meeting in Booty Bay.',
+    'You price like a goblin. I hate that.',
+    'I’m impressed, which is billable.',
+    'Either genius, or you bribed the auctioneer.',
+    'That was too clean. Check their bags.',
+    'I’d salute, but both hands are counting your cut.',
+    'You just undercut my confidence.',
+    'That’s not luck, that’s laundering.',
+    'Fine. You may touch one ledger. Once.',
+    'Even Gallywix would audit that guess.',
+    'Your accuracy has deposit-fraud energy.',
+    'I hate competence unless I invoice it.',
   ],
   close: [
     'Close enough to make me nervous.',
     'Hmph. Lucky. Definitely lucky.',
     'You’ve haggled before, haven’t you.',
     'Not bad. I’d still have fleeced you on the fees.',
+    'Close enough to overcharge with confidence.',
+    'Not terrible. I’ve taxed worse.',
+    'You’re near the price, far from respect.',
+    'A respectable guess from a discount brain.',
+    'I’d list it near there, then undercut you.',
+    'Close. Don’t start wearing a top hat.',
+    'Almost profitable. Almost attractive.',
+    'Fine instincts. Shame about the packaging.',
+    'You found the market and tripped at the stall.',
+    'Close enough for a gnome with a calculator.',
+    'I expected worse, so technically you owe me.',
+    'Near enough to be annoying.',
+    'That price has a pulse. Weak, but billable.',
+    'You’re learning. I’ll raise the lesson fee.',
+    'I dislike how little I can insult that.',
   ],
   off: [
     'Eh. I’ve seen worse from a gnome.',
     'You’d survive the auction house. Barely.',
     'Half right is still half broke, friend.',
     'That’s a “first week with the addon” guess.',
+    'That price has more wobble than a goblin ladder.',
+    'You’re not wrong enough to be interesting.',
+    'Did a kobold appraise that with a candle?',
+    'Your math limped into the AH and asked for credit.',
+    'That’s a price, not a business plan.',
+    'You aimed at profit and hit storage fees.',
+    'That estimate came pre-undercut.',
+    'Your guess needs a helmet.',
+    'That’s budget thinking in premium boots.',
+    'I’d correct you, but tutoring costs extra.',
+    'Not a disaster, just aggressively average.',
+    'You brought a spoon to a bidding war.',
+    'The AH would take your deposit and your dignity.',
+    'That price has starter-zone confidence.',
+    'Your valuation got lost near Ratchet.',
   ],
   wayoff: [
     'Did you price that with your fishing skill?',
     'Time is money, friend — and you just wasted both.',
     'My peon prices better than that. The PEON.',
     'Were you bidding, or insulting the seller?',
+    'That price fell off the zeppelin.',
+    'I’ve seen vendor trash show more ambition.',
+    'Did you appraise it from another expansion?',
+    'Your number needs a rez and a financial adviser.',
+    'That’s not valuation, that’s decorative math.',
+    'Booty Bay called. They want distance from this.',
+    'You undercut reality itself.',
+    'A murloc with a shell abacus beats that.',
+    'You priced it like the AH owes you therapy.',
+    'I’ve seen corpse runs with better direction.',
+    'You missed the market by a flight path.',
+    'Your gold sense is bound on pickup.',
+    'I’d insure that guess, then burn the policy.',
+    'You brought vendor logic to a luxury auction.',
+    'That price is so lost, it needs a hearthstone.',
   ],
   absurd: [
     'SECURITY! Get this one out of my auction house.',
     'That’s not a price, that’s a cry for help.',
     'I’d sell you a bridge in Booty Bay, but you’d overpay.',
     'Somewhere, an auctioneer just fainted.',
+    'Security, remove the walking market crash.',
+    'That guess just lowered property values in Orgrimmar.',
+    'I’m sending that number to collections.',
+    'That price belongs in a museum of bad decisions.',
+    'You just invented negative expertise.',
+    'My ledger is trying to leave the room.',
+    'I’ve seen scams with better fundamentals.',
+    'You priced it like gold grows on boars.',
+    'That’s a felony in three auction houses.',
+    'Even Booty Bay pirates would call that theft.',
+    'I’m billing you for emotional depreciation.',
+    'That guess should be soulbound to shame.',
+    'You didn’t miss the market. You declared war on it.',
+    'I’m putting your math in a locked crate.',
+    'The goblin cartel denies any association.',
   ],
   noguess: [
     'Cat got your gold?',
     'Silence won’t lower the deposit, friend.',
     'No bid? No backbone.',
     'The auction waits for no one. NEXT!',
+    'Blank input, blank ledger, blank future.',
+    'You brought no price to a price fight.',
+    'Even a peon writes something down.',
+    'The AH does not accept vibes as currency.',
+    'Empty hands, empty pockets, empty prospects.',
+    'Type a number, not your financial outlook.',
+    'That blank space just got undercut.',
+    'I’ve seen abandoned mailboxes show more intent.',
+    'No bid? Then stop breathing on the merchandise.',
+    'Your courage expired before the deposit fee.',
+    'The market waited. You contributed furniture.',
+    'That was the cheapest nothing I’ve ever seen.',
+    'You forgot the price and brought the shame.',
+    'Blank? Even vendor trash has a number.',
+    'No entry, no mercy, no refund.',
   ],
 };
+
+// Math.random, not the seeded rng: a draw from the game rng would shift
+// every later draw and fork shared boards.
+const lastHeckle = {};
+export function pickHeckle(bucket, rand = Math.random) {
+  const lines = HECKLES[bucket];
+  let line;
+  do { line = lines[Math.floor(rand() * lines.length)]; }
+  while (line === lastHeckle[bucket] && lines.length > 1);
+  lastHeckle[bucket] = line;
+  return line;
+}
 
 export function heckleBucket(guess, actual, earned) {
   if (!guess || guess <= 0) return 'noguess';
@@ -190,10 +292,7 @@ export function start(ctx) {
       } else {
         detail = `${BASIS_LABELS[basis]} is <b>${fmtGoldLong(actual)}</b>`;
       }
-      // Math.random, not the seeded rng: a draw from the game rng would shift
-      // every later draw and fork shared boards.
-      const lines = HECKLES[heckleBucket(guess, actual, earned)];
-      detail += `<span class="heckle">“${lines[Math.floor(Math.random() * lines.length)]}”</span>`;
+      detail += `<span class="heckle">“${pickHeckle(heckleBucket(guess, actual, earned))}”</span>`;
       const last = idx === rounds.length - 1;
       // Synced: the reveal (and its jackpot/wrong jingle) discloses the real
       // price — hold both until everyone's timer is done (F37).
