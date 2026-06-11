@@ -191,6 +191,11 @@ input.invalid { border-color: var(--red); }
   .value-entry input { width: 0; flex: 1 1 130px; }
 }
 
+/* Hard-mode name entry reuses the value-entry row, but the input gets the
+   width — item names are long, the answer isn't a number. */
+.hard-entry { max-width: 440px; margin-left: auto; margin-right: auto; }
+.hard-entry input { width: 0; flex: 1; text-align: left; font-size: 1rem; }
+
 .value-chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 .chip-btn {
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;

@@ -72,6 +72,9 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
     speedToggle.checked = true;
     speedToggle.addEventListener('change', () => (state.speed = speedToggle.checked ? 1 : 0));
     rows.push(row('Speed bonus scoring', el('label', { class: 'switch' }, speedToggle, el('span', {}, ' faster answer = more points'))));
+    const hardToggle = el('input', { type: 'checkbox' });
+    hardToggle.addEventListener('change', () => (state.hard = hardToggle.checked ? 1 : 0));
+    rows.push(row('Hard mode', el('label', { class: 'switch' }, hardToggle, el('span', {}, ' no choices — type the name'))));
   }
   if (modeId === 'value') {
     const curveSelect = el('select', { class: 'setup-select' },

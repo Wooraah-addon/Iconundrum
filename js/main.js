@@ -133,7 +133,10 @@ async function loadWhatsNew() {
 
 function cfgSummary(cfg) {
   const bits = [MODE_LABELS[cfg.mode], catLabel(cfg.cat)];
-  if (cfg.mode === 'icon') bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, cfg.speed ? 'speed bonus' : 'flat scoring');
+  if (cfg.mode === 'icon') {
+    bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, cfg.speed ? 'speed bonus' : 'flat scoring');
+    if (cfg.hard) bits.push('hard mode — type it');
+  }
   if (cfg.mode === 'value') bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, { 1: 'casual', 2: 'goblin', 4: 'tycoon' }[cfg.curve] + ' scoring', BASIS_SHORT[cfg.basis || 'mv']);
   if (cfg.mode === 'hl') bits.push(cfg.sep === 110 ? 'tycoon calls' : 'goblin calls', BASIS_SHORT[cfg.basis || 'mv']);
   return bits.join(' · ');

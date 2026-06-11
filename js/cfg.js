@@ -37,6 +37,9 @@ export function makeCfg(mode, opts = {}) {
     cfg.rounds = clamp(opts.rounds, LIMITS.rounds, d.rounds);
     cfg.timer = clamp(opts.timer, LIMITS.iconTimer, d.timer);
     cfg.speed = opts.speed === 0 ? 0 : 1;
+    // Hard mode (type the name, no choices) defaults OFF and is absent from
+    // pre-hard links, so old links and leaderboard sigs are untouched.
+    cfg.hard = opts.hard === 1 ? 1 : 0;
   } else if (mode === 'value') {
     cfg.rounds = clamp(opts.rounds, LIMITS.rounds, d.rounds);
     cfg.timer = clamp(opts.timer, LIMITS.valueTimer, d.timer);
@@ -53,7 +56,7 @@ export function makeCfg(mode, opts = {}) {
 // settings never share a leaderboard. The sale-avg basis appends a marker;
 // market-avg keeps the original format so pre-basis boards stay reachable.
 export function cfgSig(cfg) {
-  if (cfg.mode === 'icon') return `r${cfg.rounds}t${cfg.timer}sp${cfg.speed}`;
+  if (cfg.mode === 'icon') return `r${cfg.rounds}t${cfg.timer}sp${cfg.speed}${cfg.hard ? 'h1' : ''}`;
   const b = cfg.basis === 'sa' ? 'bsa' : '';
   if (cfg.mode === 'value') return `r${cfg.rounds}t${cfg.timer}k${cfg.curve}${b}`;
   return `sep${cfg.sep}${b}`;
@@ -61,7 +64,7 @@ export function cfgSig(cfg) {
 
 export function buildUrl(cfg, absolute = true) {
   const p = new URLSearchParams({ mode: cfg.mode, pack: cfg.pack, cat: cfg.cat, seed: cfg.seed, v: String(cfg.v) });
-  if (cfg.mode === 'icon') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('sp', cfg.speed); }
+  if (cfg.mode === 'icon') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('sp', cfg.speed); if (cfg.hard) p.set('h', 1); }
   else if (cfg.mode === 'value') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('k', cfg.curve); p.set('b', cfg.basis); }
   else { p.set('sep', cfg.sep); p.set('b', cfg.basis); }
   const path = `${location.pathname}?${p}`;
@@ -82,6 +85,7 @@ export function cfgFromParams(params) {
     rounds: int('r'),
     timer: int('t'),
     speed: int('sp'),
+    hard: int('h'),
     curve: int('k'),
     sep: int('sep'),
     basis: params.get('b'),

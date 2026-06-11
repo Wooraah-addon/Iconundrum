@@ -1,5 +1,7 @@
 // Guess the Icon — classic 4-choice, icon → name. Configurable rounds,
 // timer, and speed-bonus scoring (off = flat 1000 per correct).
+// Hard mode (cfg.hard): no choices — type the item name. Matching is
+// case/punctuation-blind with one typo forgiven on longer names.
 //
 // Distractors come from similarity tiers (v0 = filename families +
 // class/subclass) WITHIN the chosen category pool: same icon family first,
@@ -16,6 +18,40 @@ import { play } from '../sound.js';
 import { buildSyncFooter } from '../lobby.js';
 
 const TOP_K = 12;
+
+// ---- hard-mode name matching ----------------------------------------
+
+// "Kang the Decapitator!" -> "kangthedecapitator": spacing, case and
+// punctuation never decide a hard-mode answer.
+export function normName(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+// Exact normalized match always wins; names of 8+ normalized chars also
+// forgive a single typo. Short names stay strict — "ore" vs "orb" is a
+// different answer, not a typo.
+export function nameMatches(guess, actual) {
+  const g = normName(guess), a = normName(actual);
+  if (!g) return false;
+  if (g === a) return true;
+  return a.length >= 8 && Math.abs(g.length - a.length) <= 1 && levenshtein(g, a) <= 1;
+}
+
+const escapeHtml = s => s.replace(/[&<>"']/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 export function buildRounds(bundle, cfg) {
   const rng = rngFor(['icon', cfg.seed, `v${cfg.v}`]);
@@ -91,55 +127,32 @@ export function start(ctx) {
     ctx.setScore(total);
     ctx.content.innerHTML = '';
 
-    const buttons = [];
-    const grid = el('div', { class: 'choices' });
     const wrap = el('div', {},
       el('div', { class: 'question-icon-wrap' },
         el('img', { class: 'question-icon', src: iconUrl(item), alt: 'Mystery item icon' })),
-      el('div', { class: 'question-prompt', html: 'Which item is this?' }),
-      grid,
+      el('div', { class: 'question-prompt', html: cfg.hard ? 'Name this item — no choices, goblin.' : 'Which item is this?' }),
     );
     ctx.content.append(wrap);
 
     const timer = startTimer(cfg.timer, ctx.timerBar,
-      () => settle(null),
+      () => (cfg.hard ? settleHard(null) : settle(null)),
       sec => { if (sec <= 3 && sec > 0) play('tick'); });
 
-    for (const c of choices) {
-      const b = el('button', { class: 'choice', onclick: () => settle(c) }, c.n);
-      buttons.push(b);
-      grid.append(b);
-    }
-
     let settled = false;
-    forceSettle = () => settle(null, true);
 
-    function settle(chosen, forced = false) {
-      if (settled) return;
-      settled = true;
-      timer.stop();
-      const ok = chosen && chosen.id === item.id;
+    // Shared post-answer flow: score, log, sync report, then the reveal.
+    // headlineWrong is shown when ok is false; ok builds its own headline.
+    function conclude({ ok, logged, forced, headlineWrong, detail = null }) {
       const earned = ok ? (cfg.speed ? 500 + Math.round(500 * timer.leftFrac()) : 1000) : 0;
       total += earned;
-      log.push({ id: item.id, a: chosen ? chosen.id : null, ok: !!ok, s: earned, t: Math.round(timer.elapsedMs()) });
+      log.push({ id: item.id, a: logged, ok: !!ok, s: earned, t: Math.round(timer.elapsedMs()) });
       ctx.setScore(total);
       if (ctx.sync) ctx.sync.reportScore(total);
       if (forced) return; // advancing right now — skip the reveal
       play(ok ? 'correct' : 'wrong');
-
-      for (const b of buttons) {
-        b.disabled = true;
-        const name = b.textContent;
-        if (name === item.n) b.classList.add('correct');
-        else if (chosen && name === chosen.n) b.classList.add('wrong');
-        else b.classList.add('dim');
-      }
-
       setTimeout(() => {
         if (token !== roundToken) return; // already advanced past this round
-        const headline = ok
-          ? `+${earned.toLocaleString()} pts`
-          : (chosen ? 'Wrong — +0 pts' : 'Time’s up — +0 pts');
+        const headline = ok ? `+${earned.toLocaleString()} pts` : headlineWrong;
         const last = idx === rounds.length - 1;
         const footer = synced()
           ? buildSyncFooter(ctx.sync, {
@@ -149,8 +162,80 @@ export function start(ctx) {
             })
           : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
               last ? 'See results' : 'Next round');
-        renderReveal(ctx.content, item, headline, null, footer);
+        renderReveal(ctx.content, item, headline, detail, footer);
       }, 900);
+    }
+
+    // --- standard: 4 choices ---
+    const buttons = [];
+    if (!cfg.hard) {
+      const grid = el('div', { class: 'choices' });
+      wrap.append(grid);
+      for (const c of choices) {
+        const b = el('button', { class: 'choice', onclick: () => settle(c) }, c.n);
+        buttons.push(b);
+        grid.append(b);
+      }
+      forceSettle = () => settle(null, true);
+    }
+
+    function settle(chosen, forced = false) {
+      if (settled) return;
+      settled = true;
+      timer.stop();
+      const ok = chosen && chosen.id === item.id;
+      if (!forced) {
+        for (const b of buttons) {
+          b.disabled = true;
+          const name = b.textContent;
+          if (name === item.n) b.classList.add('correct');
+          else if (chosen && name === chosen.n) b.classList.add('wrong');
+          else b.classList.add('dim');
+        }
+      }
+      conclude({
+        ok, forced,
+        logged: chosen ? chosen.id : null,
+        headlineWrong: chosen ? 'Wrong — +0 pts' : 'Time’s up — +0 pts',
+      });
+    }
+
+    // --- hard: type the name ---
+    let input = null;
+    if (cfg.hard) {
+      input = el('input', {
+        type: 'text', placeholder: 'type the item name…',
+        autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', enterkeyhint: 'done',
+      });
+      input.addEventListener('input', () => input.classList.remove('invalid'));
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') tryLock(); });
+      const lockBtn = el('button', { class: 'btn', onclick: tryLock }, 'Lock in');
+      wrap.append(el('div', { class: 'value-entry hard-entry' }, input, lockBtn));
+      input.focus();
+      forceSettle = () => settleHard(input.value, true);
+
+      function tryLock() {
+        if (!input.value.trim()) { input.classList.add('invalid'); return; }
+        settleHard(input.value);
+      }
+    }
+
+    function settleHard(raw, forced = false) {
+      if (settled) return;
+      settled = true;
+      timer.stop();
+      input.disabled = true;
+      wrap.querySelectorAll('button').forEach(b => (b.disabled = true));
+      const typed = String(raw == null ? input.value : raw).trim();
+      const ok = nameMatches(typed, item.n);
+      const fuzzy = ok && normName(typed) !== normName(item.n);
+      conclude({
+        ok, forced,
+        logged: typed.slice(0, 30),
+        headlineWrong: typed ? 'Wrong — +0 pts' : 'Time’s up — +0 pts',
+        detail: fuzzy ? 'Close enough — we’ll take it.'
+          : (!ok && typed ? `You said <b>${escapeHtml(typed.slice(0, 60))}</b>` : null),
+      });
     }
   }
 
