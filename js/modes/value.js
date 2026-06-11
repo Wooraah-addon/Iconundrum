@@ -23,6 +23,58 @@ export function scoreGuess(guess, actual, k = 2) {
   return Math.round(5000 * Math.exp(-k * r));
 }
 
+// Goblin auctioneer commentary on the reveal. Buckets align 1:1 with the
+// reveal jingles (jackpot/correct/coin/wrong) so a future voice pack can key
+// off the same split.
+export const HECKLES = {
+  jackpot: [
+    'You’re banned from my auction house.',
+    'Alright, who leaked my ledger?!',
+    'Spot on. I don’t like it. I don’t like YOU.',
+    'An appraisal like that, you’re after my job.',
+  ],
+  close: [
+    'Close enough to make me nervous.',
+    'Hmph. Lucky. Definitely lucky.',
+    'You’ve haggled before, haven’t you.',
+    'Not bad. I’d still have fleeced you on the fees.',
+  ],
+  off: [
+    'Eh. I’ve seen worse from a gnome.',
+    'You’d survive the auction house. Barely.',
+    'Half right is still half broke, friend.',
+    'That’s a “first week with the addon” guess.',
+  ],
+  wayoff: [
+    'Did you price that with your fishing skill?',
+    'Time is money, friend — and you just wasted both.',
+    'My peon prices better than that. The PEON.',
+    'Were you bidding, or insulting the seller?',
+  ],
+  absurd: [
+    'SECURITY! Get this one out of my auction house.',
+    'That’s not a price, that’s a cry for help.',
+    'I’d sell you a bridge in Booty Bay, but you’d overpay.',
+    'Somewhere, an auctioneer just fainted.',
+  ],
+  noguess: [
+    'Cat got your gold?',
+    'Silence won’t lower the deposit, friend.',
+    'No bid? No backbone.',
+    'The auction waits for no one. NEXT!',
+  ],
+};
+
+export function heckleBucket(guess, actual, earned) {
+  if (!guess || guess <= 0) return 'noguess';
+  if (earned === 5000) return 'jackpot';
+  const r = guess > actual ? guess / actual : actual / guess;
+  if (r <= 1.25) return 'close';
+  if (r <= 2) return 'off';
+  if (r <= 10) return 'wayoff';
+  return 'absurd';
+}
+
 export function start(ctx) {
   const cfg = ctx.cfg;
   const basis = cfg.basis || 'mv';
@@ -138,6 +190,10 @@ export function start(ctx) {
       } else {
         detail = `${BASIS_LABELS[basis]} is <b>${fmtGoldLong(actual)}</b>`;
       }
+      // Math.random, not the seeded rng: a draw from the game rng would shift
+      // every later draw and fork shared boards.
+      const lines = HECKLES[heckleBucket(guess, actual, earned)];
+      detail += `<span class="heckle">“${lines[Math.floor(Math.random() * lines.length)]}” — Auctioneer Drezbit</span>`;
       const last = idx === rounds.length - 1;
       // Synced: the reveal (and its jackpot/wrong jingle) discloses the real
       // price — hold both until everyone's timer is done (F37).

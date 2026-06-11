@@ -296,6 +296,7 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .reveal .rclass { color: var(--text-dim); font-size: .85rem; margin-bottom: 14px; }
 .reveal img { width: 96px; height: 96px; border-radius: 12px; border: 2px solid var(--gold-dim); }
 .reveal .earned { font-size: 1.3rem; font-weight: 800; margin: 12px 0; }
+.reveal .heckle { display: block; margin-top: 10px; font-style: italic; font-size: .85rem; color: var(--text-dim); }
 .reveal .earned.good { color: var(--green); }
 .reveal .earned.bad { color: var(--red); }
 .statchips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0 16px; }
