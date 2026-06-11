@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iconundrum — The WoW Icon Guessing Game</title>
+  <meta name="description" content="Guess the WoW item from its icon, call its price, ride the higher-lower chain. Challenge your guild — one link, no sign-up.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23221733'/><text x='50' y='72' font-size='64' text-anchor='middle' fill='%23f0c640' font-family='Georgia'>%3F</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ================= HOME ================= -->
+    <section id="screen-home" class="screen">
+      <h1 class="wordmark">Ic<span class="qmark">?</span>nundrum</h1>
+      <p class="tagline">The WoW Icon Guessing Game</p>
+
+      <div id="challenge-banner"></div>
+
+      <div class="panel">
+        <div class="name-row">
+          <label for="player-name">Playing as</label>
+          <input type="text" id="player-name" maxlength="20" placeholder="your name (shown on leaderboards)">
+        </div>
+
+        <div class="mode-grid">
+          <button class="mode-card" data-mode="icon">
+            <h3>Guess the Icon</h3>
+            <p>Name the item from its icon. Four choices, ten seconds, speed scores extra.</p>
+          </button>
+          <button class="mode-card" data-mode="value">
+            <h3>Guess the Value</h3>
+            <p>The Price Is Right, goblin edition — call the AH price, closest wins the round.</p>
+          </button>
+          <button class="mode-card" data-mode="hl">
+            <h3>Higher or Lower</h3>
+            <p>Endless price chain. One call at a time — how long can you ride the streak?</p>
+          </button>
+          <div class="mode-card locked">
+            <span class="soon">Soon</span>
+            <h3>Pets Pack</h3>
+            <p>A thousand battle pets, dozens of near-identical whelps. Collectors, sharpen up.</p>
+          </div>
+          <div class="mode-card locked">
+            <span class="soon">Soon</span>
+            <h3>Guess the Spell</h3>
+            <p>Class abilities and iconic raid moments — for every player, not just the AH crowd.</p>
+          </div>
+          <div class="mode-card locked">
+            <span class="soon">Soon</span>
+            <h3>Raider Pack</h3>
+            <p>Tier sets, legendaries, trinkets of legend. Thunderfury, anyone?</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="lb-note">Pick a mode to play, then share your challenge link — everyone who opens it gets the same rounds.</p>
+    </section>
+
+    <!-- ================= GAME ================= -->
+    <section id="screen-game" class="screen">
+      <div class="game-header">
+        <span class="wordmark-small" onclick="location.href=location.pathname">Ic<span class="qmark">?</span>nundrum</span>
+        <span class="meta" id="game-meta"></span>
+        <span class="score" id="game-score"></span>
+      </div>
+      <div class="game-header">
+        <span class="meta" id="game-title"></span>
+      </div>
+      <div class="timer-track" id="timer-track"><div class="timer-bar" id="timer-bar"></div></div>
+      <div id="game-content"></div>
+    </section>
+
+    <!-- ================= SUMMARY ================= -->
+    <section id="screen-summary" class="screen">
+      <h2 class="wordmark" style="font-size:1.6rem">Ic<span class="qmark">?</span>nundrum</h2>
+      <div class="panel">
+        <div class="summary-sub" id="summary-mode"></div>
+        <div class="summary-score" id="summary-score"></div>
+        <div class="pb-banner" id="pb-banner" style="display:none">★ New personal best! ★</div>
+        <div class="summary-sub" id="summary-sub"></div>
+        <div class="round-pills" id="round-pills"></div>
+
+        <div class="action-row">
+          <button class="btn" id="btn-copy-link">Copy challenge link</button>
+          <button class="btn secondary" id="btn-share-result">Share my result</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="lb-tabs">
+          <button class="lb-tab active" data-board="challenge">This challenge</button>
+          <button class="lb-tab" data-board="alltime">All-time</button>
+        </div>
+        <table class="lb">
+          <thead><tr><th>#</th><th>Player</th><th>Score</th></tr></thead>
+          <tbody id="lb-body"></tbody>
+        </table>
+        <div class="lb-note" id="lb-status"></div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn" id="btn-play-again">Play again</button>
+        <button class="btn secondary" id="btn-home">All modes</button>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>
+    <div>Prices: EU region market averages as of <b id="price-date">…</b> · refreshed periodically</div>
+    <div>Made by Wooraah · <a href="https://github.com/Wooraah/iconundrum" rel="noopener">source on GitHub</a></div>
+    <div>Iconundrum is a free fan-made game. World of Warcraft, item icons and names are © Blizzard Entertainment. Not affiliated with or endorsed by Blizzard.</div>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

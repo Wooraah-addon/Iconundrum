@@ -1,0 +1,89 @@
+// Shared UI: screen switching, countdown timer, reveal panel, toast.
+
+import { iconUrl, statChips } from './data.js';
+
+export function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  window.scrollTo(0, 0);
+}
+
+export function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') node.className = v;
+    else if (k === 'html') node.innerHTML = v;
+    else if (k.startsWith('on')) node.addEventListener(k.slice(2), v);
+    else node.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c == null) continue;
+    node.append(c.nodeType ? c : document.createTextNode(c));
+  }
+  return node;
+}
+
+// Countdown driving the timer bar. onExpire fires once; stop() cancels.
+export function startTimer(seconds, barEl, onExpire) {
+  const t0 = performance.now();
+  const total = seconds * 1000;
+  let raf, done = false;
+  function frame(now) {
+    const left = Math.max(0, total - (now - t0));
+    const frac = left / total;
+    barEl.style.width = (frac * 100).toFixed(1) + '%';
+    barEl.classList.toggle('urgent', frac < 0.25);
+    if (left <= 0) {
+      done = true;
+      onExpire();
+      return;
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
+  return {
+    stop() { if (!done) cancelAnimationFrame(raf); },
+    elapsedMs() { return Math.min(total, performance.now() - t0); },
+    leftFrac() { return Math.max(0, 1 - (performance.now() - t0) / total); },
+  };
+}
+
+// Between-round reveal: item, what you earned, market-data chips, next button.
+export function renderReveal(container, item, earnedHtml, extraHtml, nextLabel, onNext) {
+  container.innerHTML = '';
+  const chips = statChips(item).map(c => `<span class="chip">${c}</span>`).join('');
+  const panel = el('div', { class: 'reveal panel' },
+    el('img', { src: iconUrl(item), alt: '' }),
+    el('div', { class: `rname q-${item.q}`, html: item.n }),
+    el('div', { class: 'rclass', html: item.cn }),
+    el('div', { class: 'earned', html: earnedHtml }),
+    el('div', { class: 'statchips', html: chips }),
+    extraHtml ? el('div', { class: 'question-prompt', html: extraHtml }) : null,
+    el('button', { class: 'btn', onclick: onNext }, nextLabel),
+  );
+  const earnedEl = panel.querySelector('.earned');
+  earnedEl.classList.add(earnedHtml.includes('+0') || earnedHtml.includes('Wrong') ? 'bad' : 'good');
+  container.append(panel);
+  panel.querySelector('.btn').focus();
+}
+
+let toastTimer;
+export function toast(msg) {
+  let t = document.querySelector('.toast');
+  if (!t) {
+    t = el('div', { class: 'toast' });
+    document.body.append(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+export async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// Iconundrum — Firestore security rules.
+// Model: ONE document per completed game in /games. Public read (leaderboards),
+// validated create-only writes, no updates or deletes ever.
+// Paste into Firebase console → Firestore → Rules, then Publish.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /games/{gameId} {
+      allow read: if true;
+      allow create: if validGame();
+      allow update, delete: if false;
+
+      function validGame() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['ck', 'mode', 'pack', 'seed', 'v', 'player', 'score', 'rounds', 'created'])
+          && d.keys().hasAll(['ck', 'mode', 'pack', 'seed', 'v', 'player', 'score', 'rounds', 'created'])
+          && d.ck is string && d.ck.size() <= 64
+          && d.mode in ['icon', 'value', 'hl']
+          && d.pack == 'items'
+          && d.seed is string && d.seed.size() >= 1 && d.seed.size() <= 16
+          && d.v is int && d.v >= 1 && d.v <= 1000
+          && d.player is string && d.player.size() >= 1 && d.player.size() <= 20
+          && d.score is int && d.score >= 0 && d.score <= 1000000
+          && d.rounds is list && d.rounds.size() <= 60
+          && d.created == request.time;
+      }
+    }
+
+    // Everything else stays locked.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
