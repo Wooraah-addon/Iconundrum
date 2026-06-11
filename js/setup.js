@@ -72,9 +72,11 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
     speedToggle.checked = true;
     speedToggle.addEventListener('change', () => (state.speed = speedToggle.checked ? 1 : 0));
     rows.push(row('Speed bonus scoring', el('label', { class: 'switch' }, speedToggle, el('span', {}, ' faster answer = more points'))));
-    const hardToggle = el('input', { type: 'checkbox' });
-    hardToggle.addEventListener('change', () => (state.hard = hardToggle.checked ? 1 : 0));
-    rows.push(row('Hard mode', el('label', { class: 'switch' }, hardToggle, el('span', {}, ' no choices — type the name'))));
+    // Hard mode (type the name) is BENCHED per tracker B2 — too hard on the
+    // default timer, icons too diverse. The full machinery (cfg.hard, h= in
+    // links, typed rounds in modes/icon.js) stays live and tested; restore
+    // by re-adding the toggle row here, with a rebalanced timer (20s+?) and
+    // ideally a recognizable-names pool filter.
   }
   if (modeId === 'value') {
     const curveSelect = el('select', { class: 'setup-select' },
