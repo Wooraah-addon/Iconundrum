@@ -17,6 +17,22 @@ export function initCoin() {
   if (!home || !coin) return;
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { coin.remove(); return; }
 
+  // Build the cylindrical rim: N flat segments around the Z axis bridge the two
+  // faces, giving the coin real thickness (visible edge-on, gold ring face-on).
+  const R = 14, THICK = 5, N = 18;
+  const seg = (2 * Math.PI * R / N) + 1.5; // circumferential length + overlap to avoid gaps
+  for (let i = 0; i < N; i++) {
+    const a = i * 360 / N;
+    const e = document.createElement('div');
+    e.className = 'coin-edge';
+    e.style.width = THICK + 'px';
+    e.style.height = seg + 'px';
+    e.style.marginLeft = (-THICK / 2) + 'px';
+    e.style.marginTop = (-seg / 2) + 'px';
+    e.style.transform = `rotateZ(${a}deg) translateX(${R}px) rotateY(90deg)`;
+    coin.appendChild(e);
+  }
+
   let W = window.innerWidth, H = window.innerHeight;
   let x = W * 0.5, y = H * 0.35;
   let vx = 1.4, vy = -0.7;

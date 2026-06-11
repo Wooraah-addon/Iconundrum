@@ -408,7 +408,7 @@ footer a { color: var(--gold-dim); }
   font-size: 1rem; padding: 6px 9px; cursor: pointer; line-height: 1;
 }
 .sound-toggle:hover { border-color: var(--gold-dim); }
-#screen-home { position: relative; }
+#screen-home { position: relative; z-index: 0; } /* stacking context so the coin (z-index:-1) sits behind home content */
 .game-header .sound-toggle { position: static; }
 
 /* ---- Setup modal ---- */
@@ -566,9 +566,13 @@ table.standings td, table.standings th { padding: 6px 6px; }
 /* ---- Subtle motion pass (tracker F25) ---- */
 /* Home-screen gold coin — tumbling 3D disc, physics-driven in coin.js.
    transform is owned by JS (translate + rotateX/rotateY); keep none here. */
+/* z-index -1: the coin lives BEHIND the home content (which sits in
+   #screen-home's stacking context), so it ducks behind the opaque menu
+   panels — catchable only in the open margins/gaps, never misfiring a
+   menu button. Visible + clickable wherever no panel covers it. */
 .coin {
   position: fixed; top: 0; left: 0; width: 28px; height: 28px;
-  z-index: 6; cursor: pointer; transform-style: preserve-3d;
+  z-index: -1; cursor: pointer; transform-style: preserve-3d;
   will-change: transform; pointer-events: auto; scale: 1;
 }
 .coin-face {
@@ -581,7 +585,14 @@ table.standings td, table.standings th { padding: 6px 6px; }
   box-shadow: inset 0 0 7px rgba(120, 80, 10, .55), 0 3px 9px rgba(0, 0, 0, .5);
   text-shadow: 0 1px 0 rgba(255, 240, 190, .5);
 }
-.coin-face.back { transform: rotateY(180deg); }
+/* faces pushed apart in Z; rim segments (built in coin.js) bridge the gap so
+   the coin reads as a solid disc that shows real thickness edge-on. */
+.coin-face.front { transform: translateZ(2.5px); }
+.coin-face.back { transform: rotateY(180deg) translateZ(2.5px); }
+.coin-edge {
+  position: absolute; left: 50%; top: 50%;
+  background: linear-gradient(to right, #9c7820, #f4cf57 50%, #9c7820);
+}
 /* Pocket pop: scale (independent property) composes with the JS-owned
    transform, so the coin grows + fades in place without losing its position. */
 .coin.pocketed { opacity: 0; transition: opacity .4s ease, scale .4s ease; scale: 1.7; }
