@@ -1,17 +1,15 @@
 // Home-screen gold coin — a tumbling 3D coin (CSS preserve-3d) driven by a
 // small physics loop: gentle wander, cursor repulsion (catchable but slippery),
 // edge bounce. Click to "pocket" it: it pings, vanishes for a spell, then
-// re-enters from an edge. Pocket count is stored for a future achievement
-// (F12). Decorative + opt-in to motion: hidden entirely under reduced-motion.
+// re-enters from an edge. Pure toy for now — deliberately NOT counted, so the
+// future achievements system (F12) starts everyone from zero on launch.
+// Decorative + opt-in to motion: hidden entirely under reduced-motion.
 
 import { play } from './sound.js';
 
-const KEY = 'iconundrum.coinsPocketed';
 const HIDE_MS = 20000;     // how long a pocketed coin stays gone
 const REPEL_R = 140;       // cursor influence radius (px)
 const REPEL_STR = 1.6;     // repulsion strength — higher = harder to catch
-
-export function getPocketed() { return +(localStorage.getItem(KEY) || 0); }
 
 export function initCoin() {
   const home = document.getElementById('screen-home');
@@ -33,7 +31,6 @@ export function initCoin() {
   function pocket() {
     if (gone) return;
     gone = true;
-    localStorage.setItem(KEY, getPocketed() + 1);
     play('coin'); // existing sound; dedicated "ping" tuned in the sounds pass
     coin.classList.add('pocketed');
     setTimeout(() => {
