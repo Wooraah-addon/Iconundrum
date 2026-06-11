@@ -180,21 +180,44 @@ function showChallengeBanner(cfg) {
   ));
 }
 
+// Join an open lobby NOW. Shared by the home Join-by-code box and the
+// challenge-banner Join button, so a code joins in one click rather than
+// revealing a second button (that two-step confused stream viewers — they
+// clicked "Join", saw a banner appear, and thought nothing happened).
+async function joinLobbyFlow(cfg) {
+  if (!requireName()) return;
+  sound.preload();
+  const player = profile.getName();
+  const fresh = await fire.getLobby(cfg.seed);
+  if (!fresh || fresh.state !== 'open') {
+    toast('That lobby already launched — you can still play it as a challenge.');
+    showChallengeBanner(cfg);
+    document.getElementById('challenge-banner').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if ((fresh.players || []).includes(player) && player !== fresh.host) {
+    toast('That name is taken in this lobby — change your name above, then join.');
+    return;
+  }
+  if (await fire.joinLobby(cfg.seed, player)) {
+    lobby.enterLobby({ cfg, playerName: player, isHost: player === fresh.host, onStart: sync => startGame(cfg, sync) });
+  } else {
+    toast('Couldn’t join — check your connection.');
+  }
+}
+
 async function joinByCode(raw) {
   const code = (raw || '').trim().toLowerCase();
   if (!/^[a-z0-9]{1,16}$/.test(code)) { toast('Enter a valid game code'); return; }
-  if (!requireName()) return;
   const lob = await fire.getLobby(code);
   if (!lob) { toast('No game found for that code — check it and try again'); return; }
-  const banner = document.getElementById('challenge-banner');
   if (lob.state === 'open') {
-    showLobbyJoinBanner(lob);
+    joinLobbyFlow(makeCfg(lob.cfg.mode, lob.cfg)); // straight in, one click
   } else {
-    // Already launched (or a stale doc): play it as the async challenge.
     toast('That game already started — opening it as a challenge.');
     showChallengeBanner(makeCfg(lob.cfg.mode, lob.cfg));
+    document.getElementById('challenge-banner').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-  banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // ---------------------------------------------------------------- lobby
@@ -217,25 +240,7 @@ function showLobbyJoinBanner(lob) {
   banner.append(el('div', { class: 'notice' },
     el('div', { html: `<b>${escapeHtml(lob.host)}'s lobby is open!</b> Game code <b>${escapeHtml(cfg.seed)}</b><br>${cfgSummary(cfg)}<br>${(lob.players || []).length} in so far — game starts when the host launches.` }),
     el('div', { style: 'margin-top:10px' },
-      el('button', {
-        class: 'btn',
-        onclick: async () => {
-          if (!requireName()) return;
-          sound.preload();
-          const player = profile.getName();
-          const fresh = await fire.getLobby(cfg.seed);
-          if (!fresh || fresh.state !== 'open') { toast('That lobby already launched — you can still play it as a challenge.'); showChallengeBanner(cfg); return; }
-          if ((fresh.players || []).includes(player) && player !== fresh.host) {
-            toast('That name is taken in this lobby — change your name above, then join.');
-            return;
-          }
-          if (await fire.joinLobby(cfg.seed, player)) {
-            lobby.enterLobby({ cfg, playerName: player, isHost: player === fresh.host, onStart: sync => startGame(cfg, sync) });
-          } else {
-            toast('Couldn’t join — check your connection.');
-          }
-        },
-      }, 'Join lobby')),
+      el('button', { class: 'btn', onclick: () => joinLobbyFlow(cfg) }, 'Join lobby')),
   ));
 }
 
