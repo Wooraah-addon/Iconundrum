@@ -147,6 +147,9 @@ function showChallengeBanner(cfg) {
   banner.innerHTML = '';
   banner.append(el('div', { class: 'notice' },
     el('div', { html: `<b>You've been challenged!</b> Game code <b>${cfg.seed}</b><br>${cfgSummary(cfg)}<br>Same rounds for everyone who opens this link.` }),
+    profile.hasPlayedChallenge(fire.challengeKey(cfg))
+      ? el('div', { html: `<br><b>You've played this board before</b> — replays are for fun, only your first run posted to the leaderboard.` })
+      : null,
     bundle.versionMismatch
       ? el('div', { html: `<br><b>Heads up:</b> this link was made with an older content pack. You'll play the current pack — scores land on a fresh board.` })
       : null,
@@ -260,10 +263,20 @@ async function onFinish(result) {
   showScreen('screen-summary');
   wireSummaryActions();
 
+  // Anti-grind: only this device's FIRST run on a board posts — replaying
+  // a known board is a memory test, and would leak memorized scores onto
+  // the ranked all-time board. Recorded only after a successful post, so a
+  // run that failed to save (offline) doesn't burn the attempt.
   const lbStatus = document.getElementById('lb-status');
-  lbStatus.textContent = 'Saving score…';
-  const saved = await fire.saveGame({ cfg, player, score: result.score, rounds: result.rounds });
-  lbStatus.textContent = saved ? '' : 'Leaderboards offline — score saved locally only.';
+  const ck = fire.challengeKey(cfg);
+  if (profile.hasPlayedChallenge(ck)) {
+    lbStatus.textContent = 'Replay — only your first run on a board posts to the leaderboards.';
+  } else {
+    lbStatus.textContent = 'Saving score…';
+    const saved = await fire.saveGame({ cfg, player, score: result.score, rounds: result.rounds });
+    if (saved) profile.recordChallenge(ck);
+    lbStatus.textContent = saved ? '' : 'Leaderboards offline — score saved locally only.';
+  }
   loadBoards('challenge');
 }
 

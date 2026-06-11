@@ -55,6 +55,14 @@ export async function saveGame({ cfg, player, score, rounds }) {
   }
 }
 
+// One row per player name, keeping the best score — pass SORTED rows.
+// Stops a single name flooding a board (and hides nothing legitimate:
+// replays don't post at all, see main.js onFinish).
+export function bestPerPlayer(rows) {
+  const seen = new Set();
+  return rows.filter(r => (seen.has(r.player) ? false : (seen.add(r.player), true)));
+}
+
 // Top scores for one challenge link. Tries the indexed query first; if the
 // composite index doesn't exist yet, falls back to an unordered capped fetch
 // sorted client-side (fine at v0 volumes).
@@ -62,13 +70,13 @@ export async function challengeBoard(ck, topN = 20) {
   if (!(await ensureInit())) return null;
   const games = fs.collection(db, 'games');
   try {
-    const q = fs.query(games, fs.where('ck', '==', ck), fs.orderBy('score', 'desc'), fs.limit(topN));
-    return rowsOf(await fs.getDocs(q));
+    const q = fs.query(games, fs.where('ck', '==', ck), fs.orderBy('score', 'desc'), fs.limit(100));
+    return bestPerPlayer(rowsOf(await fs.getDocs(q))).slice(0, topN);
   } catch (e) {
     console.warn('Indexed challenge query failed, falling back. Create the (ck ASC, score DESC) index for efficiency:', e.message);
     try {
       const q = fs.query(games, fs.where('ck', '==', ck), fs.limit(200));
-      return rowsOf(await fs.getDocs(q)).sort((a, b) => b.score - a.score).slice(0, topN);
+      return bestPerPlayer(rowsOf(await fs.getDocs(q)).sort((a, b) => b.score - a.score)).slice(0, topN);
     } catch (e2) {
       console.warn('challengeBoard failed:', e2);
       return null;
@@ -85,9 +93,9 @@ export async function challengeBoard(ck, topN = 20) {
 export async function allTimeBoard(mode, topN = 20) {
   if (!(await ensureInit())) return null;
   const games = fs.collection(db, 'games');
-  const ranked = rows => rows
+  const ranked = rows => bestPerPlayer(rows
     .filter(r => r.ck && isRankedSig(mode, r.ck.split('_').pop()))
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score))
     .slice(0, topN);
   try {
     const q = fs.query(games, fs.where('mode', '==', mode), fs.orderBy('score', 'desc'), fs.limit(200));

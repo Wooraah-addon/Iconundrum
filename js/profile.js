@@ -44,3 +44,16 @@ export function recordGame(mode, score) {
 export function getStats() {
   return load().stats || {};
 }
+
+// Anti-grind: each challenge board only accepts this device's FIRST run
+// (replays of a known board would just be memory tests — and would pollute
+// the ranked all-time board). Keyed by full challenge key.
+export function hasPlayedChallenge(ck) {
+  return !!(load().boards || {})[ck];
+}
+
+export function recordChallenge(ck) {
+  const p = load();
+  (p.boards = p.boards || {})[ck] = 1;
+  save(p);
+}
