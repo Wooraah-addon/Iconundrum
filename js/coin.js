@@ -34,8 +34,8 @@ export function initCoin() {
   }
 
   let W = window.innerWidth, H = window.innerHeight;
-  let x = W * 0.5, y = H * 0.35;
-  let vx = 1.4, vy = -0.7;
+  let x = W * 0.5, y = 70;       // start up over the logo, where it's visible
+  let vx = 1.4, vy = 0.8;
   let rotX = 0, rotY = 0;
   let mx = -9999, my = -9999;   // cursor; starts off-screen
   let gone = false;
@@ -78,8 +78,13 @@ export function initCoin() {
         vx += dx * f; vy += dy * f;
       }
       vx *= .985; vy *= .985;                       // damping
-      const sp = Math.hypot(vx, vy), cap = 9;        // speed cap
+      // keep a minimum cruise speed so it never parks (hidden) behind a panel
+      const sp = Math.hypot(vx, vy), cap = 9, min = 1.5;
       if (sp > cap) { vx = vx / sp * cap; vy = vy / sp * cap; }
+      else if (sp < min) {
+        if (sp < .01) { vx = min; vy = 0; }
+        else { vx = vx / sp * min; vy = vy / sp * min; }
+      }
       x += vx; y += vy;
       const m = 26;                                  // edge bounce
       if (x < m) { x = m; vx = Math.abs(vx) * .7; }

@@ -397,10 +397,9 @@ footer a { color: var(--gold-dim); }
 }
 
 /* ---- Logo ---- */
-/* z-index:-2 keeps the logo banner BELOW the coin (z-index:-1) so the coin is
-   visible drifting over it; the menu panels & stats are static blocks, which
-   paint above negative z-index, so the coin still hides behind those. */
-.logo-wrap { text-align: center; margin: 14px 0 20px; position: relative; z-index: -2; }
+/* default z-index keeps the logo banner below the coin (z-index:1) so the coin
+   drifts over it; the menu/stats blocks are lifted to z-index:2 to hide it. */
+.logo-wrap { text-align: center; margin: 14px 0 20px; }
 .logo { max-width: min(550px, 96%); height: auto; display: inline-block; }
 .logo-small { max-width: min(280px, 70%); display: block; margin: 0 auto 10px; }
 
@@ -411,7 +410,13 @@ footer a { color: var(--gold-dim); }
   font-size: 1rem; padding: 6px 9px; cursor: pointer; line-height: 1;
 }
 .sound-toggle:hover { border-color: var(--gold-dim); }
-#screen-home { position: relative; z-index: 0; } /* stacking context so the coin (z-index:-1) sits behind home content */
+#screen-home { position: relative; z-index: 0; } /* stacking context to scope the coin layering */
+/* Coin layering (all positive z — a negative-z layer flickers under the
+   compositor when animated): logo stays at default (below the coin), while
+   every other home block is lifted above it, so the coin shows over the logo
+   banner but hides behind the menu panels & stats. */
+#screen-home > *:not(.coin):not(.logo-wrap):not(.sound-toggle) { position: relative; z-index: 2; }
+.sound-toggle { z-index: 2; }
 .game-header .sound-toggle { position: static; }
 
 /* ---- Setup modal ---- */
@@ -569,13 +574,12 @@ table.standings td, table.standings th { padding: 6px 6px; }
 /* ---- Subtle motion pass (tracker F25) ---- */
 /* Home-screen gold coin — tumbling 3D disc, physics-driven in coin.js.
    transform is owned by JS (translate + rotateX/rotateY); keep none here. */
-/* z-index -1: the coin lives BEHIND the home content (which sits in
-   #screen-home's stacking context), so it ducks behind the opaque menu
-   panels — catchable only in the open margins/gaps, never misfiring a
-   menu button. Visible + clickable wherever no panel covers it. */
+/* z-index:1 — above the logo banner, below the z-index:2 menu/stats blocks
+   (see #screen-home rule). Catchable only where no panel covers it; never
+   misfires a menu button. */
 .coin {
   position: fixed; top: 0; left: 0; width: 28px; height: 28px;
-  z-index: -1; cursor: pointer; transform-style: preserve-3d;
+  z-index: 1; cursor: pointer; transform-style: preserve-3d;
   will-change: transform; pointer-events: auto; scale: 1;
 }
 .coin-face {
