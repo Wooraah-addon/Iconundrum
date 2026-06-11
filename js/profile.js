@@ -63,3 +63,18 @@ export function recordChallenge(ck) {
   (p.boards = p.boards || {})[ck] = 1;
   save(p);
 }
+
+// One lobby entry per device (F38): remember which name this device joined
+// each lobby under, keyed by game code. Blocks the cheap multi-entry trick
+// (rejoin under a second name for extra guesses) — and lets a player who
+// refreshed mid-lobby walk straight back in as themselves instead of
+// bouncing off the "name taken" check.
+export function getLobbyJoin(seed) {
+  return (load().lobbies || {})[seed] || null;
+}
+
+export function recordLobbyJoin(seed, name) {
+  const p = load();
+  (p.lobbies = p.lobbies || {})[seed] = name;
+  save(p);
+}

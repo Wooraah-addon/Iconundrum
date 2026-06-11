@@ -202,6 +202,10 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .choice.wrong { border-color: var(--red); background: rgba(224, 82, 82, .15); }
 .choice:disabled { cursor: default; }
 .choice.dim { opacity: .5; }
+/* Synced games: your pick is acknowledged neutrally — correct/wrong colours
+   arrive at the shared reveal moment (F37, no answer leaks mid-round). */
+.choice.picked { border-color: var(--gold-dim); background: rgba(240, 198, 64, .08); }
+.round-wait { text-align: center; margin-top: 12px; }
 /* Number-key hint (1–4) — a badge via ::before so it doesn't change the
    button's textContent (the answer match reads textContent). Hidden once the
    choice is resolved, and on narrow screens where keys are less relevant. */
@@ -436,6 +440,11 @@ input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
 .lobby-roster li.me { color: var(--gold); font-weight: 600; }
 .lobby-roster .ready-yes { color: var(--green); font-weight: 700; }
 .lobby-roster .ready-no { color: var(--red); font-weight: 700; }
+.roster-kick {
+  float: right; background: none; border: 1px solid transparent; border-radius: 6px;
+  color: var(--text-dim); padding: 0 7px; cursor: pointer; font-size: .85rem; line-height: 1.5;
+}
+.roster-kick:hover { color: var(--red); border-color: var(--red); }
 
 .ready-prompt {
   display: flex; gap: 10px; align-items: center; justify-content: center;

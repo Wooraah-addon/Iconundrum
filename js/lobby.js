@@ -114,7 +114,19 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
   cleanup();
   unsub = await fire.watchLobby(cfg.seed, doc => {
     if (sync) { sync.handleDoc(doc); return; }
-    renderRoster(roster, doc, playerName);
+    // Kicked? (host removed us from the roster while the lobby was open)
+    if (doc.state === 'open' && !isHost && !(doc.players || []).includes(playerName)) {
+      cleanup();
+      toast('The host removed you from this lobby.');
+      history.replaceState(null, '', location.pathname);
+      showScreen('screen-home');
+      return;
+    }
+    renderRoster(roster, doc, playerName, isHost ? name => {
+      play('click');
+      fire.leaveLobby(cfg.seed, name);
+      toast(`${name} removed from the lobby`);
+    } : null);
     handleReadyCheck(doc);
     if (doc.state === 'open' && doc.host && (doc.players || []).length && !(doc.players || []).includes(doc.host)) {
       status.textContent = 'The host left — this lobby won’t launch. Head back to the main menu.';
@@ -136,6 +148,14 @@ export function cleanup() {
 }
 
 // --------------------------------------------------------- sync driver
+
+// F37: how long a settled player's result must stay hidden — until every
+// client's round timer has expired (plus a cushion for clock skew), so an
+// early answer can't leak the correct answer to players still guessing, or
+// to a stream audience. Pure given (roundStartMs, timerMs, now); tested.
+export function revealHoldMs(roundStartMs, timerMs, now) {
+  return Math.max(0, roundStartMs + timerMs + 500 - now);
+}
 
 // player→rank (1-based) from a scores map, sorted by score desc. Pure.
 export function ranksOf(scores) {
@@ -305,7 +325,7 @@ export function buildSyncFooter(sync, { last, onHostNext, onLocalNext }) {
 
 // --------------------------------------------------------- lobby screen
 
-function renderRoster(rosterEl, lobby, playerName) {
+function renderRoster(rosterEl, lobby, playerName, onKick = null) {
   rosterEl.innerHTML = '';
   const ready = lobby.ready || {};
   for (const name of lobby.players || []) {
@@ -313,6 +333,13 @@ function renderRoster(rosterEl, lobby, playerName) {
       name === lobby.host ? `👑 ${name}` : name,
       name in ready
         ? el('span', { class: ready[name] ? 'ready-yes' : 'ready-no' }, ready[name] ? ' ✓' : ' ✗')
+        : null,
+      // Host moderation: ✕ removes a player from the roster (open lobbies
+      // only — the players list freezes once the game launches). They can
+      // rejoin via the link; for casual play "kick again" is enough teeth.
+      onKick && name !== lobby.host
+        ? el('button', { class: 'roster-kick', title: `Remove ${name}`, 'aria-label': `Remove ${name}`,
+            onclick: () => onKick(name) }, '✕')
         : null));
   }
   const n = (lobby.players || []).length;

@@ -15,7 +15,7 @@ import { rngFor, sample, shuffled } from '../rng.js';
 import { iconUrl, catItems, preloadIcons } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
-import { buildSyncFooter } from '../lobby.js';
+import { buildSyncFooter, revealHoldMs } from '../lobby.js';
 
 const TOP_K = 12;
 
@@ -143,28 +143,50 @@ export function start(ctx) {
 
     // Shared post-answer flow: score, log, sync report, then the reveal.
     // headlineWrong is shown when ok is false; ok builds its own headline.
-    function conclude({ ok, logged, forced, headlineWrong, detail = null }) {
+    // In synced games everything that discloses the answer — the green/red
+    // button highlights, the right/wrong sound, the reveal card — is held
+    // until every client's timer has expired (F37): an early answer must not
+    // leak the correct answer to players still guessing or a stream audience.
+    function conclude({ ok, logged, chosen = null, forced, headlineWrong, detail = null }) {
       const earned = ok ? (cfg.speed ? 500 + Math.round(500 * timer.leftFrac()) : 1000) : 0;
       total += earned;
       log.push({ id: item.id, a: logged, ok: !!ok, s: earned, t: Math.round(timer.elapsedMs()) });
-      ctx.setScore(total);
       if (ctx.sync) ctx.sync.reportScore(total);
       if (forced) return; // advancing right now — skip the reveal
-      play(ok ? 'correct' : 'wrong');
+      const hold = synced() ? revealHoldMs(ctx.sync.roundStartMs, cfg.timer * 1000, Date.now()) : 0;
+      let waitEl = null;
+      if (hold > 600) {
+        waitEl = el('div', { class: 'lb-note round-wait' }, '🔒 Locked in — revealed when the round ends.');
+        wrap.append(waitEl);
+      }
       setTimeout(() => {
         if (token !== roundToken) return; // already advanced past this round
-        const headline = ok ? `+${earned.toLocaleString()} pts` : headlineWrong;
-        const last = idx === rounds.length - 1;
-        const footer = synced()
-          ? buildSyncFooter(ctx.sync, {
-              last,
-              onHostNext: () => ctx.sync.hostAdvance(idx + 1),
-              onLocalNext: () => proceed(idx + 1),
-            })
-          : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
-              last ? 'See results' : 'Next round');
-        renderReveal(ctx.content, item, headline, detail, footer);
-      }, 900);
+        if (waitEl) waitEl.remove();
+        play(ok ? 'correct' : 'wrong');
+        ctx.setScore(total);
+        // Now the verdict can show on the buttons (standard mode only).
+        for (const b of buttons) {
+          b.classList.remove('picked');
+          const name = b.textContent;
+          if (name === item.n) b.classList.add('correct');
+          else if (chosen && name === chosen.n) b.classList.add('wrong');
+          else b.classList.add('dim');
+        }
+        setTimeout(() => {
+          if (token !== roundToken) return;
+          const headline = ok ? `+${earned.toLocaleString()} pts` : headlineWrong;
+          const last = idx === rounds.length - 1;
+          const footer = synced()
+            ? buildSyncFooter(ctx.sync, {
+                last,
+                onHostNext: () => ctx.sync.hostAdvance(idx + 1),
+                onLocalNext: () => proceed(idx + 1),
+              })
+            : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
+                last ? 'See results' : 'Next round');
+          renderReveal(ctx.content, item, headline, detail, footer);
+        }, 900);
+      }, hold);
     }
 
     // --- standard: 4 choices ---
@@ -197,16 +219,15 @@ export function start(ctx) {
       timer.stop();
       const ok = chosen && chosen.id === item.id;
       if (!forced) {
+        // Immediate feedback is neutral only: lock the grid and mark YOUR
+        // pick. Correct/wrong colours come at reveal time (see conclude).
         for (const b of buttons) {
           b.disabled = true;
-          const name = b.textContent;
-          if (name === item.n) b.classList.add('correct');
-          else if (chosen && name === chosen.n) b.classList.add('wrong');
-          else b.classList.add('dim');
+          if (chosen && b.textContent === chosen.n) b.classList.add('picked');
         }
       }
       conclude({
-        ok, forced,
+        ok, forced, chosen,
         logged: chosen ? chosen.id : null,
         headlineWrong: chosen ? 'Wrong — +0 pts' : 'Time’s up — +0 pts',
       });

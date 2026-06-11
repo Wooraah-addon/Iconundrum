@@ -9,7 +9,7 @@ import { rngFor, sample } from '../rng.js';
 import { iconUrl, fmtGoldLong, catItems, priceOf, parseGold, preloadIcons, BASIS_LABELS } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
-import { buildSyncFooter } from '../lobby.js';
+import { buildSyncFooter, revealHoldMs } from '../lobby.js';
 
 export function buildRounds(bundle, cfg) {
   const rng = rngFor(['value', cfg.seed, `v${cfg.v}`]);
@@ -123,10 +123,8 @@ export function start(ctx) {
       const earned = scoreGuess(guess, actual, cfg.curve);
       total += earned;
       log.push({ id: item.id, a: guess, ok: earned > 0, s: earned, t: Math.round(timer.elapsedMs()) });
-      ctx.setScore(total);
       if (ctx.sync) ctx.sync.reportScore(total);
       if (forced) return; // advancing right now — skip the reveal
-      play(earned === 5000 ? 'jackpot' : earned >= 2500 ? 'correct' : earned > 0 ? 'coin' : 'wrong');
 
       const headline = earned === 5000
         ? `JACKPOT! +5,000 pts`
@@ -141,18 +139,32 @@ export function start(ctx) {
         detail = `${BASIS_LABELS[basis]} is <b>${fmtGoldLong(actual)}</b>`;
       }
       const last = idx === rounds.length - 1;
+      // Synced: the reveal (and its jackpot/wrong jingle) discloses the real
+      // price — hold both until everyone's timer is done (F37).
+      const hold = synced() ? revealHoldMs(ctx.sync.roundStartMs, cfg.timer * 1000, Date.now()) : 0;
+      let waitEl = null;
+      if (hold > 600) {
+        waitEl = el('div', { class: 'lb-note round-wait' }, '🔒 Locked in — revealed when the round ends.');
+        preview.after(waitEl);
+      }
       setTimeout(() => {
         if (token !== roundToken) return; // already advanced past this round
-        const footer = synced()
-          ? buildSyncFooter(ctx.sync, {
-              last,
-              onHostNext: () => ctx.sync.hostAdvance(idx + 1),
-              onLocalNext: () => proceed(idx + 1),
-            })
-          : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
-              last ? 'See results' : 'Next round');
-        renderReveal(ctx.content, item, headline, detail, footer);
-      }, 500);
+        if (waitEl) waitEl.remove();
+        play(earned === 5000 ? 'jackpot' : earned >= 2500 ? 'correct' : earned > 0 ? 'coin' : 'wrong');
+        ctx.setScore(total);
+        setTimeout(() => {
+          if (token !== roundToken) return;
+          const footer = synced()
+            ? buildSyncFooter(ctx.sync, {
+                last,
+                onHostNext: () => ctx.sync.hostAdvance(idx + 1),
+                onLocalNext: () => proceed(idx + 1),
+              })
+            : el('button', { class: 'btn', onclick: () => { play('click'); proceed(idx + 1); } },
+                last ? 'See results' : 'Next round');
+          renderReveal(ctx.content, item, headline, detail, footer);
+        }, 500);
+      }, hold);
     }
   }
 

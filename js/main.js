@@ -202,7 +202,17 @@ function showChallengeBanner(cfg) {
 async function joinLobbyFlow(cfg) {
   if (!requireName()) return;
   sound.preload();
-  const player = profile.getName();
+  let player = profile.getName();
+
+  // One entry per device (F38): if this device already joined this lobby,
+  // it comes back as that name — switching names for a second entry (extra
+  // guesses, second-guessing your first run) just rejoins the original.
+  const prior = profile.getLobbyJoin(cfg.seed);
+  if (prior && prior !== player && profile.setName(prior)) {
+    player = prior;
+    toast(`One entry per device — you're back in as ${prior}.`);
+  }
+
   const fresh = await fire.getLobby(cfg.seed);
   if (!fresh || fresh.state !== 'open') {
     toast('That lobby already launched — you can still play it as a challenge.');
@@ -210,11 +220,15 @@ async function joinLobbyFlow(cfg) {
     document.getElementById('challenge-banner').scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
-  if ((fresh.players || []).includes(player) && player !== fresh.host) {
+  const alreadyIn = (fresh.players || []).includes(player);
+  if (alreadyIn && player !== fresh.host && prior !== player) {
     toast('That name is taken in this lobby — change your name above, then join.');
     return;
   }
-  if (await fire.joinLobby(cfg.seed, player)) {
+  // Returning player (refresh / re-click): already on the roster, just walk
+  // back into the lobby — no second join write.
+  if (alreadyIn || await fire.joinLobby(cfg.seed, player)) {
+    profile.recordLobbyJoin(cfg.seed, player);
     lobby.enterLobby({ cfg, playerName: player, isHost: player === fresh.host, onStart: sync => startGame(cfg, sync) });
   } else {
     toast('Couldn’t join — check your connection.');
@@ -246,6 +260,7 @@ async function hostLobby(cfg) {
     toast('Couldn’t create the lobby — is the backend set up? Playing solo works regardless.');
     return;
   }
+  profile.recordLobbyJoin(cfg.seed, player);
   lobby.enterLobby({ cfg, playerName: player, isHost: true, onStart: sync => startGame(cfg, sync) });
 }
 
