@@ -29,6 +29,41 @@ service cloud.firestore {
       }
     }
 
+    // Multiplayer lobbies — one doc per lobby, keyed by game code (= seed).
+    // Public read (roster), validated create, bounded updates (joins +
+    // host launch). cfg and host are immutable after create; no deletes
+    // (stale lobbies are inert — links to them fall back to async mode).
+    match /lobbies/{code} {
+      allow read: if true;
+      allow create: if validLobbyCreate();
+      allow update: if validLobbyUpdate();
+      allow delete: if false;
+
+      function validLobbyCreate() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['cfg', 'host', 'players', 'state', 'launchAt', 'created'])
+          && d.keys().hasAll(['cfg', 'host', 'players', 'state', 'launchAt', 'created'])
+          && code.size() >= 1 && code.size() <= 16
+          && d.cfg is map
+          && d.host is string && d.host.size() >= 1 && d.host.size() <= 20
+          && d.players is list && d.players.size() >= 1 && d.players.size() <= 40
+          && d.state == 'open'
+          && d.launchAt == null
+          && d.created == request.time;
+      }
+
+      function validLobbyUpdate() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['cfg', 'host', 'players', 'state', 'launchAt', 'created'])
+          && d.cfg == resource.data.cfg
+          && d.host == resource.data.host
+          && d.players is list && d.players.size() <= 40
+          && d.state in ['open', 'launching']
+          && (d.launchAt == null || d.launchAt is number)
+          && resource.data.state == 'open';
+      }
+    }
+
     // Everything else stays locked.
     match /{document=**} {
       allow read, write: if false;

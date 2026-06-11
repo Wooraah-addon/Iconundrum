@@ -103,3 +103,72 @@ function rowsOf(snap) {
   });
   return rows;
 }
+
+// ------------------------------------------------------------- lobbies
+// One doc per multiplayer lobby, keyed by the game code (= seed). Joins are
+// arrayUnion writes; the host flips state to 'launching' with a shared
+// launch timestamp and every listening client runs the same countdown.
+
+export async function getLobby(code) {
+  if (!(await ensureInit())) return null;
+  try {
+    const snap = await fs.getDoc(fs.doc(db, 'lobbies', code));
+    return snap.exists() ? snap.data() : null;
+  } catch (e) {
+    console.warn('getLobby failed:', e);
+    return null;
+  }
+}
+
+export async function createLobby(cfg, host) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.setDoc(fs.doc(db, 'lobbies', cfg.seed), {
+      cfg,
+      host,
+      players: [host],
+      state: 'open',
+      launchAt: null,
+      created: fs.serverTimestamp(),
+    });
+    return true;
+  } catch (e) {
+    console.warn('createLobby failed (rules published?):', e);
+    return false;
+  }
+}
+
+export async function joinLobby(code, name) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), { players: fs.arrayUnion(name) });
+    return true;
+  } catch (e) {
+    console.warn('joinLobby failed:', e);
+    return false;
+  }
+}
+
+// cb fires on every lobby change; returns an unsubscribe fn (or null).
+export async function watchLobby(code, cb) {
+  if (!(await ensureInit())) return null;
+  try {
+    return fs.onSnapshot(fs.doc(db, 'lobbies', code), snap => {
+      if (snap.exists()) cb(snap.data());
+    });
+  } catch (e) {
+    console.warn('watchLobby failed:', e);
+    return null;
+  }
+}
+
+export async function launchLobby(code, launchAtMs) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), { state: 'launching', launchAt: launchAtMs });
+    return true;
+  } catch (e) {
+    console.warn('launchLobby failed:', e);
+    return false;
+  }
+}

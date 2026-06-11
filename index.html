@@ -63,6 +63,24 @@
       <p class="lb-note">Pick a mode to play, then share your challenge link — everyone who opens it gets the same rounds.</p>
     </section>
 
+    <!-- ================= LOBBY ================= -->
+    <section id="screen-lobby" class="screen">
+      <img class="logo logo-small" src="assets/logo.png" alt="Iconundrum">
+      <div class="panel">
+        <div class="lobby-head">
+          <div>Game code: <b class="game-code" id="lobby-code"></b></div>
+          <button class="btn secondary small" id="lobby-copy">Copy lobby link</button>
+        </div>
+        <div class="lobby-roster-head">
+          <span>In the lobby</span>
+          <span class="meta" id="lobby-count"></span>
+        </div>
+        <ul class="lobby-roster" id="lobby-roster"></ul>
+        <div class="lb-note" id="lobby-status"></div>
+        <div class="action-row" id="lobby-actions"></div>
+      </div>
+    </section>
+
     <!-- ================= GAME ================= -->
     <section id="screen-game" class="screen">
       <div class="game-header">
@@ -112,6 +130,11 @@
       </div>
     </section>
 
+  </div>
+
+  <div id="countdown-overlay" hidden>
+    <div class="count-label">Get ready…</div>
+    <div id="countdown-num" class="count-num">10</div>
   </div>
 
   <footer>

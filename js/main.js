@@ -9,6 +9,7 @@ import { newSeed } from './rng.js';
 import { makeCfg, cfgFromParams, buildUrl } from './cfg.js';
 import { showScreen, el, toast, copyText } from './ui.js';
 import { openSetup } from './setup.js';
+import * as lobby from './lobby.js';
 import * as sound from './sound.js';
 import * as profile from './profile.js';
 import * as fire from './fire.js';
@@ -42,7 +43,10 @@ async function boot() {
   const linkCfg = cfgFromParams(params);
   if (linkCfg) {
     linkCfg.v = bundle.versionMismatch ? bundle.version : linkCfg.v || bundle.version;
-    showChallengeBanner(linkCfg);
+    // An open lobby for this code takes precedence over the async challenge.
+    const lob = await fire.getLobby(linkCfg.seed);
+    if (lob && lob.state === 'open') showLobbyJoinBanner(lob);
+    else showChallengeBanner(linkCfg);
   }
   showScreen('screen-home');
 }
@@ -63,7 +67,10 @@ function setupHome() {
       if (!requireName()) return;
       sound.preload();
       sound.play('click');
-      openSetup(card.dataset.mode, bundle, cfg => startGame(cfg));
+      openSetup(card.dataset.mode, bundle, {
+        onSolo: cfg => startGame(cfg),
+        onLobby: cfg => hostLobby(cfg),
+      });
     });
   });
 
@@ -95,6 +102,48 @@ function showChallengeBanner(cfg) {
       : null,
     el('div', { style: 'margin-top:10px' },
       el('button', { class: 'btn', onclick: () => { sound.preload(); startGame(cfg); } }, 'Accept challenge')),
+  ));
+}
+
+// ---------------------------------------------------------------- lobby
+
+async function hostLobby(cfg) {
+  const player = profile.getName();
+  history.replaceState(null, '', buildUrl(cfg, false));
+  const ok = await fire.createLobby(cfg, player);
+  if (!ok) {
+    toast('Couldn’t create the lobby — is the backend set up? Playing solo works regardless.');
+    return;
+  }
+  lobby.enterLobby({ cfg, playerName: player, isHost: true, onStart: () => startGame(cfg) });
+}
+
+function showLobbyJoinBanner(lob) {
+  const cfg = makeCfg(lob.cfg.mode, lob.cfg); // lobby doc is authoritative; revalidate
+  const banner = document.getElementById('challenge-banner');
+  banner.innerHTML = '';
+  banner.append(el('div', { class: 'notice' },
+    el('div', { html: `<b>${lob.host}'s lobby is open!</b> Game code <b>${cfg.seed}</b><br>${cfgSummary(cfg)}<br>${(lob.players || []).length} in so far — game starts when the host launches.` }),
+    el('div', { style: 'margin-top:10px' },
+      el('button', {
+        class: 'btn',
+        onclick: async () => {
+          if (!requireName()) return;
+          sound.preload();
+          const player = profile.getName();
+          const fresh = await fire.getLobby(cfg.seed);
+          if (!fresh || fresh.state !== 'open') { toast('That lobby already launched — you can still play it as a challenge.'); showChallengeBanner(cfg); return; }
+          if ((fresh.players || []).includes(player) && player !== fresh.host) {
+            toast('That name is taken in this lobby — change your name above, then join.');
+            return;
+          }
+          if (await fire.joinLobby(cfg.seed, player)) {
+            lobby.enterLobby({ cfg, playerName: player, isHost: player === fresh.host, onStart: () => startGame(cfg) });
+          } else {
+            toast('Couldn’t join — check your connection.');
+          }
+        },
+      }, 'Join lobby')),
   ));
 }
 

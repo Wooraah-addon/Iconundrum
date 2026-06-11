@@ -14,7 +14,7 @@ const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Hig
 const MIN_ICON = 40;
 const MIN_PRICE = 30;
 
-export function openSetup(modeId, bundle, onPlay) {
+export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   const seed = newSeed();
   const priceMode = modeId !== 'icon';
 
@@ -89,7 +89,8 @@ export function openSetup(modeId, bundle, onPlay) {
     ...rows,
     codeRow,
     el('div', { class: 'action-row' },
-      el('button', { class: 'btn', onclick: () => { play('click'); close(); onPlay(cfgNow()); } }, 'Play'),
+      el('button', { class: 'btn', onclick: () => { play('click'); close(); onSolo(cfgNow()); } }, 'Play solo'),
+      el('button', { class: 'btn', onclick: () => { play('click'); close(); onLobby(cfgNow()); } }, '👥 Create lobby'),
       el('button', { class: 'btn secondary', onclick: close }, 'Cancel'),
     ),
   );
