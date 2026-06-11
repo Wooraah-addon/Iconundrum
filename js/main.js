@@ -17,6 +17,7 @@ import * as fire from './fire.js';
 import * as modeIcon from './modes/icon.js';
 import * as modeValue from './modes/value.js';
 import * as modeHl from './modes/hl.js';
+import { initCoin } from './coin.js';
 
 const MODES = { icon: modeIcon, value: modeValue, hl: modeHl };
 const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Higher or Lower' };
@@ -90,25 +91,9 @@ function setupHome() {
     });
   });
 
-  // Gold-mote parallax: nudge the two mote layers against the cursor (opposite
-  // depths) for a faint "fluid" home background. Pointer devices only, and
-  // skipped entirely under reduced-motion. The CSS reads --mx/--my.
-  const home = document.getElementById('screen-home');
-  if (home && matchMedia('(hover: hover) and (pointer: fine)').matches
-      && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-    let pending = false, px = 0, py = 0;
-    window.addEventListener('pointermove', e => {
-      px = (e.clientX / window.innerWidth - .5) * 2;
-      py = (e.clientY / window.innerHeight - .5) * 2;
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(() => {
-        home.style.setProperty('--mx', px.toFixed(3));
-        home.style.setProperty('--my', py.toFixed(3));
-        pending = false;
-      });
-    }, { passive: true });
-  }
+  // Interactive home toy: a tumbling gold coin that drifts, dodges the cursor,
+  // and can be clicked to "pocket" it (count saved for a future achievement).
+  initCoin();
 
   // Join by game code — a viewer who sees the host's code on stream can type
   // it here instead of needing the full link. Resolves to the live lobby's
