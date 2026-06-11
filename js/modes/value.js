@@ -193,7 +193,7 @@ export function start(ctx) {
       // Math.random, not the seeded rng: a draw from the game rng would shift
       // every later draw and fork shared boards.
       const lines = HECKLES[heckleBucket(guess, actual, earned)];
-      detail += `<span class="heckle">“${lines[Math.floor(Math.random() * lines.length)]}” — Auctioneer Drezbit</span>`;
+      detail += `<span class="heckle">“${lines[Math.floor(Math.random() * lines.length)]}”</span>`;
       const last = idx === rounds.length - 1;
       // Synced: the reveal (and its jackpot/wrong jingle) discloses the real
       // price — hold both until everyone's timer is done (F37).
