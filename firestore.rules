@@ -23,8 +23,17 @@ service cloud.firestore {
           && d.seed is string && d.seed.size() >= 1 && d.seed.size() <= 16
           && d.v is int && d.v >= 1 && d.v <= 1000
           && d.player is string && d.player.size() >= 1 && d.player.size() <= 20
-          && d.score is int && d.score >= 0 && d.score <= 1000000
           && d.rounds is list && d.rounds.size() <= 60
+          && d.score is int && d.score >= 0
+          // Per-mode score ceilings — a fabricated score can't exceed what the
+          // mode can actually produce. icon: ≤1000/round, value: ≤5000/round
+          // (jackpot), hl: streak (rounds truncated at 60, so cap on the score
+          // itself — 10k is far past any human session).
+          && (
+               (d.mode == 'icon'  && d.score <= d.rounds.size() * 1000) ||
+               (d.mode == 'value' && d.score <= d.rounds.size() * 5000) ||
+               (d.mode == 'hl'    && d.score <= 10000)
+             )
           && d.created == request.time;
       }
     }
@@ -67,10 +76,15 @@ service cloud.firestore {
           && d.players is list && d.players.size() <= 40
           && (resource.data.state == 'open' || d.players == resource.data.players)
           && d.state in ['open', 'launching']
+          // State only moves forward (open → launching, never back) and rounds
+          // only advance — a griefer can't reset a live game or rewind it.
+          && (resource.data.state == 'open' || d.state == 'launching')
           && (d.launchAt == null || d.launchAt is number)
-          && d.round is int && d.round >= 0 && d.round <= 60
+          && d.round is int && d.round >= resource.data.round && d.round <= 60
           && (d.roundAt == null || d.roundAt is number)
+          // Standings can grow or hold, never be wiped wholesale.
           && d.scores is map && d.scores.size() <= 40
+          && d.scores.size() >= resource.data.scores.size()
           && (!('readyAt' in d) || d.readyAt == null || d.readyAt is number)
           && (!('ready' in d) || (d.ready is map && d.ready.size() <= 40));
       }

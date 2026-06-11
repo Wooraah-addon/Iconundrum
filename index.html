@@ -5,6 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iconundrum — The WoW Icon Guessing Game</title>
   <meta name="description" content="Guess the WoW item from its icon, call its price, ride the higher-lower chain. Challenge your guild — one link, no sign-up.">
+
+  <!-- Social link previews (Discord / Twitch chat / Twitter) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Iconundrum">
+  <meta property="og:title" content="Iconundrum — The WoW Icon Guessing Game">
+  <meta property="og:description" content="Guess the WoW item from its icon, call its price, ride the higher-lower chain. Challenge your friends — one link, no sign-up.">
+  <meta property="og:image" content="https://wooraah-addon.github.io/Iconundrum/assets/logo.png">
+  <meta property="og:url" content="https://wooraah-addon.github.io/Iconundrum/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Iconundrum — The WoW Icon Guessing Game">
+  <meta name="twitter:description" content="Guess the WoW item from its icon, call its price, ride the higher-lower chain.">
+  <meta name="twitter:image" content="https://wooraah-addon.github.io/Iconundrum/assets/logo.png">
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23221733'/><text x='50' y='72' font-size='64' text-anchor='middle' fill='%23f0c640' font-family='Georgia'>%3F</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -28,6 +41,12 @@
         <div class="name-row">
           <label for="player-name">Playing as</label>
           <input type="text" id="player-name" maxlength="20" placeholder="your name (shown on leaderboards)">
+        </div>
+
+        <div class="join-row">
+          <label for="join-code">Got a game code?</label>
+          <input type="text" id="join-code" maxlength="16" placeholder="enter code" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button class="btn secondary small" id="join-btn">Join</button>
         </div>
 
         <p class="lb-note" style="margin:0 0 14px">Play solo or challenge your friends — one link, same rounds for everyone.</p>

@@ -12,7 +12,7 @@
 // different seeds.
 
 import { rngFor, sample, shuffled } from '../rng.js';
-import { iconUrl, catItems } from '../data.js';
+import { iconUrl, catItems, preloadIcons } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
 import { buildSyncFooter } from '../lobby.js';
@@ -96,6 +96,7 @@ function distractorCandidates(pool, answer) {
 export function start(ctx) {
   const cfg = ctx.cfg;
   const rounds = buildRounds(ctx.bundle, cfg);
+  preloadIcons(rounds.map(r => r.item)); // warm all round icons up front
   const log = [];
   let total = 0;
   let idx = 0;

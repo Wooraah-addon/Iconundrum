@@ -7,7 +7,7 @@
 import { loadBundle, catLabel, BASIS_SHORT } from './data.js';
 import { newSeed } from './rng.js';
 import { makeCfg, cfgFromParams, buildUrl, isRanked } from './cfg.js';
-import { showScreen, el, toast, copyText } from './ui.js';
+import { showScreen, el, toast, copyText, escapeHtml } from './ui.js';
 import { openSetup } from './setup.js';
 import * as lobby from './lobby.js';
 import * as sound from './sound.js';
@@ -79,6 +79,16 @@ function setupHome() {
       });
     });
   });
+
+  // Join by game code — a viewer who sees the host's code on stream can type
+  // it here instead of needing the full link. Resolves to the live lobby's
+  // own config; a launched/stale code falls back to the async challenge.
+  const joinInput = document.getElementById('join-code');
+  const joinBtn = document.getElementById('join-btn');
+  if (joinBtn && joinInput) {
+    joinBtn.addEventListener('click', () => joinByCode(joinInput.value));
+    joinInput.addEventListener('keydown', e => { if (e.key === 'Enter') joinByCode(joinInput.value); });
+  }
 
   document.querySelectorAll('.sound-toggle').forEach(btn => {
     btn.textContent = sound.isMuted() ? '🔇' : '🔊';
@@ -158,7 +168,7 @@ function showChallengeBanner(cfg) {
   const banner = document.getElementById('challenge-banner');
   banner.innerHTML = '';
   banner.append(el('div', { class: 'notice' },
-    el('div', { html: `<b>You've been challenged!</b> Game code <b>${cfg.seed}</b><br>${cfgSummary(cfg)}<br>Same rounds for everyone who opens this link.` }),
+    el('div', { html: `<b>You've been challenged!</b> Game code <b>${escapeHtml(cfg.seed)}</b><br>${cfgSummary(cfg)}<br>Same rounds for everyone who opens this link.` }),
     profile.hasPlayedChallenge(fire.challengeKey(cfg))
       ? el('div', { html: `<br><b>You've played this board before</b> — replays are for fun, only your first run posted to the leaderboard.` })
       : null,
@@ -168,6 +178,23 @@ function showChallengeBanner(cfg) {
     el('div', { style: 'margin-top:10px' },
       el('button', { class: 'btn', onclick: () => { sound.preload(); startGame(cfg); } }, 'Accept challenge')),
   ));
+}
+
+async function joinByCode(raw) {
+  const code = (raw || '').trim().toLowerCase();
+  if (!/^[a-z0-9]{1,16}$/.test(code)) { toast('Enter a valid game code'); return; }
+  if (!requireName()) return;
+  const lob = await fire.getLobby(code);
+  if (!lob) { toast('No game found for that code — check it and try again'); return; }
+  const banner = document.getElementById('challenge-banner');
+  if (lob.state === 'open') {
+    showLobbyJoinBanner(lob);
+  } else {
+    // Already launched (or a stale doc): play it as the async challenge.
+    toast('That game already started — opening it as a challenge.');
+    showChallengeBanner(makeCfg(lob.cfg.mode, lob.cfg));
+  }
+  banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // ---------------------------------------------------------------- lobby
@@ -188,7 +215,7 @@ function showLobbyJoinBanner(lob) {
   const banner = document.getElementById('challenge-banner');
   banner.innerHTML = '';
   banner.append(el('div', { class: 'notice' },
-    el('div', { html: `<b>${lob.host}'s lobby is open!</b> Game code <b>${cfg.seed}</b><br>${cfgSummary(cfg)}<br>${(lob.players || []).length} in so far — game starts when the host launches.` }),
+    el('div', { html: `<b>${escapeHtml(lob.host)}'s lobby is open!</b> Game code <b>${escapeHtml(cfg.seed)}</b><br>${cfgSummary(cfg)}<br>${(lob.players || []).length} in so far — game starts when the host launches.` }),
     el('div', { style: 'margin-top:10px' },
       el('button', {
         class: 'btn',

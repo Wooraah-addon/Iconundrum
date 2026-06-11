@@ -6,7 +6,7 @@
 // chosen in setup, locked into the challenge link, own leaderboard each.
 
 import { rngFor, sample } from '../rng.js';
-import { iconUrl, fmtGoldLong, catItems, priceOf, parseGold, BASIS_LABELS } from '../data.js';
+import { iconUrl, fmtGoldLong, catItems, priceOf, parseGold, preloadIcons, BASIS_LABELS } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
 import { buildSyncFooter } from '../lobby.js';
@@ -27,6 +27,7 @@ export function start(ctx) {
   const cfg = ctx.cfg;
   const basis = cfg.basis || 'mv';
   const rounds = buildRounds(ctx.bundle, cfg);
+  preloadIcons(rounds); // warm all round icons up front
   const log = [];
   let total = 0;
   let idx = 0;

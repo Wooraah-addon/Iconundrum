@@ -85,6 +85,17 @@ export function iconUrl(item) {
   return bundle.iconBase + item.i + '.jpg';
 }
 
+// Warm the browser cache for a set of item icons so the timed round doesn't
+// race the Blizzard CDN — the icon is decoded by the time the round renders.
+// Fire-and-forget; failures are harmless (the <img> will retry on render).
+export function preloadIcons(items) {
+  for (const it of items) {
+    if (!it) continue;
+    const img = new Image();
+    img.src = iconUrl(it);
+  }
+}
+
 export function fmtGold(g) {
   if (g >= 1000000) return (g / 1000000).toFixed(2).replace(/\.?0+$/, '') + 'M';
   return g.toLocaleString('en-GB');

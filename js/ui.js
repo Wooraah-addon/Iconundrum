@@ -7,6 +7,13 @@ export function showScreen(id) {
   window.scrollTo(0, 0);
 }
 
+// Escape user-sourced strings before they go anywhere near an innerHTML
+// string. Lobby host names and game codes arrive from Firestore docs that
+// the security rules only length-bound, so a crafted doc could otherwise
+// inject markup into a banner.
+export const escapeHtml = s => String(s).replace(/[&<>"']/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
 export function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {

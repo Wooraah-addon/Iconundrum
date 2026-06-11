@@ -179,7 +179,10 @@ function makeSync({ cfg, playerName, isHost, launchAt }) {
       if (scoresHandler) scoresHandler();
       if (doc.round > localRound) {
         localRound = doc.round;
-        sync.roundStartMs = doc.roundAt || Date.now();
+        // Clamp to our own clock: a host clock running ahead must not push the
+        // round start into our future (that would mis-time the bar + unlock).
+        // Mirrors runCountdown's launchAt clamp.
+        sync.roundStartMs = Math.min(doc.roundAt || Date.now(), Date.now());
         if (advanceHandler) advanceHandler(doc.round);
       }
     },

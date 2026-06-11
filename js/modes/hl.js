@@ -6,7 +6,7 @@
 // ('mv' posted market avg / 'sa' TSM sale avg) — locked into the link.
 
 import { rngFor, shuffled } from '../rng.js';
-import { iconUrl, fmtGoldLong, catItems, priceOf } from '../data.js';
+import { iconUrl, fmtGoldLong, catItems, priceOf, preloadIcons } from '../data.js';
 import { el } from '../ui.js';
 import { play } from '../sound.js';
 
@@ -51,6 +51,7 @@ export function start(ctx) {
   const maxLives = lives;
   let current = stream.next();
   let challenger = stream.next();
+  preloadIcons([current, challenger]);
 
   ctx.timerBar.parentElement.style.display = 'none'; // untimed — zero friction
 
@@ -118,6 +119,7 @@ export function start(ctx) {
       setTimeout(() => {
         current = challenger;
         challenger = stream.next();
+        preloadIcons([challenger]);
         render();
       }, 1100);
     } else if (lives > 1) {
@@ -133,6 +135,7 @@ export function start(ctx) {
       setTimeout(() => {
         current = challenger;
         challenger = stream.next();
+        preloadIcons([challenger]);
         render();
       }, 1500);
     } else {
