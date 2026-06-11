@@ -112,6 +112,15 @@ input[type="text"], input[type="number"] {
 input:focus { border-color: var(--gold-dim); }
 input.invalid { border-color: var(--red); }
 
+/* Keyboard focus ring — only for keyboard users (focus-visible), never on
+   mouse click. Inputs override the outline:none above when keyboard-focused. */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.btn:focus-visible, .choice:focus-visible, .mode-card:focus-visible,
+.chip-btn:focus-visible, .lb-tab:focus-visible, .sound-toggle:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 2px;
+}
+input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
+
 .btn {
   background: linear-gradient(180deg, #f3d35e, #d4a72c);
   color: #2a1d0a;
@@ -184,6 +193,23 @@ input.invalid { border-color: var(--red); }
 .choice.wrong { border-color: var(--red); background: rgba(224, 82, 82, .15); }
 .choice:disabled { cursor: default; }
 .choice.dim { opacity: .5; }
+/* Number-key hint (1–4) — a badge via ::before so it doesn't change the
+   button's textContent (the answer match reads textContent). Hidden once the
+   choice is resolved, and on narrow screens where keys are less relevant. */
+.choice[data-key]::before {
+  content: attr(data-key);
+  display: inline-block;
+  min-width: 1.3em;
+  margin-right: 8px;
+  padding: 0 .25em;
+  border-radius: 5px;
+  background: rgba(240, 198, 64, .14);
+  color: var(--gold-dim);
+  font-size: .8em;
+  font-weight: 700;
+}
+.choice.correct[data-key]::before, .choice.wrong[data-key]::before, .choice.dim[data-key]::before { opacity: .35; }
+@media (hover: none) { .choice[data-key]::before { display: none; } }
 
 /* ---- Value entry ---- */
 .value-entry { display: flex; gap: 10px; justify-content: center; align-items: center; margin-top: 6px; }
@@ -227,6 +253,8 @@ input.invalid { border-color: var(--red); }
 .hl-card .ihidden { color: var(--text-dim); font-size: 1.3rem; font-weight: 800; }
 .hl-vs { align-self: center; color: var(--text-dim); font-weight: 800; }
 .hl-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
+.hl-keyhint { text-align: center; color: var(--text-dim); font-size: .75rem; margin-top: 8px; }
+@media (hover: none) { .hl-keyhint { display: none; } }
 .hl-streak { text-align: center; color: var(--gold); font-size: 1.05rem; font-weight: 700; margin-top: 4px; }
 .hl-hearts { text-align: center; font-size: 1.3rem; letter-spacing: .18em; margin-top: 10px; line-height: 1; }
 .hl-hearts .full { color: var(--red); text-shadow: 0 0 8px rgba(224, 82, 82, .5); }
@@ -293,6 +321,9 @@ table.lb tr.me td { color: var(--gold); font-weight: 700; }
 .q-UNCOMMON { color: var(--q-uncommon); } .q-RARE { color: var(--q-rare); }
 .q-EPIC { color: var(--q-epic); } .q-LEGENDARY { color: var(--q-legendary); }
 .q-ARTIFACT { color: var(--q-artifact); } .q-HEIRLOOM { color: var(--q-heirloom); }
+/* Quality colours (rare blue / epic purple especially) sit low-contrast on the
+   dark panels — a soft dark halo lifts them to readable without losing flavour. */
+[class*="q-"] { text-shadow: 0 1px 2px rgba(0, 0, 0, .75); }
 
 /* ---- Footer ---- */
 footer {
@@ -474,6 +505,9 @@ table.standings { max-width: 340px; margin: 0 auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   .motes { display: none; }
+  /* Cut the remaining one-shot animations that live outside the
+     no-preference gate — screen/toast fade-ins and the countdown pop. */
+  .screen.active, .toast, .count-num.pop { animation: none; }
 }
 
 /* ---- What's new strip (home) ---- */

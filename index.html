@@ -115,13 +115,13 @@
       <div class="game-header">
         <span class="wordmark-small" title="Back to main menu" onclick="location.href=location.pathname">Ic<span class="qmark">?</span>nundrum</span>
         <span class="meta" id="game-meta"></span>
-        <span class="score" id="game-score"></span>
+        <span class="score" id="game-score" aria-live="polite"></span>
         <button class="sound-toggle" title="Toggle sound" aria-label="Toggle sound">🔊</button>
       </div>
       <div class="game-header">
         <span class="meta" id="game-title"></span>
       </div>
-      <div class="timer-track" id="timer-track"><div class="timer-bar" id="timer-bar"></div></div>
+      <div class="timer-track" id="timer-track" aria-hidden="true"><div class="timer-bar" id="timer-bar"></div></div>
       <div id="game-content"></div>
     </section>
 

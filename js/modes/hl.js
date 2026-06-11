@@ -55,6 +55,18 @@ export function start(ctx) {
 
   ctx.timerBar.parentElement.style.display = 'none'; // untimed — zero friction
 
+  // Keyboard: H / ↑ = higher, L / ↓ = lower. Acts on the live call buttons
+  // only (ignored once a call is locked in). Removed at game over so replays
+  // don't stack listeners.
+  const onKey = e => {
+    const btns = ctx.content.querySelectorAll('.hl-buttons button');
+    if (!btns.length || btns[0].disabled) return;
+    const k = e.key.toLowerCase();
+    if (k === 'h' || e.key === 'ArrowUp') { e.preventDefault(); btns[0].click(); }
+    else if (k === 'l' || e.key === 'ArrowDown') { e.preventDefault(); btns[1].click(); }
+  };
+  document.addEventListener('keydown', onKey);
+
   function heartsEl() {
     if (maxLives <= 1) return null;
     const h = el('div', { class: 'hl-hearts' });
@@ -89,6 +101,7 @@ export function start(ctx) {
         el('button', { class: 'btn', onclick: () => call(true) }, '▲ Higher'),
         el('button', { class: 'btn secondary', onclick: () => call(false) }, '▼ Lower'),
       ),
+      el('div', { class: 'hl-keyhint' }, 'Tip: press H for higher, L for lower'),
       heartsEl(),
       el('div', { class: 'hl-streak' }, streak > 0 ? `Streak: ${streak}` : ' '),
     );
@@ -141,6 +154,7 @@ export function start(ctx) {
     } else {
       play('wrong');
       streakEl.innerHTML = `<span style="color:var(--red)">Wrong — it was ${gapTxt}.</span> Final streak: ${streak}`;
+      document.removeEventListener('keydown', onKey);
       setTimeout(() => {
         play('gameover');
         ctx.finish({ score: streak, rounds: log });

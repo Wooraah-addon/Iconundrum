@@ -72,7 +72,7 @@ export function renderReveal(container, item, earnedHtml, extraHtml, footer) {
     el('img', { src: iconUrl(item), alt: '' }),
     el('div', { class: `rname q-${item.q}`, html: item.n }),
     el('div', { class: 'rclass', html: item.cn }),
-    el('div', { class: 'earned', html: earnedHtml }),
+    el('div', { class: 'earned', role: 'status', html: earnedHtml }),
     el('div', { class: 'statchips', html: chips }),
     extraHtml ? el('div', { class: 'question-prompt', html: extraHtml }) : null,
     footer,

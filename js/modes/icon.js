@@ -169,20 +169,31 @@ export function start(ctx) {
 
     // --- standard: 4 choices ---
     const buttons = [];
+    let onKey = null;
     if (!cfg.hard) {
       const grid = el('div', { class: 'choices' });
       wrap.append(grid);
-      for (const c of choices) {
-        const b = el('button', { class: 'choice', onclick: () => settle(c) }, c.n);
+      choices.forEach((c, i) => {
+        const b = el('button', { class: 'choice', 'data-key': String(i + 1), onclick: () => settle(c) }, c.n);
         buttons.push(b);
         grid.append(b);
-      }
+      });
+      // Number keys 1–4 pick a choice. Mouse-travel time is part of the speed
+      // score, so a keyboard path is fairness, not just convenience.
+      onKey = e => {
+        if (settled) return;
+        if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+        const n = parseInt(e.key, 10);
+        if (n >= 1 && n <= buttons.length) { e.preventDefault(); buttons[n - 1].click(); }
+      };
+      document.addEventListener('keydown', onKey);
       forceSettle = () => settle(null, true);
     }
 
     function settle(chosen, forced = false) {
       if (settled) return;
       settled = true;
+      if (onKey) document.removeEventListener('keydown', onKey);
       timer.stop();
       const ok = chosen && chosen.id === item.id;
       if (!forced) {
