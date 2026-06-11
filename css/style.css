@@ -1,5 +1,15 @@
 /* Iconundrum — dark purple & gold house style */
 
+/* Display face for wordmark, headings & hero numbers (body stays system).
+   Cinzel 700, latin subset, self-hosted (~15KB, OFL). Swap --font-display
+   back to Georgia to revert everything at once. */
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../assets/fonts/cinzel.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
   /* --bg matches the logo PNG's baked background exactly — keep in sync */
   --bg: #150d1f;
@@ -11,6 +21,7 @@
   --gold-dim: #b8964a;
   --text: #e8e2f4;
   --text-dim: #9d92b5;
+  --font-display: 'Cinzel', Georgia, "Times New Roman", serif;
   --green: #4caf50;
   --red: #e05252;
   --q-common: #ffffff;
@@ -45,18 +56,18 @@ body {
 .wordmark {
   text-align: center;
   font-size: clamp(2rem, 8vw, 3.2rem);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text);
   margin: 24px 0 4px;
   text-transform: uppercase;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-display);
 }
 .wordmark .qmark { color: var(--gold); text-shadow: 0 0 18px rgba(240, 198, 64, .45); }
 .tagline { text-align: center; color: var(--text-dim); margin-bottom: 28px; font-style: italic; }
 
 .wordmark-small {
-  font-family: Georgia, serif; font-weight: 800; font-size: 1.1rem;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
   text-transform: uppercase; letter-spacing: .04em; cursor: pointer;
 }
 .wordmark-small .qmark { color: var(--gold); }
@@ -91,7 +102,7 @@ body {
 }
 .mode-card:hover { transform: translateY(-2px); border-color: var(--gold-dim); border-left-color: var(--gold); background: var(--bg-card-hover); }
 .mode-glyph { grid-row: 1 / 3; align-self: center; width: 34px; height: 34px; color: var(--gold); }
-.mode-card h3 { grid-column: 2; color: var(--gold); margin-bottom: 4px; font-size: 1.15rem; }
+.mode-card h3 { grid-column: 2; color: var(--gold); margin-bottom: 4px; font-size: 1.2rem; font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; }
 .mode-card p { grid-column: 2; color: var(--text-dim); font-size: .85rem; line-height: 1.35; }
 
 /* Roadmap packs — demoted to a quiet chip strip, not full cards. */
@@ -319,7 +330,7 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .chip b { color: var(--gold); font-weight: 600; }
 
 /* ---- Summary & leaderboard ---- */
-.summary-score { text-align: center; font-size: 2.2rem; font-weight: 800; color: var(--gold); margin: 8px 0; }
+.summary-score { text-align: center; font-size: 2.4rem; font-weight: 700; color: var(--gold); margin: 8px 0; font-family: var(--font-display); text-shadow: 0 0 16px rgba(240, 198, 64, .25); }
 .summary-sub { text-align: center; color: var(--text-dim); margin-bottom: 14px; }
 .pb-banner {
   text-align: center; color: #1a1226; background: linear-gradient(90deg, #f3d35e, #d4a72c);
@@ -405,7 +416,7 @@ footer a { color: var(--gold-dim); }
   animation: fadein .15s ease;
 }
 .modal { width: min(460px, 94%); max-height: 90vh; overflow-y: auto; }
-.modal-title { color: var(--gold); margin-bottom: 16px; font-size: 1.2rem; }
+.modal-title { color: var(--gold); margin-bottom: 16px; font-size: 1.3rem; font-family: var(--font-display); font-weight: 700; }
 .form-row {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
   margin-bottom: 14px; flex-wrap: wrap;
@@ -508,8 +519,8 @@ input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
 #countdown-overlay[hidden] { display: none; }
 .count-label { color: var(--text-dim); font-size: 1.1rem; letter-spacing: .1em; text-transform: uppercase; }
 .count-num {
-  font-size: 7rem; font-weight: 800; color: var(--gold);
-  font-family: Georgia, serif; line-height: 1;
+  font-size: 7rem; font-weight: 700; color: var(--gold);
+  font-family: var(--font-display); line-height: 1;
   text-shadow: 0 0 40px rgba(240, 198, 64, .5);
 }
 .count-num.pop { animation: countpop .9s ease; }
@@ -520,7 +531,7 @@ input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
 
 /* ---- Changelog page ---- */
 .cl-entry { margin-bottom: 22px; }
-.cl-entry h3 { color: var(--text); font-size: 1rem; margin-bottom: 8px; }
+.cl-entry h3 { color: var(--text); font-size: 1.1rem; margin-bottom: 8px; font-family: var(--font-display); font-weight: 700; }
 .cl-date { color: var(--text-dim); font-weight: 400; font-size: .8rem; margin-left: 8px; }
 .cl-entry ul { margin-left: 20px; color: var(--text-dim); font-size: .9rem; line-height: 1.6; }
 a.btn { text-decoration: none; display: inline-block; }
