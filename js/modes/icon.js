@@ -57,12 +57,49 @@ export function buildRounds(bundle, cfg) {
   const rng = rngFor(['icon', cfg.seed, `v${cfg.v}`]);
   const pool = catItems(bundle, cfg.cat);
   const answers = sample(pool, cfg.rounds, rng);
+  // F45: v2+ bundles draw distractors from the FULL similarity tiers instead
+  // of a fixed top-12 prefix, so repeat players can't learn the "usual
+  // suspects" and answer by elimination. Gated on the CONTENT version so it
+  // can't rewrite the boards of already-shared v1 links — the v1 path below
+  // must stay byte-identical forever.
+  const used = new Set(); // v2: distractors already shown this game (anti-repeat)
   return answers.map(item => {
-    const candidates = distractorCandidates(pool, item);
-    const distractors = sample(candidates.slice(0, TOP_K), 3, rng);
+    const distractors = cfg.v >= 2
+      ? wideDistractors(pool, item, rng, used)
+      : sample(distractorCandidates(pool, item).slice(0, TOP_K), 3, rng);
+    if (cfg.v >= 2) for (const d of distractors) used.add(d.id);
     const choices = shuffled([item, ...distractors], rng);
     return { item, choices };
   });
+}
+
+// v2+ distractors: same plausibility ladder (icon family → subclass → class
+// → anything in the pool) and roughly the old family share (≤2 of 3), but
+// each tier's picks are rng-sampled from the WHOLE tier, preferring items
+// not yet shown as a distractor this game (the "Silverleaf every round"
+// complaint). Deterministic per (seed, v) like everything else.
+export function wideDistractors(pool, answer, rng, used = new Set()) {
+  const seen = new Set([answer.id]);
+  const names = new Set([answer.n]);
+  const out = [];
+  const eligible = it => !seen.has(it.id) && !names.has(it.n) && it.i !== answer.i;
+  const draw = (match, want, allowUsed) => {
+    if (out.length >= 3 || want <= 0) return;
+    const tier = pool.filter(it => eligible(it) && match(it) && (allowUsed || !used.has(it.id)));
+    for (const pick of sample(tier, Math.min(want, 3 - out.length), rng)) {
+      seen.add(pick.id);
+      names.add(pick.n);
+      out.push(pick);
+    }
+  };
+  draw(it => it.family === answer.family, 2, false);
+  draw(it => it.c === answer.c && it.s === answer.s, 3 - out.length, false);
+  draw(it => it.c === answer.c, 3 - out.length, false);
+  draw(() => true, 3 - out.length, false);
+  // Tiny pools only: allow repeats rather than coming up short of 3.
+  draw(it => it.c === answer.c, 3 - out.length, true);
+  draw(() => true, 3 - out.length, true);
+  return out;
 }
 
 function distractorCandidates(pool, answer) {
