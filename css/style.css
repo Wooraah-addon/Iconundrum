@@ -397,7 +397,10 @@ footer a { color: var(--gold-dim); }
 }
 
 /* ---- Logo ---- */
-.logo-wrap { text-align: center; margin: 14px 0 20px; }
+/* z-index:-2 keeps the logo banner BELOW the coin (z-index:-1) so the coin is
+   visible drifting over it; the menu panels & stats are static blocks, which
+   paint above negative z-index, so the coin still hides behind those. */
+.logo-wrap { text-align: center; margin: 14px 0 20px; position: relative; z-index: -2; }
 .logo { max-width: min(550px, 96%); height: auto; display: inline-block; }
 .logo-small { max-width: min(280px, 70%); display: block; margin: 0 auto 10px; }
 
@@ -579,11 +582,12 @@ table.standings td, table.standings th { padding: 6px 6px; }
   position: absolute; inset: 0; border-radius: 50%;
   backface-visibility: hidden;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: #7a5512;
-  background: radial-gradient(circle at 36% 30%, #fff3c4 0%, #f4cf57 32%, #d4a72c 66%, #9c7820 100%);
-  border: 2px solid #b8863a;
-  box-shadow: inset 0 0 7px rgba(120, 80, 10, .55), 0 3px 9px rgba(0, 0, 0, .5);
-  text-shadow: 0 1px 0 rgba(255, 240, 190, .5);
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: #f7d65a;
+  /* purple gem face + gold rim — echoes the "?" medallion in the logo */
+  background: radial-gradient(circle at 38% 32%, #6f43a2 0%, #4a2a72 34%, #301848 70%, #1d0f2e 100%);
+  border: 2px solid #d4a72c;
+  box-shadow: inset 0 0 6px rgba(18, 8, 36, .85), inset 0 0 3px rgba(240, 200, 90, .45), 0 3px 9px rgba(0, 0, 0, .5);
+  text-shadow: 0 0 5px rgba(180, 120, 240, .75), 0 1px 1px rgba(0, 0, 0, .55);
 }
 /* faces pushed apart in Z; rim segments (built in coin.js) bridge the gap so
    the coin reads as a solid disc that shows real thickness edge-on. */
