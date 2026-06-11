@@ -39,7 +39,10 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
 
   document.getElementById('lobby-copy').onclick = async () => {
     play('click');
-    toast(await copyText(buildUrl(cfg)) ? 'Lobby link copied — anyone who opens it can join' : buildUrl(cfg));
+    // ?lobby=1 marks this as a multiplayer invite: if a clicker arrives before
+    // the lobby is open they wait for the host instead of starting a solo game.
+    const link = buildUrl(cfg) + '&lobby=1';
+    toast(await copyText(link) ? 'Lobby link copied — anyone who opens it can join' : link);
   };
 
   if (isHost) {

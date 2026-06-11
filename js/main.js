@@ -23,6 +23,16 @@ const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Hig
 let bundle = null;
 let game = null; // { cfg, result }
 
+// A lobby doc is never deleted, so age is the liveness signal: a doc older
+// than this counts as stale (host created it and wandered off).
+const LOBBY_TTL_MS = 20 * 60 * 1000;
+const lobbyFresh = lob => lob && lob.created && typeof lob.created.toMillis === 'function'
+  && (Date.now() - lob.created.toMillis()) < LOBBY_TTL_MS;
+
+// Live subscription used while a player waits on a not-yet-open lobby link.
+let lobbyWatchUnsub = null;
+function stopLobbyWatch() { if (lobbyWatchUnsub) { lobbyWatchUnsub(); lobbyWatchUnsub = null; } }
+
 // ---------------------------------------------------------------- boot
 
 async function boot() {
@@ -44,14 +54,13 @@ async function boot() {
   const linkCfg = cfgFromParams(params);
   if (linkCfg) {
     linkCfg.v = bundle.versionMismatch ? bundle.version : linkCfg.v || bundle.version;
-    // An open lobby for this code takes precedence over the async challenge —
-    // unless it's stale (host created it and never launched). Nothing ever
-    // closes a lobby doc, so age is the liveness signal.
-    const LOBBY_TTL_MS = 20 * 60 * 1000;
+    // An open lobby for this code takes precedence over the async challenge.
+    // A link flagged ?lobby=1 (shared from the lobby screen) is a multiplayer
+    // invite: if the lobby isn't open yet, wait for the host instead of
+    // dropping the player into a solo game.
     const lob = await fire.getLobby(linkCfg.seed);
-    const fresh = lob && lob.created && typeof lob.created.toMillis === 'function'
-      && (Date.now() - lob.created.toMillis()) < LOBBY_TTL_MS;
-    if (lob && lob.state === 'open' && fresh) showLobbyJoinBanner(lob);
+    if (lob && lob.state === 'open' && lobbyFresh(lob)) showLobbyJoinBanner(lob);
+    else if (params.get('lobby') === '1') showLobbyWaitingBanner(linkCfg);
     else showChallengeBanner(linkCfg);
   }
   showScreen('screen-home');
@@ -223,6 +232,7 @@ async function joinByCode(raw) {
 // ---------------------------------------------------------------- lobby
 
 async function hostLobby(cfg) {
+  stopLobbyWatch();
   const player = profile.getName();
   history.replaceState(null, '', buildUrl(cfg, false));
   const ok = await fire.createLobby(cfg, player);
@@ -244,6 +254,39 @@ function showLobbyJoinBanner(lob) {
   ));
 }
 
+// A lobby link (?lobby=1) whose lobby isn't open yet: hold the player here
+// instead of starting a solo game, and flip to the Join banner live the
+// moment the host opens it. If it already launched/went stale, say so and
+// offer the solo board rather than silently doing nothing.
+async function showLobbyWaitingBanner(cfg) {
+  stopLobbyWatch();
+  const banner = document.getElementById('challenge-banner');
+  banner.innerHTML = '';
+  banner.append(el('div', { class: 'notice' },
+    el('div', { html: `<b>This lobby isn't open yet.</b><br>Game code <b>${escapeHtml(cfg.seed)}</b> · ${cfgSummary(cfg)}<br>Waiting for the host to start it — you'll join automatically.` }),
+    el('div', { style: 'margin-top:10px' },
+      el('button', { class: 'btn secondary', onclick: () => { stopLobbyWatch(); showChallengeBanner(cfg); } }, 'Play solo instead')),
+  ));
+
+  let resolved = false;
+  const unsub = await fire.watchLobby(cfg.seed, doc => {
+    if (resolved) return;
+    if (doc.state === 'open' && lobbyFresh(doc)) {
+      resolved = true; stopLobbyWatch(); showLobbyJoinBanner(doc);
+    } else if (doc.state === 'launching' || !lobbyFresh(doc)) {
+      resolved = true; stopLobbyWatch();
+      banner.innerHTML = '';
+      banner.append(el('div', { class: 'notice' },
+        el('div', { html: `<b>This lobby has already started.</b><br>You can still play the same board on your own.` }),
+        el('div', { style: 'margin-top:10px' },
+          el('button', { class: 'btn', onclick: () => { sound.preload(); startGame(cfg); } }, 'Play solo')),
+      ));
+    }
+  });
+  lobbyWatchUnsub = unsub;
+  if (resolved) stopLobbyWatch(); // fired during the await, before assignment
+}
+
 // ---------------------------------------------------------------- game
 
 function requireName() {
@@ -259,6 +302,7 @@ function requireName() {
 
 function startGame(cfg, sync = null) {
   if (!requireName()) return;
+  stopLobbyWatch(); // leaving any "waiting for lobby" state
   game = { cfg };
 
   history.replaceState(null, '', buildUrl(cfg, false));
