@@ -60,6 +60,8 @@ body {
   text-transform: uppercase; letter-spacing: .04em; cursor: pointer;
 }
 .wordmark-small .qmark { color: var(--gold); }
+/* 2x source (56px) so the header logo stays crisp on retina */
+.logo-header { height: 28px; width: auto; display: block; cursor: pointer; }
 
 /* ---- Panels & cards ---- */
 .panel {
