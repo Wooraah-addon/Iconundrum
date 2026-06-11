@@ -281,9 +281,12 @@ async function showLobbyWaitingBanner(cfg) {
       resolved = true; stopLobbyWatch(); showLobbyJoinBanner(doc);
     } else if (doc.state === 'launching' || !lobbyFresh(doc)) {
       resolved = true; stopLobbyWatch();
+      const headline = doc.state === 'launching'
+        ? `<b>This lobby has already started.</b>`
+        : `<b>This lobby has expired</b> — the host never started it.`;
       banner.innerHTML = '';
       banner.append(el('div', { class: 'notice' },
-        el('div', { html: `<b>This lobby has already started.</b><br>You can still play the same board on your own.` }),
+        el('div', { html: `${headline}<br>You can still play the same board on your own.` }),
         el('div', { style: 'margin-top:10px' },
           el('button', { class: 'btn', onclick: () => { sound.preload(); startGame(cfg); } }, 'Play solo')),
       ));
@@ -309,7 +312,7 @@ function requireName() {
 function startGame(cfg, sync = null) {
   if (!requireName()) return;
   stopLobbyWatch(); // leaving any "waiting for lobby" state
-  game = { cfg };
+  game = { cfg, synced: !!sync };
 
   history.replaceState(null, '', buildUrl(cfg, false));
 
@@ -372,6 +375,14 @@ async function onFinish(result) {
     lbStatus.textContent = saved ? '' : 'Leaderboards offline — score saved locally only.';
   }
   loadBoards('challenge');
+  // Synced game: everyone finishes (and saves) within seconds of each other,
+  // so the board fetched at finish races the other players' saves (F41 —
+  // "I'm on my board but not on theirs"). One delayed refetch closes most of
+  // the gap; the ↻ button covers the stragglers.
+  if (game.synced) {
+    const g = game;
+    setTimeout(() => { if (game === g) loadBoards(boardTab); }, 6000);
+  }
 }
 
 function wireSummaryActions() {
@@ -402,9 +413,13 @@ function wireSummaryActions() {
   document.querySelectorAll('.lb-tab').forEach(tab => {
     tab.onclick = () => loadBoards(tab.dataset.board);
   });
+  document.getElementById('lb-refresh').onclick = () => { sound.play('click'); loadBoards(boardTab); };
 }
 
+let boardTab = 'challenge'; // which board the summary screen is showing
+
 async function loadBoards(which) {
+  boardTab = which;
   document.querySelectorAll('.lb-tab').forEach(t =>
     t.classList.toggle('active', t.dataset.board === which));
   const tbody = document.getElementById('lb-body');

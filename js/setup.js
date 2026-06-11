@@ -110,15 +110,22 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   const cfgNow = () => makeCfg(modeId, { ...state, seed, v: bundle.version });
 
   // --- game code + share ---
-  const codeRow = el('div', { class: 'code-row' },
-    el('span', {}, 'Game code: ', el('b', { class: 'game-code' }, seed)),
-    el('button', {
-      class: 'btn secondary small',
-      onclick: async () => {
-        play('click');
-        toast(await copyText(buildUrl(cfgNow())) ? 'Challenge link copied — same rounds for everyone' : buildUrl(cfgNow()));
-      },
-    }, 'Copy challenge link'),
+  // F36 root cause on stream: hosts shared THIS link expecting it to pull
+  // people into their lobby — it's the async solo link. Say so here; the
+  // real invite link lives on the lobby screen.
+  const codeRow = el('div', {},
+    el('div', { class: 'code-row' },
+      el('span', {}, 'Game code: ', el('b', { class: 'game-code' }, seed)),
+      el('button', {
+        class: 'btn secondary small',
+        onclick: async () => {
+          play('click');
+          toast(await copyText(buildUrl(cfgNow())) ? 'Challenge link copied — friends play it solo, anytime' : buildUrl(cfgNow()));
+        },
+      }, 'Copy challenge link'),
+    ),
+    el('div', { class: 'lb-note code-note' },
+      'Challenge link = friends play the same board solo, anytime. Playing live together? Create the lobby and share the invite link from there.'),
   );
 
   const modal = el('div', { class: 'modal panel' },

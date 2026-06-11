@@ -59,6 +59,8 @@ export function start(ctx) {
   // only (ignored once a call is locked in). Removed at game over so replays
   // don't stack listeners.
   const onKey = e => {
+    const a = document.activeElement;
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) return;
     const btns = ctx.content.querySelectorAll('.hl-buttons button');
     if (!btns.length || btns[0].disabled) return;
     const k = e.key.toLowerCase();

@@ -39,11 +39,15 @@
 
       <div class="panel">
         <div class="name-row">
-          <label for="player-name">Playing as</label>
-          <input type="text" id="player-name" maxlength="20" placeholder="your name (shown on leaderboards)">
-          <label for="join-code" class="join-label">Game code?</label>
-          <input type="text" id="join-code" maxlength="16" placeholder="code" autocomplete="off" autocapitalize="off" spellcheck="false">
-          <button class="btn secondary small" id="join-btn">Join</button>
+          <div class="field-group grow">
+            <label for="player-name">Playing as</label>
+            <input type="text" id="player-name" maxlength="20" placeholder="your name (shown on leaderboards)">
+          </div>
+          <div class="field-group join-group">
+            <label for="join-code">Got a game code?</label>
+            <input type="text" id="join-code" maxlength="16" placeholder="code" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button class="btn secondary small" id="join-btn">Join</button>
+          </div>
         </div>
 
         <p class="lb-note" style="margin:0 0 14px">Play solo or challenge your friends — one link, same rounds for everyone.</p>
@@ -102,8 +106,9 @@
       <div class="panel">
         <div class="lobby-head">
           <div>Game code: <b class="game-code" id="lobby-code"></b></div>
-          <button class="btn secondary small" id="lobby-copy">Copy lobby link</button>
+          <button class="btn small" id="lobby-copy">📋 Copy invite link</button>
         </div>
+        <div class="lb-note" style="margin:0 0 12px">This is the link that brings players into <em>this</em> lobby — share it, or have them type the game code on the home screen.</div>
         <div class="lobby-roster-head">
           <span>In the lobby</span>
           <span class="meta" id="lobby-count"></span>

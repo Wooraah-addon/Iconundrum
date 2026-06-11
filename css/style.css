@@ -94,12 +94,21 @@ body {
 }
 
 /* ---- Forms & buttons ---- */
-.name-row { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
-.name-row label { color: var(--text-dim); font-size: .9rem; }
-.name-row #player-name { flex: 1 1 180px; min-width: 0; }
-.name-row .join-label { margin-left: 6px; }
+/* Two distinct clusters: "who am I" grows, "join a game" hugs the right with
+   a divider so they don't read as one long control strip. Wraps to its own
+   line on small screens, divider dropped. */
+.name-row { display: flex; gap: 12px 22px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+.field-group { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.field-group.grow { flex: 1 1 260px; }
+.field-group label { color: var(--text-dim); font-size: .9rem; white-space: nowrap; }
+.field-group #player-name { flex: 1 1 160px; min-width: 0; }
+.join-group { padding-left: 22px; border-left: 1px solid var(--border); }
 #join-code { flex: 0 0 96px; width: 96px; text-transform: lowercase; }
 #join-code::placeholder { text-transform: none; }
+@media (max-width: 560px) {
+  .join-group { padding-left: 0; border-left: none; flex: 1 1 100%; }
+  .join-group #join-code { flex: 1 1 96px; }
+}
 input[type="text"], input[type="number"] {
   background: #181022;
   border: 1px solid var(--border);
@@ -311,6 +320,11 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
   color: var(--text-dim); padding: 6px 14px; cursor: pointer; font-size: .85rem;
 }
 .lb-tab.active { color: var(--gold); border-color: var(--gold-dim); }
+.lb-refresh {
+  margin-left: auto; background: none; border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text-dim); padding: 6px 11px; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.lb-refresh:hover { color: var(--gold); border-color: var(--gold-dim); }
 table.lb { width: 100%; border-collapse: collapse; font-size: .9rem; }
 table.lb th { color: var(--text-dim); text-align: left; font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--border); }
 table.lb td { padding: 7px 8px; border-bottom: 1px solid #2a1f3d; }
@@ -396,6 +410,7 @@ footer a { color: var(--gold-dim); }
 input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
 .switch { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-size: .85rem; }
 .switch input { accent-color: var(--gold); width: 18px; height: 18px; }
+.code-note { margin: 8px 0 0; }
 .code-row {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;
   flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px;
