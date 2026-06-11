@@ -201,9 +201,14 @@ function runCountdown(launchAtMs, go) {
   const overlay = document.getElementById('countdown-overlay');
   const num = document.getElementById('countdown-num');
   overlay.hidden = false;
+  // launchAt is stamped with the HOST's clock. If this client's clock is
+  // badly skewed, clamp so the countdown is never longer than the real
+  // 10s+buffer (clock behind) — a clock ahead just starts sooner.
+  const maxLaunch = Date.now() + COUNTDOWN_MS + LAUNCH_BUFFER_MS;
+  const target = Math.min(launchAtMs, maxLaunch);
   let lastShown = null;
   const h = setInterval(() => {
-    const left = launchAtMs - Date.now();
+    const left = target - Date.now();
     if (left <= 0) {
       clearInterval(h);
       overlay.hidden = true;

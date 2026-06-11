@@ -43,9 +43,14 @@ async function boot() {
   const linkCfg = cfgFromParams(params);
   if (linkCfg) {
     linkCfg.v = bundle.versionMismatch ? bundle.version : linkCfg.v || bundle.version;
-    // An open lobby for this code takes precedence over the async challenge.
+    // An open lobby for this code takes precedence over the async challenge —
+    // unless it's stale (host created it and never launched). Nothing ever
+    // closes a lobby doc, so age is the liveness signal.
+    const LOBBY_TTL_MS = 20 * 60 * 1000;
     const lob = await fire.getLobby(linkCfg.seed);
-    if (lob && lob.state === 'open') showLobbyJoinBanner(lob);
+    const fresh = lob && lob.created && typeof lob.created.toMillis === 'function'
+      && (Date.now() - lob.created.toMillis()) < LOBBY_TTL_MS;
+    if (lob && lob.state === 'open' && fresh) showLobbyJoinBanner(lob);
     else showChallengeBanner(linkCfg);
   }
   showScreen('screen-home');
