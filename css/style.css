@@ -411,8 +411,13 @@ footer a { color: var(--gold-dim); }
   color: var(--text-dim); font-size: .72rem; text-transform: uppercase; letter-spacing: .1em;
   border-bottom: 1px solid var(--border); padding-bottom: 4px; margin: 14px 0 10px;
 }
-.cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-@media (max-width: 480px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+/* Wider frame for the setup modal — the tile grid auto-fills columns, so it
+   stays a tidy 2 rows today and absorbs ~10 categories without redesign. */
+.setup-modal { width: min(600px, 94%); }
+.cat-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  grid-auto-rows: min-content; align-items: start; gap: 8px;
+}
 .cat-tile {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 10px 6px; background: var(--bg-card); border: 1px solid var(--border);

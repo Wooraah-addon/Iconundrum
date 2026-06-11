@@ -28,9 +28,8 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
 
   // --- category picker: icon tiles (F29 — the most-touched control in the
-  // app deserves better than a dropdown). Face icon = the category's
-  // priciest item: recognizable, and derived live so it survives pool
-  // rebuilds. Counts depend on the price basis, so refreshable.
+  // app deserves better than a dropdown). Counts depend on the price basis,
+  // so refreshable. Scales to ~10 categories via the auto-fill grid.
   const catGrid = el('div', { class: 'cat-grid' });
   function fillCats() {
     catGrid.innerHTML = '';
@@ -39,7 +38,10 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
       const n = items.length;
       const viable = n >= (priceMode ? MIN_PRICE : MIN_ICON);
       if (!viable && state.cat === c.id) state.cat = 'all';
-      const face = n ? items.reduce((m, it) => (it.mv > m.mv ? it : m), items[0]) : null;
+      // Face from the UNFILTERED category: the tile's identity shouldn't
+      // change between modes just because the price floor drops an iconic
+      // cheap item (Peacebloom is the Trade Goods face even in Value games).
+      const face = pickFace(c.id, catItems(bundle, c.id, false));
       const attrs = {
         type: 'button',
         class: `cat-tile${state.cat === c.id ? ' active' : ''}`,
@@ -142,7 +144,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
       'Challenge link = friends play the same board solo, anytime. Playing live together? Create the lobby and share the invite link from there.'),
   );
 
-  const modal = el('div', { class: 'modal panel' },
+  const modal = el('div', { class: 'modal panel setup-modal' },
     el('h3', { class: 'modal-title' }, MODE_LABELS[modeId]),
     ...rows,
     codeRow,
@@ -154,6 +156,28 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   );
   overlay.append(modal);
   document.body.append(overlay);
+}
+
+// Hand-picked tile faces — the most iconic item in each bucket, not the
+// priciest (which gave "Everything" and "Transmog" the same boots). Names
+// resolve against the live pool; a missing name just tries the next, and
+// the final fallback is the category's priciest item, so pool rebuilds and
+// future categories can never break the picker.
+const FACE_PREFS = {
+  all: ['Orb of Deception', 'Sky Golem'],
+  gear: ["Teebu's Blazing Longsword", 'Pendulum of Doom'],
+  trade: ['Peacebloom', 'Copper Ore'],
+  consume: ['Savory Deviate Delight', 'Void-Touched Augment Rune'],
+  recipes: ['Formula: Smoking Heart of the Mountain'],
+  curios: ['Sky Golem', "Mekgineer's Chopper", 'Reins of Poseidus'],
+};
+
+function pickFace(catId, items) {
+  for (const name of FACE_PREFS[catId] || []) {
+    const hit = items.find(it => it.n === name);
+    if (hit) return hit;
+  }
+  return items.length ? items.reduce((m, it) => (it.mv > m.mv ? it : m), items[0]) : null;
 }
 
 function row(label, control) {
