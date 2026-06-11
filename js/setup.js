@@ -46,7 +46,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
     const ranked = isRanked(cfgNow());
     rankedNote.className = `ranked-note ${ranked ? 'is-ranked' : 'is-custom'}`;
     rankedNote.textContent = ranked
-      ? 'Default ruleset — scores count on the global ranked leaderboards.'
+      ? 'Default ruleset — default settings required for global leaderboard ranking'
       : 'Custom settings — this game competes on its own challenge link only, not the global ranked boards.';
   }
 
