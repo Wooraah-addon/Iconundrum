@@ -369,6 +369,12 @@ table.lb th { color: var(--text-dim); text-align: left; font-weight: 600; paddin
 table.lb td { padding: 7px 8px; border-bottom: 1px solid #2a1f3d; }
 table.lb tr.me td { color: var(--gold); font-weight: 700; }
 .lb-note { color: var(--text-dim); font-size: .8rem; margin-top: 8px; text-align: center; }
+/* End-of-game scoring outcome — coloured so "posted" vs "didn't post (and why)"
+   reads at a glance instead of as a dim footnote. */
+.save-status { line-height: 1.45; }
+.save-status.ok { color: var(--green); font-weight: 600; }
+.save-status.warn { color: var(--red); font-weight: 600; }
+.save-status.info { color: var(--text-dim); }
 
 .action-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
 

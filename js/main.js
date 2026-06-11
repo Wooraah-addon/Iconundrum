@@ -385,19 +385,33 @@ async function onFinish(result) {
   if (pb) setTimeout(() => celebrate(document.getElementById('summary-score'), 1.7), 760);
   wireSummaryActions();
 
-  // Anti-grind: only this device's FIRST run on a board posts — replaying
-  // a known board is a memory test, and would leak memorized scores onto
-  // the ranked all-time board. Recorded only after a successful post, so a
-  // run that failed to save (offline) doesn't burn the attempt.
+  // Scoring outcome — always spell out whether the run posted and, if not,
+  // why (replay / offline / custom-not-ranked), so a missing leaderboard
+  // entry is never a silent mystery.
   const lbStatus = document.getElementById('lb-status');
+  const setStatus = (kind, msg) => {
+    lbStatus.className = `lb-note save-status ${kind}`;
+    lbStatus.textContent = msg;
+  };
+  const ranked = isRanked(cfg);
   const ck = fire.challengeKey(cfg);
+  // Anti-grind: only this device's FIRST run on a board posts — replaying a
+  // known board is a memory test, and would leak memorized scores onto the
+  // ranked all-time board. Recorded only after a successful post, so a run
+  // that failed to save (offline) doesn't burn the attempt.
   if (profile.hasPlayedChallenge(ck)) {
-    lbStatus.textContent = 'Replay — only your first run on a board posts to the leaderboards.';
+    setStatus('info', 'Replay — you’ve already posted a score on this exact board, so this run didn’t count. Replays are just for fun; only your first run on each board posts.');
   } else {
-    lbStatus.textContent = 'Saving score…';
+    setStatus('info', 'Saving score…');
     const saved = await fire.saveGame({ cfg, player, score: result.score, rounds: result.rounds });
-    if (saved) profile.recordChallenge(ck);
-    lbStatus.textContent = saved ? '' : 'Leaderboards offline — score saved locally only.';
+    if (saved) {
+      profile.recordChallenge(ck);
+      setStatus('ok', ranked
+        ? '✓ Score saved — posted to this challenge’s board and the global ranked leaderboard.'
+        : '✓ Score saved to this challenge’s board. Custom settings, so it doesn’t count on the global ranked leaderboard — use “Reset to defaults” in setup to compete there.');
+    } else {
+      setStatus('warn', 'Couldn’t reach the leaderboards — your score is saved on this device only, nothing was lost. Check your connection and play a fresh board to post.');
+    }
   }
   loadBoards('challenge');
   // Synced game: everyone finishes (and saves) within seconds of each other,
