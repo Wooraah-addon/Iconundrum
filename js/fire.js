@@ -55,6 +55,24 @@ export async function saveGame({ cfg, player, score, rounds }) {
   }
 }
 
+// Player feedback (bug report / feature request) → private `feedback`
+// collection. Create-only; clients can't read it back (rules deny read).
+export async function saveFeedback({ type, mode, context, text, name }) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.addDoc(fs.collection(db, 'feedback'), {
+      type, mode, context,
+      text: String(text).slice(0, 2000),
+      name: String(name || '').slice(0, 20),
+      created: fs.serverTimestamp(),
+    });
+    return true;
+  } catch (e) {
+    console.warn('saveFeedback failed (rules published?):', e);
+    return false;
+  }
+}
+
 // One row per player name, keeping the best score — pass SORTED rows.
 // Stops a single name flooding a board (and hides nothing legitimate:
 // replays don't post at all, see main.js onFinish).

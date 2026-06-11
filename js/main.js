@@ -9,6 +9,7 @@ import { newSeed } from './rng.js';
 import { makeCfg, cfgFromParams, buildUrl, isRanked } from './cfg.js';
 import { showScreen, el, toast, copyText, escapeHtml } from './ui.js';
 import { openSetup } from './setup.js';
+import { openFeedback } from './feedback.js';
 import * as lobby from './lobby.js';
 import * as sound from './sound.js';
 import * as profile from './profile.js';
@@ -107,6 +108,11 @@ function setupHome() {
       if (!muted) sound.play('coin');
     });
   });
+
+  const bugBtn = document.getElementById('btn-report-bug');
+  const sugBtn = document.getElementById('btn-suggest');
+  if (bugBtn) bugBtn.addEventListener('click', () => { sound.play('click'); openFeedback('bug'); });
+  if (sugBtn) sugBtn.addEventListener('click', () => { sound.play('click'); openFeedback('feature'); });
 
   renderHomeStats();
 }

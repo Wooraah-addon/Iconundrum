@@ -10,6 +10,10 @@ let ctx = null;
 let muted = typeof localStorage !== 'undefined' && localStorage.getItem(MUTE_KEY) === '1';
 const buffers = new Map(); // name -> AudioBuffer (real sample) once loaded
 
+// Per-sound playback gain for real samples (default 0.5). The ready-check
+// (levelup2) sample is loud — stream viewers flagged it — so it's turned down.
+const SAMPLE_GAIN = { readycheck: 0.3 };
+
 function ac() {
   if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
   if (ctx.state === 'suspended') ctx.resume();
@@ -47,7 +51,7 @@ export function play(name) {
       const c = ac();
       const src = c.createBufferSource();
       const g = c.createGain();
-      g.gain.value = 0.5;
+      g.gain.value = SAMPLE_GAIN[name] ?? 0.5;
       src.buffer = buf;
       src.connect(g).connect(c.destination);
       src.start();
@@ -98,6 +102,7 @@ const SYNTH = {
     [659, 784, 1046].forEach(f => tone(f, 0.28, 0.7, 'triangle', 0.08));
   },
   // raid ready check — the real sample (levelup2) ships in assets/sounds;
-  // this two-note chime only covers a failed fetch
-  readycheck: () => { tone(587, 0, 0.12, 'triangle', 0.15); tone(880, 0.1, 0.4, 'triangle', 0.15); },
+  // this two-note chime only covers a failed fetch (kept in step with the
+  // sample's reduced volume)
+  readycheck: () => { tone(587, 0, 0.12, 'triangle', 0.09); tone(880, 0.1, 0.4, 'triangle', 0.09); },
 };

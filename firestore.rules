@@ -90,6 +90,26 @@ service cloud.firestore {
       }
     }
 
+    // Player feedback (bug reports / feature requests). Create-only and
+    // PRIVATE: clients can't read it back (only the dev, via the admin SDK /
+    // console, which bypasses rules). No updates or deletes.
+    match /feedback/{id} {
+      allow read, update, delete: if false;
+      allow create: if validFeedback();
+
+      function validFeedback() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['type', 'mode', 'context', 'text', 'name', 'created'])
+          && d.keys().hasAll(['type', 'mode', 'context', 'text', 'name', 'created'])
+          && d.type in ['bug', 'feature']
+          && d.mode in ['general', 'icon', 'value', 'hl']
+          && d.context in ['na', 'solo', 'multi']
+          && d.text is string && d.text.size() >= 1 && d.text.size() <= 2000
+          && d.name is string && d.name.size() <= 20
+          && d.created == request.time;
+      }
+    }
+
     // Everything else stays locked.
     match /{document=**} {
       allow read, write: if false;
