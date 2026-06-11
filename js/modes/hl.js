@@ -5,6 +5,11 @@
 // defensible, never coin-flips on stale data. Prices follow cfg.basis
 // ('mv' posted market avg / 'sa' TSM sale avg) — locked into the link.
 
+// Multiplayer (F39) is a RACE: synced launch, then everyone rides the same
+// deterministic chain at their own pace. Live standings (streaks + 💀 for
+// the fallen) sit under the cards; the fallen spectate until everyone's
+// done, then all flow to the normal summary + challenge board.
+
 import { rngFor, shuffled } from '../rng.js';
 import { iconUrl, fmtGoldLong, catItems, priceOf, preloadIcons } from '../data.js';
 import { el } from '../ui.js';
@@ -52,8 +57,17 @@ export function start(ctx) {
   let current = stream.next();
   let challenger = stream.next();
   preloadIcons([current, challenger]);
+  const synced = () => ctx.sync && !ctx.sync.detached;
 
   ctx.timerBar.parentElement.style.display = 'none'; // untimed — zero friction
+
+  // Race plumbing: appear on the board at streak 0, then live-update the
+  // standings strip wherever its current element sits.
+  let raceEl = null;
+  if (synced()) {
+    ctx.sync.reportScore(0);
+    ctx.sync.onScores(() => { if (raceEl && raceEl.isConnected) renderRace(raceEl, ctx.sync); });
+  }
 
   // Keyboard: H / ↑ = higher, L / ↓ = lower. Acts on the live call buttons
   // only (ignored once a call is locked in). Removed at game over so replays
@@ -107,6 +121,11 @@ export function start(ctx) {
       heartsEl(),
       el('div', { class: 'hl-streak' }, streak > 0 ? `Streak: ${streak}` : ' '),
     );
+    if (synced()) {
+      raceEl = el('div', { class: 'hl-race' });
+      renderRace(raceEl, ctx.sync);
+      ctx.content.append(raceEl);
+    }
   }
 
   function call(saidHigher) {
@@ -130,6 +149,7 @@ export function start(ctx) {
       play('coin');
       streak += 1;
       ctx.setScore(streak);
+      if (synced()) ctx.sync.reportScore(streak);
       streakEl.textContent = `Streak: ${streak} — it was ${gapTxt}`;
       setTimeout(() => {
         current = challenger;
@@ -157,12 +177,57 @@ export function start(ctx) {
       play('wrong');
       streakEl.innerHTML = `<span style="color:var(--red)">Wrong — it was ${gapTxt}.</span> Final streak: ${streak}`;
       document.removeEventListener('keydown', onKey);
+      if (synced()) ctx.sync.markDone(streak);
       setTimeout(() => {
         play('gameover');
-        ctx.finish({ score: streak, rounds: log });
+        if (synced() && !ctx.sync.allDone()) spectate();
+        else ctx.finish({ score: streak, rounds: log });
       }, 1600);
     }
   }
 
+  // Race spectator state: you're out, others are still riding. Live
+  // standings keep updating; flow to the summary when the last rider falls
+  // (or whenever you like — a closed tab can't hold the race hostage).
+  function spectate() {
+    let finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
+      ctx.finish({ score: streak, rounds: log });
+    };
+    ctx.content.innerHTML = '';
+    raceEl = el('div', { class: 'hl-race' });
+    renderRace(raceEl, ctx.sync);
+    ctx.content.append(
+      el('div', { class: 'question-prompt' }, `You're out at ${streak} — watching the race…`),
+      raceEl,
+      el('div', { class: 'action-row' },
+        el('button', { class: 'btn secondary', onclick: () => { play('click'); done(); } }, 'See results now')),
+    );
+    ctx.sync.onScores(() => {
+      if (finished || !raceEl.isConnected) return;
+      renderRace(raceEl, ctx.sync);
+      if (ctx.sync.allDone()) done();
+    });
+  }
+
   render();
+}
+
+// Compact live standings for the race: rank · alive/dead · name · streak.
+function renderRace(container, sync) {
+  container.innerHTML = '';
+  const rows = sync.raceStandings();
+  if (rows.length < 2) return; // solo in a lobby — nothing to race
+  container.append(
+    el('div', { class: 'standings-head' }, 'The race'),
+    el('table', { class: 'lb standings' },
+      el('tbody', {}, ...rows.map(r =>
+        el('tr', { class: r.name === sync.playerName ? 'me' : '' },
+          el('td', {}, String(r.rank)),
+          el('td', { class: 'race-state' }, r.dead ? '💀' : '▶'),
+          el('td', {}, r.name),
+          el('td', { class: 'num' }, String(r.score)),
+        )))));
 }

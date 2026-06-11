@@ -272,6 +272,8 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .hl-keyhint { text-align: center; color: var(--text-dim); font-size: .75rem; margin-top: 8px; }
 @media (hover: none) { .hl-keyhint { display: none; } }
 .hl-streak { text-align: center; color: var(--gold); font-size: 1.05rem; font-weight: 700; margin-top: 4px; }
+.hl-race { max-width: 420px; margin: 18px auto 0; }
+.hl-race .race-state { width: 2em; text-align: center; }
 .hl-hearts { text-align: center; font-size: 1.3rem; letter-spacing: .18em; margin-top: 10px; line-height: 1; }
 .hl-hearts .full { color: var(--red); text-shadow: 0 0 8px rgba(224, 82, 82, .5); }
 .hl-hearts .spent { color: #3a2a4a; }

@@ -68,9 +68,11 @@ service cloud.firestore {
       // advances, per-round score reports, and ready checks (v0.6: readyAt
       // ping + per-player ready map — optional, never written at create, so
       // pre-readycheck lobby docs stay valid). cfg/host immutable.
+      // v0.7: optional `fin` map (player → final streak) marks Higher/Lower
+      // racers as finished — mirrors `ready`'s shape and rules.
       function validLobbyUpdate() {
         let d = request.resource.data;
-        return d.keys().hasOnly(['cfg', 'host', 'players', 'state', 'launchAt', 'round', 'roundAt', 'scores', 'created', 'readyAt', 'ready'])
+        return d.keys().hasOnly(['cfg', 'host', 'players', 'state', 'launchAt', 'round', 'roundAt', 'scores', 'created', 'readyAt', 'ready', 'fin'])
           && d.cfg == resource.data.cfg
           && d.host == resource.data.host
           && d.players is list && d.players.size() <= 40
@@ -86,7 +88,8 @@ service cloud.firestore {
           && d.scores is map && d.scores.size() <= 40
           && d.scores.size() >= resource.data.scores.size()
           && (!('readyAt' in d) || d.readyAt == null || d.readyAt is number)
-          && (!('ready' in d) || (d.ready is map && d.ready.size() <= 40));
+          && (!('ready' in d) || (d.ready is map && d.ready.size() <= 40))
+          && (!('fin' in d) || (d.fin is map && d.fin.size() <= 40));
       }
     }
 

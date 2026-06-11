@@ -157,6 +157,13 @@ export function revealHoldMs(roundStartMs, timerMs, now) {
   return Math.max(0, roundStartMs + timerMs + 500 - now);
 }
 
+// Higher/Lower race standings: scores = live streaks, fin = who's out (and
+// at what streak). Rows sorted by streak desc, dead flagged. Pure; tested.
+export function raceRows(scores, fin = {}) {
+  return Object.entries(scores || {}).sort((a, b) => b[1] - a[1])
+    .map(([name, score], i) => ({ name, score, rank: i + 1, dead: name in (fin || {}) }));
+}
+
 // player→rank (1-based) from a scores map, sorted by score desc. Pure.
 export function ranksOf(scores) {
   const ranks = {};
@@ -221,6 +228,20 @@ function makeSync({ cfg, playerName, isHost, launchAt }) {
 
     reportScore(total) {
       fire.updateLobbyScore(cfg.seed, playerName, total);
+    },
+
+    // ---- Higher/Lower race (F39): everyone rides the same chain at their
+    // own pace; scores carry live streaks, `fin` marks who's out.
+    raceStandings() {
+      return raceRows(lastDoc ? lastDoc.scores : {}, lastDoc ? lastDoc.fin : {});
+    },
+    markDone(streak) {
+      fire.setLobbyFin(cfg.seed, playerName, streak);
+    },
+    allDone() {
+      const players = lastDoc ? (lastDoc.players || []) : [];
+      const fin = (lastDoc && lastDoc.fin) || {};
+      return players.length > 0 && players.every(p => p in fin);
     },
 
     // Host: advance locally at once, then tell everyone else.

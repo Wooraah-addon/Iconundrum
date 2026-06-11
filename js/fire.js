@@ -263,6 +263,20 @@ export async function setReady(code, player, isReady) {
   }
 }
 
+// Higher/Lower race: mark this player as finished (out) with their final
+// streak. Optional v0.7 `fin` field — degrades to a console warn if the
+// rules predate it (standings then just lack death markers / auto-finish).
+export async function setLobbyFin(code, player, streak) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), new fs.FieldPath('fin', player), Math.round(streak));
+    return true;
+  } catch (e) {
+    console.warn('setLobbyFin failed (v0.7 rules published?):', e);
+    return false;
+  }
+}
+
 // Player's running total for the rolling standings (FieldPath handles
 // names with spaces). One write per player per round — bounded and cheap.
 export async function updateLobbyScore(code, player, total) {
