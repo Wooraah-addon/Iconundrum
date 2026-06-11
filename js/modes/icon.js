@@ -1,34 +1,34 @@
-// Guess the Icon — classic 4-choice, icon → name. 5 rounds, 10s timer,
-// speed-decay scoring (500 base + up to 500 for speed).
+// Guess the Icon — classic 4-choice, icon → name. Configurable rounds,
+// timer, and speed-bonus scoring (off = flat 1000 per correct).
 //
 // Distractors come from similarity tiers (v0 = filename families +
-// class/subclass): same icon family first, then same subclass, then same
-// class, then anything. Items sharing the EXACT icon file with the answer are
-// excluded — two names for one identical picture is unanswerable, not hard.
-// Sampling draws 3 from the top-K candidates so the same item can roll
-// different choice sets across different seeds.
+// class/subclass) WITHIN the chosen category pool: same icon family first,
+// then same subclass, then same class, then anything in the pool. Items
+// sharing the EXACT icon file with the answer are excluded — two names for
+// one identical picture is unanswerable, not hard. Sampling draws 3 from the
+// top-K candidates so the same item can roll different choice sets across
+// different seeds.
 
-import { GAME } from '../config.js';
 import { rngFor, sample, shuffled } from '../rng.js';
-import { iconUrl } from '../data.js';
+import { iconUrl, catItems } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
+import { play } from '../sound.js';
 
 const TOP_K = 12;
 
-export const meta = { id: 'icon', title: 'Guess the Icon', rounds: GAME.iconRounds };
-
-export function buildRounds(bundle, seed, v) {
-  const rng = rngFor(['icon', seed, `v${v}`]);
-  const answers = sample(bundle.items, GAME.iconRounds, rng);
+export function buildRounds(bundle, cfg) {
+  const rng = rngFor(['icon', cfg.seed, `v${cfg.v}`]);
+  const pool = catItems(bundle, cfg.cat);
+  const answers = sample(pool, cfg.rounds, rng);
   return answers.map(item => {
-    const candidates = distractorCandidates(bundle, item);
+    const candidates = distractorCandidates(pool, item);
     const distractors = sample(candidates.slice(0, TOP_K), 3, rng);
     const choices = shuffled([item, ...distractors], rng);
     return { item, choices };
   });
 }
 
-function distractorCandidates(bundle, answer) {
+function distractorCandidates(pool, answer) {
   const seen = new Set([answer.id]);
   const names = new Set([answer.n]);
   const out = [];
@@ -42,7 +42,7 @@ function distractorCandidates(bundle, answer) {
     { cap: TOP_K, match: () => true },
   ];
   for (const { cap, match } of tiers) {
-    for (const it of bundle.items) {
+    for (const it of pool) {
       if (out.length >= cap) break;
       if (seen.has(it.id) || names.has(it.n)) continue;
       if (it.i === answer.i) continue; // identical icon file = ambiguous
@@ -57,7 +57,8 @@ function distractorCandidates(bundle, answer) {
 }
 
 export function start(ctx) {
-  const rounds = buildRounds(ctx.bundle, ctx.seed, ctx.v);
+  const cfg = ctx.cfg;
+  const rounds = buildRounds(ctx.bundle, cfg);
   const log = [];
   let total = 0;
   let idx = 0;
@@ -78,7 +79,9 @@ export function start(ctx) {
     );
     ctx.content.append(wrap);
 
-    const timer = startTimer(GAME.iconTimerSec, ctx.timerBar, () => settle(null));
+    const timer = startTimer(cfg.timer, ctx.timerBar,
+      () => settle(null),
+      sec => { if (sec <= 3 && sec > 0) play('tick'); });
 
     for (const c of choices) {
       const b = el('button', { class: 'choice', onclick: () => settle(c) }, c.n);
@@ -92,9 +95,10 @@ export function start(ctx) {
       settled = true;
       timer.stop();
       const ok = chosen && chosen.id === item.id;
-      const earned = ok ? 500 + Math.round(500 * timer.leftFrac()) : 0;
+      const earned = ok ? (cfg.speed ? 500 + Math.round(500 * timer.leftFrac()) : 1000) : 0;
       total += earned;
       log.push({ id: item.id, a: chosen ? chosen.id : null, ok: !!ok, s: earned, t: Math.round(timer.elapsedMs()) });
+      play(ok ? 'correct' : 'wrong');
 
       for (const b of buttons) {
         b.disabled = true;
@@ -111,6 +115,7 @@ export function start(ctx) {
           : (chosen ? 'Wrong — +0 pts' : 'Time’s up — +0 pts');
         const last = idx === rounds.length - 1;
         renderReveal(ctx.content, item, headline, null, last ? 'See results' : 'Next round', () => {
+          play('click');
           idx += 1;
           if (idx < rounds.length) playRound();
           else ctx.finish({ score: total, rounds: log });

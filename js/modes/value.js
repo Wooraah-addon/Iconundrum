@@ -1,29 +1,29 @@
 // Guess the Value — Price Is Right. Free-entry gold guess, closest wins.
-// Proximity scoring (GeoGuessr-style): 5000 × exp(-2·|ln(guess/actual)|),
-// exact within ±1% = clean 5000 jackpot. 5 rounds, 20s to lock in.
-// v0 anchor: region market average ("prices as of <date>" shown on home).
+// Proximity scoring (GeoGuessr-style): 5000 × exp(-k·|ln(guess/actual)|),
+// exact within ±1% = clean 5000 jackpot. k is the configurable strictness
+// (1 casual / 2 standard / 4 tycoon). Anchor: region market average
+// ("prices as of <date>" shown on home).
 
-import { GAME } from '../config.js';
 import { rngFor, sample } from '../rng.js';
-import { iconUrl, fmtGoldLong } from '../data.js';
+import { iconUrl, fmtGoldLong, catItems } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
+import { play } from '../sound.js';
 
-export const meta = { id: 'value', title: 'Guess the Value', rounds: GAME.valueRounds };
-
-export function buildRounds(bundle, seed, v) {
-  const rng = rngFor(['value', seed, `v${v}`]);
-  return sample(bundle.priceItems, GAME.valueRounds, rng);
+export function buildRounds(bundle, cfg) {
+  const rng = rngFor(['value', cfg.seed, `v${cfg.v}`]);
+  return sample(catItems(bundle, cfg.cat, true), cfg.rounds, rng);
 }
 
-export function scoreGuess(guess, actual) {
+export function scoreGuess(guess, actual, k = 2) {
   if (!guess || guess <= 0) return 0;
   const r = Math.abs(Math.log(guess / actual));
   if (r <= Math.log(1.01)) return 5000;
-  return Math.round(5000 * Math.exp(-2 * r));
+  return Math.round(5000 * Math.exp(-k * r));
 }
 
 export function start(ctx) {
-  const rounds = buildRounds(ctx.bundle, ctx.seed, ctx.v);
+  const cfg = ctx.cfg;
+  const rounds = buildRounds(ctx.bundle, cfg);
   const log = [];
   let total = 0;
   let idx = 0;
@@ -56,7 +56,9 @@ export function start(ctx) {
     ));
     input.focus();
 
-    const timer = startTimer(GAME.valueTimerSec, ctx.timerBar, () => settle(true));
+    const timer = startTimer(cfg.timer, ctx.timerBar,
+      () => settle(true),
+      sec => { if (sec <= 3 && sec > 0) play('tick'); });
 
     let settled = false;
     function settle(expired = false) {
@@ -68,9 +70,10 @@ export function start(ctx) {
       input.disabled = true;
       lockBtn.disabled = true;
 
-      const earned = scoreGuess(guess, item.mv);
+      const earned = scoreGuess(guess, item.mv, cfg.curve);
       total += earned;
       log.push({ id: item.id, a: guess, ok: earned > 0, s: earned, t: Math.round(timer.elapsedMs()) });
+      play(earned === 5000 ? 'jackpot' : earned >= 2500 ? 'correct' : earned > 0 ? 'coin' : 'wrong');
       ctx.setScore(total);
 
       const headline = earned === 5000
@@ -81,6 +84,7 @@ export function start(ctx) {
         : `Market average is <b>${fmtGoldLong(item.mv)}</b>`;
       const last = idx === rounds.length - 1;
       renderReveal(ctx.content, item, headline, detail, last ? 'See results' : 'Next round', () => {
+        play('click');
         idx += 1;
         if (idx < rounds.length) playRound();
         else ctx.finish({ score: total, rounds: log });

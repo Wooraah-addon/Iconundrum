@@ -10,15 +10,8 @@ export const firebaseConfig = {
   appId: "1:229519071531:web:2cad41e1d541ccf3620d6e",
 };
 
+// Mode defaults/limits live in cfg.js (they encode into challenge links).
 export const GAME = {
-  pack: 'items',
-  iconRounds: 5,
-  iconTimerSec: 10,
-  valueRounds: 5,
-  valueTimerSec: 20,
-  // Higher/Lower: adjacent cards must differ by at least this price ratio,
-  // so calls are defensible and never stale-data coin-flips.
-  hlMinSeparation: 1.25,
   // Items must be worth at least this many gold to appear in price modes.
   priceModeMinGold: 5,
   maxNameLen: 20,

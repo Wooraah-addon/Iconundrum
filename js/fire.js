@@ -4,6 +4,7 @@
 // deployed yet — every call here degrades gracefully.
 
 import { firebaseConfig } from './config.js';
+import { cfgSig } from './cfg.js';
 
 let db = null;
 let fs = null; // firestore module namespace
@@ -27,17 +28,20 @@ async function ensureInit() {
   }
 }
 
-export function challengeKey({ mode, pack, seed, v }) {
-  return `${mode}_${pack}_${seed}_v${v}`;
+// Full config in the key: custom settings = their own leaderboard bucket
+// (scores are only comparable within identical configs). Max ~45 chars,
+// comfortably under the rules' 64-char cap.
+export function challengeKey(cfg) {
+  return `${cfg.mode}_${cfg.pack}.${cfg.cat}_${cfg.seed}_v${cfg.v}_${cfgSig(cfg)}`;
 }
 
 // Write the completed game. Returns the doc id or null.
-export async function saveGame({ mode, pack, seed, v, player, score, rounds }) {
+export async function saveGame({ cfg, player, score, rounds }) {
   if (!(await ensureInit())) return null;
   try {
     const doc = {
-      ck: challengeKey({ mode, pack, seed, v }),
-      mode, pack, seed, v,
+      ck: challengeKey(cfg),
+      mode: cfg.mode, pack: cfg.pack, seed: cfg.seed, v: cfg.v,
       player,
       score: Math.round(score),
       rounds: rounds.slice(0, 60),

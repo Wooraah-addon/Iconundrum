@@ -13,8 +13,13 @@
 
     <!-- ================= HOME ================= -->
     <section id="screen-home" class="screen">
-      <h1 class="wordmark">Ic<span class="qmark">?</span>nundrum</h1>
-      <p class="tagline">The WoW Icon Guessing Game</p>
+      <button class="sound-toggle" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      <div class="logo-wrap">
+        <img class="logo" src="assets/logo.png" alt="Iconundrum — The WoW Icon Guessing Game"
+             onerror="this.hidden=true;document.getElementById('wordmark-fallback').hidden=false;document.getElementById('tagline-fallback').hidden=false;">
+        <h1 class="wordmark" id="wordmark-fallback" hidden>Ic<span class="qmark">?</span>nundrum</h1>
+        <p class="tagline" id="tagline-fallback" hidden>The WoW Icon Guessing Game</p>
+      </div>
 
       <div id="challenge-banner"></div>
 
@@ -64,6 +69,7 @@
         <span class="wordmark-small" onclick="location.href=location.pathname">Ic<span class="qmark">?</span>nundrum</span>
         <span class="meta" id="game-meta"></span>
         <span class="score" id="game-score"></span>
+        <button class="sound-toggle" title="Toggle sound" aria-label="Toggle sound">🔊</button>
       </div>
       <div class="game-header">
         <span class="meta" id="game-title"></span>
@@ -74,7 +80,7 @@
 
     <!-- ================= SUMMARY ================= -->
     <section id="screen-summary" class="screen">
-      <h2 class="wordmark" style="font-size:1.6rem">Ic<span class="qmark">?</span>nundrum</h2>
+      <img class="logo logo-small" src="assets/logo.png" alt="Iconundrum" onerror="this.outerHTML='<h2 class=&quot;wordmark&quot; style=&quot;font-size:1.6rem&quot;>Ic<span class=&quot;qmark&quot;>?</span>nundrum</h2>'">
       <div class="panel">
         <div class="summary-sub" id="summary-mode"></div>
         <div class="summary-score" id="summary-score"></div>

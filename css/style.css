@@ -278,3 +278,47 @@ footer a { color: var(--gold-dim); }
   border-radius: 8px; padding: 10px 14px; font-size: .85rem; color: var(--text-dim);
   margin-bottom: 14px;
 }
+
+/* ---- Logo ---- */
+.logo-wrap { text-align: center; margin: 14px 0 20px; }
+.logo { max-width: min(440px, 92%); height: auto; display: inline-block; }
+.logo-small { max-width: min(280px, 70%); display: block; margin: 0 auto 10px; }
+
+/* ---- Sound toggle ---- */
+.sound-toggle {
+  position: absolute; top: 14px; right: 14px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  font-size: 1rem; padding: 6px 9px; cursor: pointer; line-height: 1;
+}
+.sound-toggle:hover { border-color: var(--gold-dim); }
+#screen-home { position: relative; }
+.game-header .sound-toggle { position: static; }
+
+/* ---- Setup modal ---- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 40;
+  background: rgba(10, 6, 18, .72);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadein .15s ease;
+}
+.modal { width: min(460px, 94%); max-height: 90vh; overflow-y: auto; }
+.modal-title { color: var(--gold); margin-bottom: 16px; font-size: 1.2rem; }
+.form-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.form-row > label { color: var(--text-dim); font-size: .9rem; }
+.form-row .slider-val { color: var(--gold); }
+.setup-select {
+  background: #181022; border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); padding: 8px 10px; font-size: .9rem; max-width: 250px;
+}
+input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
+.switch { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-size: .85rem; }
+.switch input { accent-color: var(--gold); width: 18px; height: 18px; }
+.code-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px;
+  font-size: .9rem; color: var(--text-dim);
+}
+.game-code { color: var(--gold); font-family: Consolas, monospace; letter-spacing: .08em; }

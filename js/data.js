@@ -40,6 +40,30 @@ export function iconFamily(stem) {
   return stem.replace(/_\d+$/, '');
 }
 
+// Item categories within the items pack, by item class ID.
+// (True Pets pack — caged battle pets — is a separate full-launch pack.)
+export const CATEGORIES = [
+  { id: 'all', label: 'Everything', classes: null },
+  { id: 'gear', label: 'Transmog — Weapons & Armor', classes: [2, 4] },
+  { id: 'trade', label: 'Trade Goods & Gems', classes: [1, 3, 7] },
+  { id: 'consume', label: 'Consumables & Enchants', classes: [0, 8] },
+  { id: 'recipes', label: 'Recipes & Patterns', classes: [9] },
+  { id: 'curios', label: 'Mounts, Pets & Curios', classes: [12, 13, 15, 20] },
+];
+
+export function catLabel(catId) {
+  const c = CATEGORIES.find(x => x.id === catId);
+  return c ? c.label : 'Everything';
+}
+
+// Items for a category; priceOnly additionally applies the price-mode floor.
+export function catItems(bundle, catId, priceOnly = false) {
+  const cat = CATEGORIES.find(x => x.id === catId);
+  let items = cat && cat.classes ? bundle.items.filter(it => cat.classes.includes(it.c)) : bundle.items;
+  if (priceOnly) items = items.filter(it => it.mv >= GAME.priceModeMinGold);
+  return items;
+}
+
 export function iconUrl(item) {
   return bundle.iconBase + item.i + '.jpg';
 }

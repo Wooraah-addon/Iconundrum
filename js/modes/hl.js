@@ -1,22 +1,22 @@
 // Higher / Lower — Play Your Cards Right × Hot-or-Not. Endless one-call
 // chain: is the next item's price higher or lower than the current card?
-// Play until wrong; score = streak. Adjacent cards always differ by ≥1.25×
-// so calls are defensible, never coin-flips on stale data.
+// Play until wrong; score = streak. Adjacent cards always differ by the
+// configured separation ratio (Goblin ≥1.25×, Tycoon ≥1.10×) so calls are
+// defensible, never coin-flips on stale data.
 
-import { GAME } from '../config.js';
 import { rngFor, shuffled } from '../rng.js';
-import { iconUrl, fmtGoldLong } from '../data.js';
+import { iconUrl, fmtGoldLong, catItems } from '../data.js';
 import { el } from '../ui.js';
-
-export const meta = { id: 'hl', title: 'Higher or Lower', rounds: null };
+import { play } from '../sound.js';
 
 // Deterministic card stream for a seed: walk a seeded shuffle, only accepting
 // cards that clear the separation ratio vs the card before them; reshuffle
 // (continuing the same rng) when the walk runs dry.
-export function makeStream(bundle, seed, v) {
-  const rng = rngFor(['hl', seed, `v${v}`]);
-  const minLn = Math.log(GAME.hlMinSeparation);
-  let deck = shuffled(bundle.priceItems, rng);
+export function makeStream(bundle, cfg) {
+  const rng = rngFor(['hl', cfg.seed, `v${cfg.v}`]);
+  const pool = catItems(bundle, cfg.cat, true);
+  const minLn = Math.log(cfg.sep / 100);
+  let deck = shuffled(pool, rng);
   let i = 0;
   let prev = null;
 
@@ -30,10 +30,10 @@ export function makeStream(bundle, seed, v) {
           return card;
         }
       }
-      deck = shuffled(bundle.priceItems, rng);
+      deck = shuffled(pool, rng);
       i = 0;
     }
-    // Pathological pool; should never happen with 400+ price items.
+    // Pathological pool; should never happen with viable categories.
     prev = deck[0];
     return deck[0];
   }
@@ -41,7 +41,7 @@ export function makeStream(bundle, seed, v) {
 }
 
 export function start(ctx) {
-  const stream = makeStream(ctx.bundle, ctx.seed, ctx.v);
+  const stream = makeStream(ctx.bundle, ctx.cfg);
   const log = [];
   let streak = 0;
   let current = stream.next();
@@ -74,7 +74,7 @@ export function start(ctx) {
         el('button', { class: 'btn', onclick: () => call(true) }, '▲ Higher'),
         el('button', { class: 'btn secondary', onclick: () => call(false) }, '▼ Lower'),
       ),
-      el('div', { class: 'hl-streak' }, streak > 0 ? `Streak: ${streak}` : ' '),
+      el('div', { class: 'hl-streak' }, streak > 0 ? `Streak: ${streak}` : ' '),
     );
   }
 
@@ -91,6 +91,7 @@ export function start(ctx) {
     }
 
     if (ok) {
+      play('coin');
       streak += 1;
       ctx.setScore(streak);
       const streakEl = ctx.content.querySelector('.hl-streak');
@@ -101,9 +102,13 @@ export function start(ctx) {
         render();
       }, 1100);
     } else {
+      play('wrong');
       const streakEl = ctx.content.querySelector('.hl-streak');
       streakEl.innerHTML = `<span style="color:var(--red)">Wrong!</span> Final streak: ${streak}`;
-      setTimeout(() => ctx.finish({ score: streak, rounds: log }), 1600);
+      setTimeout(() => {
+        play('gameover');
+        ctx.finish({ score: streak, rounds: log });
+      }, 1600);
     }
   }
 

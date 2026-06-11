@@ -23,15 +23,23 @@ export function el(tag, attrs = {}, ...children) {
 }
 
 // Countdown driving the timer bar. onExpire fires once; stop() cancels.
-export function startTimer(seconds, barEl, onExpire) {
+// onSecond (optional) fires when the whole-seconds-remaining value changes —
+// used for the final-seconds tick sound.
+export function startTimer(seconds, barEl, onExpire, onSecond) {
   const t0 = performance.now();
   const total = seconds * 1000;
   let raf, done = false;
+  let lastSec = seconds;
   function frame(now) {
     const left = Math.max(0, total - (now - t0));
     const frac = left / total;
     barEl.style.width = (frac * 100).toFixed(1) + '%';
     barEl.classList.toggle('urgent', frac < 0.25);
+    const sec = Math.ceil(left / 1000);
+    if (sec !== lastSec) {
+      lastSec = sec;
+      if (onSecond) onSecond(sec);
+    }
     if (left <= 0) {
       done = true;
       onExpire();
