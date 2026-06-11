@@ -96,10 +96,10 @@ body {
 /* ---- Forms & buttons ---- */
 .name-row { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
 .name-row label { color: var(--text-dim); font-size: .9rem; }
-.join-row { display: flex; gap: 10px; align-items: center; margin: -6px 0 18px; flex-wrap: wrap; }
-.join-row label { color: var(--text-dim); font-size: .9rem; }
-.join-row input { width: 140px; text-transform: lowercase; }
-.join-row input::placeholder { text-transform: none; }
+.name-row #player-name { flex: 1 1 180px; min-width: 0; }
+.name-row .join-label { margin-left: 6px; }
+#join-code { flex: 0 0 96px; width: 96px; text-transform: lowercase; }
+#join-code::placeholder { text-transform: none; }
 input[type="text"], input[type="number"] {
   background: #181022;
   border: 1px solid var(--border);
