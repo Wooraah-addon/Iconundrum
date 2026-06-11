@@ -2,7 +2,7 @@
 // shareable game code. Copying the link BEFORE playing lets a host drop the
 // challenge in discord and then play the same board themselves.
 
-import { CATEGORIES, catItems } from './data.js';
+import { CATEGORIES, catItems, iconUrl } from './data.js';
 import { makeCfg, buildUrl, DEFAULTS, LIMITS } from './cfg.js';
 import { newSeed } from './rng.js';
 import { el, toast, copyText } from './ui.js';
@@ -27,25 +27,38 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   const close = () => overlay.remove();
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
 
-  // --- category select (counts depend on the price basis, so refreshable) ---
-  const catSelect = el('select', { class: 'setup-select' });
+  // --- category picker: icon tiles (F29 — the most-touched control in the
+  // app deserves better than a dropdown). Face icon = the category's
+  // priciest item: recognizable, and derived live so it survives pool
+  // rebuilds. Counts depend on the price basis, so refreshable.
+  const catGrid = el('div', { class: 'cat-grid' });
   function fillCats() {
-    const keep = catSelect.value;
-    catSelect.innerHTML = '';
+    catGrid.innerHTML = '';
     for (const c of CATEGORIES) {
-      const n = catItems(bundle, c.id, priceMode ? state.basis : false).length;
+      const items = catItems(bundle, c.id, priceMode ? state.basis : false);
+      const n = items.length;
       const viable = n >= (priceMode ? MIN_PRICE : MIN_ICON);
-      const opt = el('option', { value: c.id }, `${c.label} (${n})`);
-      if (!viable) opt.disabled = true;
-      catSelect.append(opt);
+      if (!viable && state.cat === c.id) state.cat = 'all';
+      const face = n ? items.reduce((m, it) => (it.mv > m.mv ? it : m), items[0]) : null;
+      const attrs = {
+        type: 'button',
+        class: `cat-tile${state.cat === c.id ? ' active' : ''}`,
+        onclick: () => { if (state.cat !== c.id) { play('click'); state.cat = c.id; fillCats(); } },
+      };
+      if (!viable) attrs.disabled = 'disabled';
+      catGrid.append(el('button', attrs,
+        face ? el('img', { src: iconUrl(face), alt: '' }) : null,
+        el('span', { class: 'cat-name' }, c.label),
+        el('span', { class: 'cat-count' }, `${n} items`),
+      ));
     }
-    catSelect.value = keep && !catSelect.querySelector(`option[value="${keep}"]`)?.disabled ? keep : 'all';
-    state.cat = catSelect.value;
   }
   fillCats();
-  catSelect.addEventListener('change', () => { state.cat = catSelect.value; });
 
-  const rows = [row('Category', catSelect)];
+  const rows = [
+    section('The board'),
+    el('div', { class: 'form-row stack' }, el('label', {}, 'Category'), catGrid),
+  ];
 
   // --- price basis (Value & Higher/Lower) ---
   if (priceMode) {
@@ -61,6 +74,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   }
 
   // --- per-mode controls ---
+  rows.push(section('The rules'));
   if (modeId === 'icon' || modeId === 'value') {
     const [rLo, rHi] = LIMITS.rounds;
     rows.push(sliderRow('Rounds', rLo, rHi, state.rounds, v => (state.rounds = v)));
@@ -144,6 +158,10 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
 
 function row(label, control) {
   return el('div', { class: 'form-row' }, el('label', {}, label), control);
+}
+
+function section(label) {
+  return el('div', { class: 'setup-section' }, label);
 }
 
 function sliderRow(label, min, max, value, onChange, suffix = '') {
