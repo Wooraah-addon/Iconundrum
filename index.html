@@ -29,18 +29,20 @@
           <input type="text" id="player-name" maxlength="20" placeholder="your name (shown on leaderboards)">
         </div>
 
+        <p class="lb-note" style="margin:0 0 14px">Play solo or challenge your guild — one link, same rounds for everyone.</p>
+
         <div class="mode-grid">
           <button class="mode-card" data-mode="icon">
             <h3>Guess the Icon</h3>
-            <p>Name the item from its icon. Four choices, ten seconds, speed scores extra.</p>
+            <p>Name the item from its icon. Four choices — faster answers score more.</p>
           </button>
           <button class="mode-card" data-mode="value">
             <h3>Guess the Value</h3>
-            <p>The Price Is Right, goblin edition — call the AH price, closest wins the round.</p>
+            <p>The Price Is Right, goblin edition — call the price, closest wins. Within 1% hits the jackpot.</p>
           </button>
           <button class="mode-card" data-mode="hl">
             <h3>Higher or Lower</h3>
-            <p>Endless price chain. One call at a time — how long can you ride the streak?</p>
+            <p>Worth more or less than the last card? Call it right and ride the streak.</p>
           </button>
           <div class="mode-card locked">
             <span class="soon">Soon</span>
@@ -60,7 +62,8 @@
         </div>
       </div>
 
-      <p class="lb-note">Pick a mode to play, then share your challenge link — everyone who opens it gets the same rounds.</p>
+      <p class="lb-note">Pick a mode, set your options, play — or copy the challenge link first and drop it in Discord.<br>
+        Price modes use EU region auction-house data: market average (posted) or sale average (TSM) — your pick in setup.</p>
     </section>
 
     <!-- ================= LOBBY ================= -->
@@ -138,7 +141,7 @@
   </div>
 
   <footer>
-    <div>Prices: EU region market averages as of <b id="price-date">…</b> · refreshed periodically</div>
+    <div>Prices: EU region auction-house averages (market or sale — your pick) as of <b id="price-date">…</b> · for game balance, not trading advice</div>
     <div>Made by Wooraah · <a href="changelog.html">what's new</a> · <a href="https://github.com/Wooraah-addon/Iconundrum" rel="noopener">source on GitHub</a></div>
     <div>Iconundrum is a free fan-made game. World of Warcraft, item icons and names are © Blizzard Entertainment. Not affiliated with or endorsed by Blizzard.</div>
   </footer>

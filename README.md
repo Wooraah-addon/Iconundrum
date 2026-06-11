@@ -14,6 +14,10 @@ community game nights.
   closest wins. Exact (±1%) hits the 5,000-point jackpot.
 - **Higher or Lower** — endless price chain, one call at a time, play until wrong.
 
+Price modes guess against a selectable **price basis**: the EU region **sale
+average** (TSM — what items actually sell for, the default) or the **market
+average** (what they're posted for, which can be inflated).
+
 More packs and modes are on the board: Pets, Guess the Spell, Raider pack, and
 some game-show shells you'll recognise.
 
@@ -22,7 +26,9 @@ some game-show shells you'll recognise.
 Every game has a shareable URL (`?mode=…&seed=…&v=…`). Everyone who opens it gets
 the **identical rounds** — rounds are generated client-side from the seed, and the
 `v` parameter pins the content-pack version so old links never silently change.
-Each link has its own leaderboard.
+Each link has its own leaderboard. Price modes also pin the price basis
+(`b=sa|mv`); links without it predate v0.5 and score against the market average,
+so older boards stay valid.
 
 ## How it works
 

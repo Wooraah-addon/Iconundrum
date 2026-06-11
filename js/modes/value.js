@@ -1,18 +1,19 @@
 // Guess the Value — Price Is Right. Free-entry gold guess, closest wins.
 // Proximity scoring (GeoGuessr-style): 5000 × exp(-k·|ln(guess/actual)|),
 // exact within ±1% = clean 5000 jackpot. k is the configurable strictness
-// (1 casual / 2 standard / 4 tycoon). Anchor: region market average
-// ("prices as of <date>" shown on home).
+// (1 casual / 2 standard / 4 tycoon). The price being guessed is cfg.basis:
+// 'mv' region market average (posted) or 'sa' TSM region sale average —
+// chosen in setup, locked into the challenge link, own leaderboard each.
 
 import { rngFor, sample } from '../rng.js';
-import { iconUrl, fmtGoldLong, catItems } from '../data.js';
+import { iconUrl, fmtGoldLong, catItems, priceOf, parseGold, BASIS_LABELS } from '../data.js';
 import { el, startTimer, renderReveal } from '../ui.js';
 import { play } from '../sound.js';
 import { buildSyncFooter } from '../lobby.js';
 
 export function buildRounds(bundle, cfg) {
   const rng = rngFor(['value', cfg.seed, `v${cfg.v}`]);
-  return sample(catItems(bundle, cfg.cat, true), cfg.rounds, rng);
+  return sample(catItems(bundle, cfg.cat, cfg.basis || 'mv'), cfg.rounds, rng);
 }
 
 export function scoreGuess(guess, actual, k = 2) {
@@ -24,6 +25,7 @@ export function scoreGuess(guess, actual, k = 2) {
 
 export function start(ctx) {
   const cfg = ctx.cfg;
+  const basis = cfg.basis || 'mv';
   const rounds = buildRounds(ctx.bundle, cfg);
   const log = [];
   let total = 0;
@@ -50,17 +52,19 @@ export function start(ctx) {
     roundToken++;
     const token = roundToken;
     const item = rounds[idx];
+    const actual = priceOf(item, basis);
     ctx.setMeta(`Round ${idx + 1} / ${rounds.length}`);
     ctx.setScore(total);
     ctx.content.innerHTML = '';
 
     const input = el('input', {
-      type: 'number', min: '1', step: '1', placeholder: 'gold',
-      inputmode: 'numeric', autocomplete: 'off',
+      type: 'text', placeholder: 'e.g. 25000 or 25k',
+      autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
     });
     const preview = el('div', { class: 'value-preview' });
     input.addEventListener('input', () => {
-      const g = parseInt(input.value, 10);
+      input.classList.remove('invalid');
+      const g = parseGold(input.value);
       preview.textContent = g > 0 ? `= ${fmtGoldLong(g)}` : '';
     });
     input.addEventListener('keydown', e => { if (e.key === 'Enter') settle(); });
@@ -85,14 +89,14 @@ export function start(ctx) {
 
     function settle(expired = false, forced = false) {
       if (settled) return;
-      const guess = parseInt(input.value, 10) || 0;
+      const guess = parseGold(input.value);
       if (!expired && guess <= 0) { input.classList.add('invalid'); return; }
       settled = true;
       timer.stop();
       input.disabled = true;
       lockBtn.disabled = true;
 
-      const earned = scoreGuess(guess, item.mv, cfg.curve);
+      const earned = scoreGuess(guess, actual, cfg.curve);
       total += earned;
       log.push({ id: item.id, a: guess, ok: earned > 0, s: earned, t: Math.round(timer.elapsedMs()) });
       ctx.setScore(total);
@@ -102,10 +106,16 @@ export function start(ctx) {
 
       const headline = earned === 5000
         ? `JACKPOT! +5,000 pts`
-        : earned > 0 ? `+${earned.toLocaleString()} pts` : 'No guess — +0 pts';
-      const detail = guess > 0
-        ? `You said <b>${fmtGoldLong(guess)}</b> — market average is <b>${fmtGoldLong(item.mv)}</b>`
-        : `Market average is <b>${fmtGoldLong(item.mv)}</b>`;
+        : earned > 0 ? `+${earned.toLocaleString()} pts`
+        : guess > 0 ? 'Way off — +0 pts' : 'No guess — +0 pts';
+      let detail;
+      if (guess > 0) {
+        const pct = Math.abs(guess / actual - 1) * 100;
+        const offTxt = pct < 1 ? 'spot on' : `${Math.round(pct)}% ${guess > actual ? 'high' : 'low'}`;
+        detail = `You said <b>${fmtGoldLong(guess)}</b> — ${BASIS_LABELS[basis]} is <b>${fmtGoldLong(actual)}</b> (${offTxt})`;
+      } else {
+        detail = `${BASIS_LABELS[basis]} is <b>${fmtGoldLong(actual)}</b>`;
+      }
       const last = idx === rounds.length - 1;
       setTimeout(() => {
         if (token !== roundToken) return; // already advanced past this round

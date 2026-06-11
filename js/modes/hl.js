@@ -2,10 +2,11 @@
 // chain: is the next item's price higher or lower than the current card?
 // Play until wrong; score = streak. Adjacent cards always differ by the
 // configured separation ratio (Goblin ≥1.25×, Tycoon ≥1.10×) so calls are
-// defensible, never coin-flips on stale data.
+// defensible, never coin-flips on stale data. Prices follow cfg.basis
+// ('mv' posted market avg / 'sa' TSM sale avg) — locked into the link.
 
 import { rngFor, shuffled } from '../rng.js';
-import { iconUrl, fmtGoldLong, catItems } from '../data.js';
+import { iconUrl, fmtGoldLong, catItems, priceOf } from '../data.js';
 import { el } from '../ui.js';
 import { play } from '../sound.js';
 
@@ -14,7 +15,8 @@ import { play } from '../sound.js';
 // (continuing the same rng) when the walk runs dry.
 export function makeStream(bundle, cfg) {
   const rng = rngFor(['hl', cfg.seed, `v${cfg.v}`]);
-  const pool = catItems(bundle, cfg.cat, true);
+  const basis = cfg.basis || 'mv';
+  const pool = catItems(bundle, cfg.cat, basis);
   const minLn = Math.log(cfg.sep / 100);
   let deck = shuffled(pool, rng);
   let i = 0;
@@ -25,7 +27,7 @@ export function makeStream(bundle, cfg) {
       while (i < deck.length) {
         const card = deck[i++];
         if (!prev) { prev = card; return card; }
-        if (card.id !== prev.id && Math.abs(Math.log(card.mv / prev.mv)) >= minLn) {
+        if (card.id !== prev.id && Math.abs(Math.log(priceOf(card, basis) / priceOf(prev, basis))) >= minLn) {
           prev = card;
           return card;
         }
@@ -41,6 +43,7 @@ export function makeStream(bundle, cfg) {
 }
 
 export function start(ctx) {
+  const basis = ctx.cfg.basis || 'mv';
   const stream = makeStream(ctx.bundle, ctx.cfg);
   const log = [];
   let streak = 0;
@@ -55,7 +58,7 @@ export function start(ctx) {
       el('div', { class: `iname q-${item.q}`, html: item.n }),
       hidePrice
         ? el('div', { class: 'ihidden' }, '?')
-        : el('div', { class: 'iprice' }, fmtGoldLong(item.mv)),
+        : el('div', { class: 'iprice' }, fmtGoldLong(priceOf(item, basis))),
     );
   }
 
@@ -79,23 +82,27 @@ export function start(ctx) {
   }
 
   function call(saidHigher) {
-    const isHigher = challenger.mv > current.mv;
+    const a = priceOf(challenger, basis);
+    const b = priceOf(current, basis);
+    const isHigher = a > b;
     const ok = saidHigher === isHigher;
+    const ratio = Math.max(a, b) / Math.min(a, b);
+    const gapTxt = `${ratio >= 10 ? Math.round(ratio) : ratio.toFixed(1)}× ${isHigher ? 'higher' : 'lower'}`;
     log.push({ id: challenger.id, a: saidHigher ? 'H' : 'L', ok, s: ok ? 1 : 0, t: 0 });
 
     // Reveal the challenger's price in place
     ctx.content.querySelectorAll('.hl-buttons button').forEach(b => (b.disabled = true));
     const hidden = ctx.content.querySelector('.ihidden');
     if (hidden) {
-      hidden.outerHTML = `<div class="iprice">${fmtGoldLong(challenger.mv)}</div>`;
+      hidden.outerHTML = `<div class="iprice">${fmtGoldLong(a)}</div>`;
     }
 
+    const streakEl = ctx.content.querySelector('.hl-streak');
     if (ok) {
       play('coin');
       streak += 1;
       ctx.setScore(streak);
-      const streakEl = ctx.content.querySelector('.hl-streak');
-      streakEl.textContent = `Streak: ${streak}`;
+      streakEl.textContent = `Streak: ${streak} — it was ${gapTxt}`;
       setTimeout(() => {
         current = challenger;
         challenger = stream.next();
@@ -103,8 +110,7 @@ export function start(ctx) {
       }, 1100);
     } else {
       play('wrong');
-      const streakEl = ctx.content.querySelector('.hl-streak');
-      streakEl.innerHTML = `<span style="color:var(--red)">Wrong!</span> Final streak: ${streak}`;
+      streakEl.innerHTML = `<span style="color:var(--red)">Wrong — it was ${gapTxt}.</span> Final streak: ${streak}`;
       setTimeout(() => {
         play('gameover');
         ctx.finish({ score: streak, rounds: log });

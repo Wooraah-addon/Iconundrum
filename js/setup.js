@@ -19,23 +19,46 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   const priceMode = modeId !== 'icon';
 
   const state = { ...DEFAULTS[modeId], cat: 'all' };
+  // New price games default to the sale average — closer to realized value.
+  // (Links without ?b= still decode as market avg; see cfg.js.)
+  if (priceMode) state.basis = 'sa';
 
   const overlay = el('div', { class: 'modal-overlay' });
   const close = () => overlay.remove();
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
 
-  // --- category select ---
+  // --- category select (counts depend on the price basis, so refreshable) ---
   const catSelect = el('select', { class: 'setup-select' });
-  for (const c of CATEGORIES) {
-    const n = catItems(bundle, c.id, priceMode).length;
-    const viable = n >= (priceMode ? MIN_PRICE : MIN_ICON);
-    const opt = el('option', { value: c.id }, `${c.label} (${n})`);
-    if (!viable) opt.disabled = true;
-    catSelect.append(opt);
+  function fillCats() {
+    const keep = catSelect.value;
+    catSelect.innerHTML = '';
+    for (const c of CATEGORIES) {
+      const n = catItems(bundle, c.id, priceMode ? state.basis : false).length;
+      const viable = n >= (priceMode ? MIN_PRICE : MIN_ICON);
+      const opt = el('option', { value: c.id }, `${c.label} (${n})`);
+      if (!viable) opt.disabled = true;
+      catSelect.append(opt);
+    }
+    catSelect.value = keep && !catSelect.querySelector(`option[value="${keep}"]`)?.disabled ? keep : 'all';
+    state.cat = catSelect.value;
   }
+  fillCats();
   catSelect.addEventListener('change', () => { state.cat = catSelect.value; });
 
   const rows = [row('Category', catSelect)];
+
+  // --- price basis (Value & Higher/Lower) ---
+  if (priceMode) {
+    const basisSelect = el('select', { class: 'setup-select' },
+      el('option', { value: 'sa' }, 'Sale average — what items actually sell for (TSM)'),
+      el('option', { value: 'mv' }, 'Market average — what items are posted for'),
+    );
+    basisSelect.value = state.basis;
+    basisSelect.addEventListener('change', () => { state.basis = basisSelect.value; fillCats(); });
+    rows.push(row('Price basis', basisSelect));
+    rows.push(el('div', { class: 'lb-note', style: 'margin:-8px 0 12px; text-align:left' },
+      'EU region prices. Posted prices can be inflated; the sale average is closer to what items really trade at. Your pick is locked into the challenge link — each basis keeps its own leaderboard.'));
+  }
 
   // --- per-mode controls ---
   if (modeId === 'icon' || modeId === 'value') {

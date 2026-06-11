@@ -56,11 +56,28 @@ export function catLabel(catId) {
   return c ? c.label : 'Everything';
 }
 
-// Items for a category; priceOnly additionally applies the price-mode floor.
-export function catItems(bundle, catId, priceOnly = false) {
+// The two price bases every item carries: 'mv' = region market average
+// (posted listings), 'sa' = TSM region sale average (recorded sales — closer
+// to realized value, but 0 when an item has no sale data).
+export function priceOf(item, basis) {
+  return basis === 'sa' ? item.sa : item.mv;
+}
+
+export const BASIS_LABELS = {
+  mv: 'EU market average (posted)',
+  sa: 'EU sale average (TSM)',
+};
+export const BASIS_SHORT = { mv: 'posted prices', sa: 'sale-avg prices' };
+
+// Items for a category; priceBasis ('mv' | 'sa' | legacy true → 'mv')
+// additionally applies the price-mode floor against that basis.
+export function catItems(bundle, catId, priceBasis = false) {
   const cat = CATEGORIES.find(x => x.id === catId);
   let items = cat && cat.classes ? bundle.items.filter(it => cat.classes.includes(it.c)) : bundle.items;
-  if (priceOnly) items = items.filter(it => it.mv >= GAME.priceModeMinGold);
+  if (priceBasis) {
+    const basis = priceBasis === 'sa' ? 'sa' : 'mv';
+    items = items.filter(it => priceOf(it, basis) >= GAME.priceModeMinGold);
+  }
   return items;
 }
 
@@ -75,6 +92,16 @@ export function fmtGold(g) {
 
 export function fmtGoldLong(g) {
   return g.toLocaleString('en-GB') + 'g';
+}
+
+// Free-entry gold parsing: "25000", "25,000", "25 000", "300g", "25k",
+// "1.5m" → integer gold; 0 = unparseable / not a positive amount.
+export function parseGold(str) {
+  if (typeof str !== 'string') return 0;
+  const m = str.trim().toLowerCase().replace(/[,\s]/g, '').replace(/g$/, '')
+    .match(/^(\d+(?:\.\d+)?)([km])?$/);
+  if (!m) return 0;
+  return Math.round(parseFloat(m[1]) * (m[2] === 'k' ? 1e3 : m[2] === 'm' ? 1e6 : 1));
 }
 
 // Market-data chips for the reveal screen — the sneakily-educational bit.

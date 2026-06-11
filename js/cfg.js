@@ -8,6 +8,9 @@ export const DEFAULTS = {
   value: { rounds: 5, timer: 20, curve: 2 },
   hl: { sep: 125 },
 };
+// Price basis ('mv' posted market avg / 'sa' TSM sale avg) is NOT in DEFAULTS:
+// links without ?b= must decode as 'mv' so pre-basis links and leaderboards
+// stay valid, while the setup modal defaults NEW games to 'sa' (see setup.js).
 
 export const LIMITS = {
   rounds: [3, 20],
@@ -38,25 +41,29 @@ export function makeCfg(mode, opts = {}) {
     cfg.rounds = clamp(opts.rounds, LIMITS.rounds, d.rounds);
     cfg.timer = clamp(opts.timer, LIMITS.valueTimer, d.timer);
     cfg.curve = LIMITS.curves.includes(opts.curve) ? opts.curve : d.curve;
+    cfg.basis = opts.basis === 'sa' ? 'sa' : 'mv';
   } else if (mode === 'hl') {
     cfg.sep = LIMITS.seps.includes(opts.sep) ? opts.sep : d.sep;
+    cfg.basis = opts.basis === 'sa' ? 'sa' : 'mv';
   }
   return cfg;
 }
 
 // Per-mode settings signature — part of the challenge key, so different
-// settings never share a leaderboard.
+// settings never share a leaderboard. The sale-avg basis appends a marker;
+// market-avg keeps the original format so pre-basis boards stay reachable.
 export function cfgSig(cfg) {
   if (cfg.mode === 'icon') return `r${cfg.rounds}t${cfg.timer}sp${cfg.speed}`;
-  if (cfg.mode === 'value') return `r${cfg.rounds}t${cfg.timer}k${cfg.curve}`;
-  return `sep${cfg.sep}`;
+  const b = cfg.basis === 'sa' ? 'bsa' : '';
+  if (cfg.mode === 'value') return `r${cfg.rounds}t${cfg.timer}k${cfg.curve}${b}`;
+  return `sep${cfg.sep}${b}`;
 }
 
 export function buildUrl(cfg, absolute = true) {
   const p = new URLSearchParams({ mode: cfg.mode, pack: cfg.pack, cat: cfg.cat, seed: cfg.seed, v: String(cfg.v) });
   if (cfg.mode === 'icon') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('sp', cfg.speed); }
-  else if (cfg.mode === 'value') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('k', cfg.curve); }
-  else p.set('sep', cfg.sep);
+  else if (cfg.mode === 'value') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('k', cfg.curve); p.set('b', cfg.basis); }
+  else { p.set('sep', cfg.sep); p.set('b', cfg.basis); }
   const path = `${location.pathname}?${p}`;
   return absolute ? `${location.origin}${path}` : path;
 }
@@ -77,5 +84,6 @@ export function cfgFromParams(params) {
     speed: int('sp'),
     curve: int('k'),
     sep: int('sep'),
+    basis: params.get('b'),
   });
 }

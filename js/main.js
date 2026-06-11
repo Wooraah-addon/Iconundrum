@@ -4,7 +4,7 @@
 // reproduces the exact game; leaderboard buckets key on the whole config so
 // custom-settings scores never mix.
 
-import { loadBundle, catLabel } from './data.js';
+import { loadBundle, catLabel, BASIS_SHORT } from './data.js';
 import { newSeed } from './rng.js';
 import { makeCfg, cfgFromParams, buildUrl } from './cfg.js';
 import { showScreen, el, toast, copyText } from './ui.js';
@@ -92,8 +92,8 @@ function setupHome() {
 function cfgSummary(cfg) {
   const bits = [MODE_LABELS[cfg.mode], catLabel(cfg.cat)];
   if (cfg.mode === 'icon') bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, cfg.speed ? 'speed bonus' : 'flat scoring');
-  if (cfg.mode === 'value') bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, { 1: 'casual', 2: 'goblin', 4: 'tycoon' }[cfg.curve] + ' scoring');
-  if (cfg.mode === 'hl') bits.push(cfg.sep === 110 ? 'tycoon calls' : 'goblin calls');
+  if (cfg.mode === 'value') bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, { 1: 'casual', 2: 'goblin', 4: 'tycoon' }[cfg.curve] + ' scoring', BASIS_SHORT[cfg.basis || 'mv']);
+  if (cfg.mode === 'hl') bits.push(cfg.sep === 110 ? 'tycoon calls' : 'goblin calls', BASIS_SHORT[cfg.basis || 'mv']);
   return bits.join(' · ');
 }
 
