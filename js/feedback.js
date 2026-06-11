@@ -69,7 +69,7 @@ export function openFeedback(type) {
       el('label', {}, isBug ? 'What went wrong?' : 'Your idea'),
       text),
     el('div', { class: 'lb-note', style: 'text-align:left; margin:0 0 14px' },
-      'Goes straight to the developer — no account needed. Please don’t include personal info.'),
+      'This is a casual side project — no promises, but I’ll get round to bug fixes and feature requests when I can. Goes straight to the developer; no account needed.'),
     el('div', { class: 'action-row' },
       submit,
       el('button', { class: 'btn secondary', onclick: close }, 'Cancel')),
