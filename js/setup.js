@@ -3,7 +3,7 @@
 // challenge in discord and then play the same board themselves.
 
 import { CATEGORIES, catItems } from './data.js';
-import { makeCfg, buildUrl, DEFAULTS, LIMITS } from './cfg.js';
+import { makeCfg, buildUrl, DEFAULTS, LIMITS, isRanked } from './cfg.js';
 import { newSeed } from './rng.js';
 import { el, toast, copyText } from './ui.js';
 import { play } from './sound.js';
@@ -14,18 +14,71 @@ const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Hig
 const MIN_ICON = 40;
 const MIN_PRICE = 30;
 
+// The default options for a mode: DEFAULTS (cfg.js) + Everything, and the
+// sale-avg basis for price modes (the new-game default; see makeCfg). The one
+// source of truth for both the initial state and Reset to defaults.
+function defaultState(modeId) {
+  const s = { ...DEFAULTS[modeId], cat: 'all' };
+  if (modeId !== 'icon') s.basis = 'sa';
+  return s;
+}
+
 export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   const seed = newSeed();
   const priceMode = modeId !== 'icon';
 
-  const state = { ...DEFAULTS[modeId], cat: 'all' };
-  // New price games default to the sale average — closer to realized value.
-  // (Links without ?b= still decode as market avg; see cfg.js.)
-  if (priceMode) state.basis = 'sa';
+  const state = defaultState(modeId);
+  // Each control registers a fn that snaps its widget back to match `state` —
+  // Reset to defaults runs them all. (Links without ?b= still decode as market
+  // avg; the setup default is sale avg — see cfg.js / makeCfg.)
+  const resetters = [];
+  const cfgNow = () => makeCfg(modeId, { ...state, seed, v: bundle.version });
 
   const overlay = el('div', { class: 'modal-overlay' });
   const close = () => overlay.remove();
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  // Live ranked-eligibility note: only the default ruleset competes on the
+  // global all-time boards (isRanked); custom settings get their own challenge
+  // board. Flips as the player changes settings, so the trade-off is explicit.
+  const rankedNote = el('div', {});
+  function refreshRankedNote() {
+    const ranked = isRanked(cfgNow());
+    rankedNote.className = `ranked-note ${ranked ? 'is-ranked' : 'is-custom'}`;
+    rankedNote.textContent = ranked
+      ? 'Default ruleset — scores count on the global ranked leaderboards.'
+      : 'Custom settings — this game competes on its own challenge link only, not the global ranked boards.';
+  }
+
+  // --- control builders that register a reset hook + refresh the ranked note
+  const sliderRow = (label, [min, max], get, set, suffix = '') => {
+    const valEl = el('b', { class: 'slider-val' }, `${get()}${suffix}`);
+    const input = el('input', { type: 'range', min: String(min), max: String(max), value: String(get()) });
+    input.addEventListener('input', () => {
+      const v = parseInt(input.value, 10);
+      valEl.textContent = `${v}${suffix}`;
+      set(v); refreshRankedNote();
+    });
+    resetters.push(() => { const v = get(); input.value = String(v); valEl.textContent = `${v}${suffix}`; });
+    return el('div', { class: 'form-row' }, el('label', {}, `${label} `, valEl), input);
+  };
+
+  const selectRow = (label, options, get, set) => {
+    const sel = el('select', { class: 'setup-select' },
+      ...options.map(([v, l]) => el('option', { value: v }, l)));
+    sel.value = get();
+    sel.addEventListener('change', () => { set(sel.value); refreshRankedNote(); });
+    resetters.push(() => { sel.value = get(); });
+    return row(label, sel);
+  };
+
+  const switchRow = (label, text, get, set) => {
+    const cb = el('input', { type: 'checkbox' });
+    cb.checked = get();
+    cb.addEventListener('change', () => { set(cb.checked); refreshRankedNote(); });
+    resetters.push(() => { cb.checked = get(); });
+    return row(label, el('label', { class: 'switch' }, cb, el('span', {}, text)));
+  };
 
   // --- category picker: icon tiles (F29 — the most-touched control in the
   // app deserves better than a dropdown). Counts depend on the price basis,
@@ -63,13 +116,10 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
 
   // --- price basis (Value & Higher/Lower) ---
   if (priceMode) {
-    const basisSelect = el('select', { class: 'setup-select' },
-      el('option', { value: 'sa' }, 'Sale average — what items actually sell for (TSM)'),
-      el('option', { value: 'mv' }, 'Market average — what items are posted for'),
-    );
-    basisSelect.value = state.basis;
-    basisSelect.addEventListener('change', () => { state.basis = basisSelect.value; fillCats(); });
-    rows.push(row('Price basis', basisSelect));
+    rows.push(selectRow('Price basis',
+      [['sa', 'Sale average — what items actually sell for (TSM)'],
+       ['mv', 'Market average — what items are posted for']],
+      () => state.basis, v => (state.basis = v, fillCats(), v)));
     rows.push(el('div', { class: 'lb-note', style: 'margin:-8px 0 12px; text-align:left' },
       'EU region prices. Posted prices can be inflated; the sale average is closer to what items really trade at. Your pick is locked into the challenge link — each basis keeps its own leaderboard.'));
   }
@@ -77,52 +127,46 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   // --- per-mode controls ---
   rows.push(section('The rules'));
   if (modeId === 'icon' || modeId === 'value') {
-    const [rLo, rHi] = LIMITS.rounds;
-    rows.push(sliderRow('Rounds', rLo, rHi, state.rounds, v => (state.rounds = v)));
-    const [tLo, tHi] = modeId === 'icon' ? LIMITS.iconTimer : LIMITS.valueTimer;
-    rows.push(sliderRow('Seconds per round', tLo, tHi, state.timer, v => (state.timer = v), 's'));
+    rows.push(sliderRow('Rounds', LIMITS.rounds, () => state.rounds, v => (state.rounds = v)));
+    const tLimits = modeId === 'icon' ? LIMITS.iconTimer : LIMITS.valueTimer;
+    rows.push(sliderRow('Seconds per round', tLimits, () => state.timer, v => (state.timer = v), 's'));
   }
   if (modeId === 'icon') {
-    const speedToggle = el('input', { type: 'checkbox' });
-    speedToggle.checked = true;
-    speedToggle.addEventListener('change', () => (state.speed = speedToggle.checked ? 1 : 0));
-    rows.push(row('Speed bonus scoring', el('label', { class: 'switch' }, speedToggle, el('span', {}, ' faster answer = more points'))));
+    rows.push(switchRow('Speed bonus scoring', ' faster answer = more points',
+      () => state.speed === 1, v => (state.speed = v ? 1 : 0)));
     // Hard mode (type the name) is BENCHED per tracker B2 — too hard on the
     // default timer, icons too diverse. The full machinery (cfg.hard, h= in
     // links, typed rounds in modes/icon.js) stays live and tested; restore
-    // by re-adding the toggle row here, with a rebalanced timer (20s+?) and
+    // by re-adding a toggle row here, with a rebalanced timer (20s+?) and
     // ideally a recognizable-names pool filter.
   }
   if (modeId === 'value') {
-    const curveSelect = el('select', { class: 'setup-select' },
-      el('option', { value: '1' }, 'Casual — forgiving curve'),
-      el('option', { value: '2' }, 'Goblin — standard'),
-      el('option', { value: '4' }, 'Tycoon — precision pays'),
-    );
-    curveSelect.value = '2';
-    curveSelect.addEventListener('change', () => (state.curve = parseInt(curveSelect.value, 10)));
-    rows.push(row('Scoring', curveSelect));
+    rows.push(selectRow('Scoring',
+      [['1', 'Casual — forgiving curve'], ['2', 'Goblin — standard'], ['4', 'Tycoon — precision pays']],
+      () => String(state.curve), v => (state.curve = parseInt(v, 10))));
   }
   if (modeId === 'hl') {
-    const sepSelect = el('select', { class: 'setup-select' },
-      el('option', { value: '125' }, 'Goblin — clear price gaps (≥1.25×)'),
-      el('option', { value: '110' }, 'Tycoon — tight calls (≥1.10×)'),
-    );
-    sepSelect.value = '125';
-    sepSelect.addEventListener('change', () => (state.sep = parseInt(sepSelect.value, 10)));
-    rows.push(row('Difficulty', sepSelect));
-    const livesSelect = el('select', { class: 'setup-select' },
-      el('option', { value: '1' }, '1 — sudden death (ranked)'),
-      el('option', { value: '2' }, '2 ♥ — one mistake forgiven'),
-      el('option', { value: '3' }, '3 ♥'),
-      el('option', { value: '4' }, '4 ♥'),
-    );
-    livesSelect.value = '1';
-    livesSelect.addEventListener('change', () => (state.lives = parseInt(livesSelect.value, 10)));
-    rows.push(row('Lives', livesSelect));
+    rows.push(selectRow('Difficulty',
+      [['125', 'Goblin — clear price gaps (≥1.25×)'], ['110', 'Tycoon — tight calls (≥1.10×)']],
+      () => String(state.sep), v => (state.sep = parseInt(v, 10))));
+    rows.push(selectRow('Lives',
+      [['1', '1 — sudden death (ranked)'], ['2', '2 ♥ — one mistake forgiven'], ['3', '3 ♥'], ['4', '4 ♥']],
+      () => String(state.lives ?? 1), v => (state.lives = parseInt(v, 10))));
   }
 
-  const cfgNow = () => makeCfg(modeId, { ...state, seed, v: bundle.version });
+  // --- reset + ranked-eligibility note ---
+  function resetToDefaults() {
+    play('click');
+    Object.assign(state, defaultState(modeId));
+    delete state.lives; // not in DEFAULTS.hl — makeCfg defaults it back to 1
+    resetters.forEach(fn => fn());
+    fillCats();
+    refreshRankedNote();
+  }
+  rows.push(el('div', { class: 'reset-row' },
+    rankedNote,
+    el('button', { class: 'btn secondary small', type: 'button', onclick: resetToDefaults }, 'Reset to defaults')));
+  refreshRankedNote();
 
   // --- game code + share ---
   // F36 root cause on stream: hosts shared THIS link expecting it to pull
@@ -163,17 +207,4 @@ function row(label, control) {
 
 function section(label) {
   return el('div', { class: 'setup-section' }, label);
-}
-
-function sliderRow(label, min, max, value, onChange, suffix = '') {
-  const valEl = el('b', { class: 'slider-val' }, `${value}${suffix}`);
-  const input = el('input', { type: 'range', min: String(min), max: String(max), value: String(value) });
-  input.addEventListener('input', () => {
-    const v = parseInt(input.value, 10);
-    valEl.textContent = `${v}${suffix}`;
-    onChange(v);
-  });
-  return el('div', { class: 'form-row' },
-    el('label', {}, `${label} `, valEl),
-    input);
 }

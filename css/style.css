@@ -447,6 +447,17 @@ footer a { color: var(--gold-dim); }
 /* Stacked form row (label above a full-width control) — used by the textarea. */
 .form-row.stack { flex-direction: column; align-items: stretch; }
 
+/* Reset-to-defaults + live ranked-eligibility note (F55). The note flips
+   green (counts on the ranked boards) ↔ gold-dim (custom, own board only) as
+   settings change, so the trade-off is explicit before you play. */
+.reset-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  flex-wrap: wrap; margin: 4px 0 2px;
+}
+.ranked-note { font-size: .78rem; line-height: 1.35; flex: 1 1 200px; }
+.ranked-note.is-ranked { color: var(--green); }
+.ranked-note.is-custom { color: var(--gold-dim); }
+
 /* Setup modal: slim section headers + the icon-tile category picker (F29). */
 .setup-section {
   color: var(--text-dim); font-size: .72rem; text-transform: uppercase; letter-spacing: .1em;
