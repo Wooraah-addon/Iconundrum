@@ -62,6 +62,21 @@ export function cfgSig(cfg) {
   return `sep${cfg.sep}${b}`;
 }
 
+// The all-time board is RANKED: it only admits the mode's default
+// competitive ruleset — otherwise a 20-round game tops a 5-round game on
+// score ceiling alone. Category, seed and price basis don't move the
+// ceiling, so they all rank; rounds/timer/scoring/hard must be default.
+// Defined on the sig so saved games can be classified from their challenge
+// key alone (no schema change).
+export function isRankedSig(mode, sig) {
+  const base = cfgSig(makeCfg(mode, { seed: 'x', v: 1 }));
+  return sig === base || sig === base + 'bsa';
+}
+
+export function isRanked(cfg) {
+  return isRankedSig(cfg.mode, cfgSig(cfg));
+}
+
 export function buildUrl(cfg, absolute = true) {
   const p = new URLSearchParams({ mode: cfg.mode, pack: cfg.pack, cat: cfg.cat, seed: cfg.seed, v: String(cfg.v) });
   if (cfg.mode === 'icon') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('sp', cfg.speed); if (cfg.hard) p.set('h', 1); }

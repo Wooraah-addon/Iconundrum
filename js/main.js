@@ -6,7 +6,7 @@
 
 import { loadBundle, catLabel, BASIS_SHORT } from './data.js';
 import { newSeed } from './rng.js';
-import { makeCfg, cfgFromParams, buildUrl } from './cfg.js';
+import { makeCfg, cfgFromParams, buildUrl, isRanked } from './cfg.js';
 import { showScreen, el, toast, copyText } from './ui.js';
 import { openSetup } from './setup.js';
 import * as lobby from './lobby.js';
@@ -241,7 +241,8 @@ async function onFinish(result) {
   const { pb, best } = profile.recordGame(cfg.mode, result.score);
   if (pb) sound.play('fanfare');
 
-  document.getElementById('summary-mode').textContent = cfgSummary(cfg);
+  document.getElementById('summary-mode').textContent =
+    cfgSummary(cfg) + (isRanked(cfg) ? '' : ' · custom rules — ranks on this challenge only');
   document.getElementById('summary-score').textContent =
     cfg.mode === 'hl' ? `Streak: ${result.score}` : `${result.score.toLocaleString()} pts`;
   document.getElementById('summary-sub').textContent =

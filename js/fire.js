@@ -4,7 +4,7 @@
 // deployed yet — every call here degrades gracefully.
 
 import { firebaseConfig } from './config.js';
-import { cfgSig } from './cfg.js';
+import { cfgSig, isRankedSig } from './cfg.js';
 
 let db = null;
 let fs = null; // firestore module namespace
@@ -76,18 +76,27 @@ export async function challengeBoard(ck, topN = 20) {
   }
 }
 
-// All-time top scores for a mode. Same index-then-fallback pattern.
+// All-time top scores for a mode — RANKED: default-ruleset games only,
+// classified by the settings sig parsed off each game's challenge key
+// (last _-token; the sig has no underscores). Derived data, so no schema,
+// rules or index change, and it covers every game ever saved. Revisit with
+// a stored ranked flag + (mode, ranked, score DESC) composite index when
+// volume outgrows the capped fetch. Same index-then-fallback pattern.
 export async function allTimeBoard(mode, topN = 20) {
   if (!(await ensureInit())) return null;
   const games = fs.collection(db, 'games');
+  const ranked = rows => rows
+    .filter(r => r.ck && isRankedSig(mode, r.ck.split('_').pop()))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topN);
   try {
-    const q = fs.query(games, fs.where('mode', '==', mode), fs.orderBy('score', 'desc'), fs.limit(topN));
-    return rowsOf(await fs.getDocs(q));
+    const q = fs.query(games, fs.where('mode', '==', mode), fs.orderBy('score', 'desc'), fs.limit(200));
+    return ranked(rowsOf(await fs.getDocs(q)));
   } catch (e) {
     console.warn('Indexed all-time query failed, falling back. Create the (mode ASC, score DESC) index:', e.message);
     try {
       const q = fs.query(games, fs.where('mode', '==', mode), fs.limit(200));
-      return rowsOf(await fs.getDocs(q)).sort((a, b) => b.score - a.score).slice(0, topN);
+      return ranked(rowsOf(await fs.getDocs(q)));
     } catch (e2) {
       console.warn('allTimeBoard failed:', e2);
       return null;
@@ -99,7 +108,7 @@ function rowsOf(snap) {
   const rows = [];
   snap.forEach(d => {
     const x = d.data();
-    rows.push({ id: d.id, player: x.player, score: x.score, mode: x.mode });
+    rows.push({ id: d.id, player: x.player, score: x.score, mode: x.mode, ck: x.ck });
   });
   return rows;
 }
