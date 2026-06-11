@@ -137,12 +137,43 @@ export function cleanup() {
 
 // --------------------------------------------------------- sync driver
 
+// player→rank (1-based) from a scores map, sorted by score desc. Pure.
+export function ranksOf(scores) {
+  const ranks = {};
+  Object.entries(scores || {}).sort((a, b) => b[1] - a[1]).forEach(([n], i) => (ranks[n] = i + 1));
+  return ranks;
+}
+
+// Current scores + last-boundary baseline → rows sorted by score desc, each
+// with this round's points (delta) and rank movement. Pure; tested.
+// rankDelta: +n up n places, -n down, 0 held, null = no prior round.
+export function standingsWithDeltas(scores, prevTotals = {}, prevRanks = {}) {
+  return Object.entries(scores || {}).sort((a, b) => b[1] - a[1]).map(([name, score], i) => {
+    const rank = i + 1;
+    const prevRank = prevRanks[name];
+    return {
+      name, score, rank,
+      delta: score - (prevTotals[name] ?? 0),
+      rankDelta: prevRank === undefined ? null : prevRank - rank,
+    };
+  });
+}
+
 function makeSync({ cfg, playerName, isHost, launchAt }) {
   const timerMs = (cfg.timer || 0) * 1000;
   let localRound = 0;
   let advanceHandler = null;
   let scoresHandler = null;
   let lastDoc = null;
+  // Round-over-round baseline: each player's total and rank as of the last
+  // round boundary, so the reveal can show this round's points (+N) and the
+  // rank move (▲/▼) since last round. Captured the instant a round advances.
+  let prevTotals = {};
+  let prevRanks = {};
+  const snapshotStandings = () => {
+    prevTotals = lastDoc ? { ...(lastDoc.scores || {}) } : {};
+    prevRanks = ranksOf(prevTotals);
+  };
 
   const sync = {
     isHost,
@@ -163,12 +194,18 @@ function makeSync({ cfg, playerName, isHost, launchAt }) {
         : [];
     },
 
+    // Standings with this-round points + rank movement vs the last boundary.
+    standingsDetailed() {
+      return standingsWithDeltas(lastDoc ? lastDoc.scores : {}, prevTotals, prevRanks);
+    },
+
     reportScore(total) {
       fire.updateLobbyScore(cfg.seed, playerName, total);
     },
 
     // Host: advance locally at once, then tell everyone else.
     hostAdvance(nextIdx) {
+      snapshotStandings(); // freeze the round that just ended as the baseline
       localRound = nextIdx;
       sync.roundStartMs = Date.now();
       fire.advanceRound(cfg.seed, nextIdx, sync.roundStartMs);
@@ -181,6 +218,9 @@ function makeSync({ cfg, playerName, isHost, launchAt }) {
       lastDoc = doc;
       if (scoresHandler) scoresHandler();
       if (doc.round > localRound) {
+        // Baseline = standings through the round that just ended (the advance
+        // write carries the new round but not new scores yet).
+        snapshotStandings();
         localRound = doc.round;
         // Clamp to our own clock: a host clock running ahead must not push the
         // round start into our future (that would mis-time the bar + unlock).
@@ -197,14 +237,25 @@ function makeSync({ cfg, playerName, isHost, launchAt }) {
 // sync.onScores as players' totals trickle in.
 export function renderStandings(container, sync) {
   container.innerHTML = '';
-  const rows = sync.standings();
+  const rows = sync.standingsDetailed();
   if (!rows.length) return;
+  const moveCell = r => {
+    if (r.rankDelta === null) return el('td', { class: 'rank-move' }, '');
+    if (r.rankDelta === 0) return el('td', { class: 'rank-move flat' }, '–');
+    const up = r.rankDelta > 0;
+    return el('td', { class: `rank-move ${up ? 'up' : 'down'}` }, `${up ? '▲' : '▼'}${Math.abs(r.rankDelta)}`);
+  };
   const table = el('table', { class: 'lb standings' },
-    el('tbody', {}, ...rows.map(([name, score], i) =>
-      el('tr', { class: name === sync.playerName ? 'me' : '' },
-        el('td', {}, String(i + 1)),
-        el('td', {}, name),
-        el('td', {}, score.toLocaleString()),
+    el('thead', {}, el('tr', {},
+      el('th', {}, '#'), el('th', {}, ''), el('th', {}, 'Player'),
+      el('th', { class: 'num' }, 'Round'), el('th', { class: 'num' }, 'Total'))),
+    el('tbody', {}, ...rows.map(r =>
+      el('tr', { class: r.name === sync.playerName ? 'me' : '' },
+        el('td', {}, String(r.rank)),
+        moveCell(r),
+        el('td', {}, r.name),
+        el('td', { class: 'num delta' }, r.delta > 0 ? `+${r.delta.toLocaleString()}` : '–'),
+        el('td', { class: 'num' }, r.score.toLocaleString()),
       ))));
   container.append(el('div', { class: 'standings-head' }, 'Standings'), table);
 }

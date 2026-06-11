@@ -458,7 +458,15 @@ a.btn { text-decoration: none; display: inline-block; }
   color: var(--text-dim); font-size: .85rem; text-transform: uppercase;
   letter-spacing: .08em; margin-bottom: 6px;
 }
-table.standings { max-width: 340px; margin: 0 auto; }
+table.standings { max-width: 380px; margin: 0 auto; }
+table.standings td.num, table.standings th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.standings .delta { color: var(--gold-dim); }
+.standings .rank-move { text-align: center; font-weight: 700; font-size: .85rem; padding-left: 0; padding-right: 0; white-space: nowrap; }
+.standings .rank-move.up { color: var(--green); }
+.standings .rank-move.down { color: var(--red); }
+.standings .rank-move.flat { color: var(--text-dim); font-weight: 400; }
+table.standings td, table.standings th { padding: 6px 6px; }
+@media (max-width: 420px) { table.standings td, table.standings th { padding: 5px 4px; font-size: .82rem; } }
 
 /* ---- Home stats strip ---- */
 .home-stats { margin: -4px 0 16px; }
