@@ -570,7 +570,7 @@ table.standings td, table.standings th { padding: 6px 6px; }
 .motes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
 .motes::before, .motes::after {
   content: ''; position: absolute; top: 0; left: 0;
-  width: 3px; height: 3px; border-radius: 50%; background: transparent;
+  width: 4px; height: 4px; border-radius: 50%; background: transparent;
 }
 .motes::before {
   box-shadow:
@@ -584,7 +584,7 @@ table.standings td, table.standings th { padding: 6px 6px; }
     44vw 108vh 0 0 rgba(240,198,64,.18), 67vw 155vh 0 0 rgba(240,198,64,.24);
 }
 .motes::after {
-  width: 2px; height: 2px;
+  width: 3px; height: 3px;
   box-shadow:
     13vw 45vh 0 0 rgba(240,198,64,.16), 50vw 72vh 0 0 rgba(240,198,64,.14),
     72vw 15vh 0 0 rgba(240,198,64,.18), 86vw 58vh 0 0 rgba(240,198,64,.12),
@@ -596,9 +596,9 @@ table.standings td, table.standings th { padding: 6px 6px; }
 @media (prefers-reduced-motion: no-preference) {
   /* translate (parallax, follows --mx/--my from JS) composes with the drift
      animation's transform — independent properties, so they don't clobber. */
-  .motes::before, .motes::after { transition: translate .45s ease-out; }
-  .motes::before { animation: drift 80s linear infinite; translate: calc(var(--mx, 0) * 9px) calc(var(--my, 0) * 9px); }
-  .motes::after { animation: drift 130s linear infinite; translate: calc(var(--mx, 0) * -6px) calc(var(--my, 0) * -6px); }
+  .motes::before, .motes::after { transition: translate .35s ease-out; }
+  .motes::before { animation: drift 80s linear infinite; translate: calc(var(--mx, 0) * 26px) calc(var(--my, 0) * 26px); }
+  .motes::after { animation: drift 130s linear infinite; translate: calc(var(--mx, 0) * -18px) calc(var(--my, 0) * -18px); }
   @keyframes drift { to { transform: translateY(-100vh); } }
 
   .btn:hover { transform: translateY(-1px); }
