@@ -67,3 +67,23 @@ export function celebrate(target, intensity = 1) {
   // Backstop: if onfinish never fires (tab blur pausing WAAPI), reap anyway.
   setTimeout(() => layer.remove(), 1600);
 }
+
+// Count a hero number up from zero so the final score lands as a payoff
+// instead of just appearing. format(n) renders each frame's integer; on a
+// personal best the value overshoots ~7% then settles, so the number visibly
+// "lands". Snaps straight to the target under reduced-motion.
+export function countUp(el, target, format, { overshoot = false, ms = 760 } = {}) {
+  if (!el) return;
+  if (reduced() || target <= 0) { el.textContent = format(target); return; }
+  const t0 = performance.now();
+  function frame(now) {
+    const p = Math.min(1, (now - t0) / ms);
+    const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    const v = p < 1
+      ? target * eased + (overshoot ? target * 0.07 * Math.sin(p * Math.PI) : 0)
+      : target;
+    el.textContent = format(Math.round(v));
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}

@@ -8,7 +8,7 @@ import { loadBundle, catLabel, BASIS_SHORT } from './data.js';
 import { newSeed } from './rng.js';
 import { makeCfg, cfgFromParams, buildUrl, isRanked } from './cfg.js';
 import { showScreen, el, toast, copyText, escapeHtml } from './ui.js';
-import { celebrate } from './fx.js';
+import { celebrate, countUp } from './fx.js';
 import { openSetup } from './setup.js';
 import { openFeedback } from './feedback.js';
 import * as lobby from './lobby.js';
@@ -364,8 +364,8 @@ async function onFinish(result) {
 
   document.getElementById('summary-mode').textContent =
     cfgSummary(cfg) + (isRanked(cfg) ? '' : ' · custom rules — ranks on this challenge only');
-  document.getElementById('summary-score').textContent =
-    cfg.mode === 'hl' ? `Streak: ${result.score}` : `${result.score.toLocaleString()} pts`;
+  const fmtScore = cfg.mode === 'hl' ? n => `Streak: ${n}` : n => `${n.toLocaleString()} pts`;
+  countUp(document.getElementById('summary-score'), result.score, fmtScore, { overshoot: pb });
   document.getElementById('summary-sub').textContent =
     pb ? '' : `Personal best: ${cfg.mode === 'hl' ? best : best.toLocaleString()}`;
   document.getElementById('pb-banner').style.display = pb ? '' : 'none';
@@ -380,8 +380,9 @@ async function onFinish(result) {
 
   showScreen('screen-summary');
   // A personal best is the strongest intrinsic reward in a no-account game —
-  // celebrate the hero number (the fanfare is parked, so the visual carries it).
-  if (pb) setTimeout(() => celebrate(document.getElementById('summary-score'), 1.7), 350);
+  // celebrate the hero number as the count-up lands (the fanfare is parked,
+  // so the visual carries it).
+  if (pb) setTimeout(() => celebrate(document.getElementById('summary-score'), 1.7), 760);
   wireSummaryActions();
 
   // Anti-grind: only this device's FIRST run on a board posts — replaying
