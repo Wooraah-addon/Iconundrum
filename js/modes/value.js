@@ -59,7 +59,7 @@ export function start(ctx) {
     ctx.content.innerHTML = '';
 
     const input = el('input', {
-      type: 'text', placeholder: 'e.g. 25000 or 25k',
+      type: 'text', placeholder: 'type a guess — 25000 or 25k',
       autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
     });
     const preview = el('div', { class: 'value-preview' });
@@ -96,6 +96,9 @@ export function start(ctx) {
       el('div', { class: 'question-prompt', html: `What does <strong class="q-${item.q}">${item.n}</strong> go for on the AH?` }),
       el('div', { class: 'value-entry' }, input, el('span', { class: 'g' }, 'g'), lockBtn),
       chips,
+      // Players who see the chips assume they're the only way in (real-player
+      // feedback, B9) — say outright that the box takes typed amounts too.
+      el('div', { class: 'value-hint' }, 'Type any amount in the box, or build it with the buttons.'),
       preview,
     ));
     input.focus();

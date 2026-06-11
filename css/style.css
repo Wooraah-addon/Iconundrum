@@ -235,6 +235,9 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .chip-btn:hover { border-color: var(--gold-dim); background: var(--bg-card-hover); }
 .chip-btn:disabled { opacity: .5; cursor: default; }
 .chip-btn.clear { color: var(--text-dim); }
+/* Unlike .hl-keyhint this stays visible on touch devices — mobile players
+   (no auto-focused keyboard) are exactly who misses that the box is typable. */
+.value-hint { text-align: center; color: var(--text-dim); font-size: .75rem; margin-top: 8px; }
 
 /* ---- Higher/Lower ---- */
 .hl-cards { display: flex; gap: 14px; justify-content: center; align-items: stretch; margin: 14px 0; }
