@@ -52,7 +52,7 @@ export const CATEGORIES = [
   { id: 'trade', label: 'Trade Goods & Gems', classes: [1, 3, 7], face: 'inv_misc_flower_02' },
   { id: 'consume', label: 'Consumables & Enchants', classes: [0, 8], face: 'inv_potion_95' },
   { id: 'recipes', label: 'Recipes & Patterns', classes: [9], face: 'inv_scroll_03', hidden: true },
-  { id: 'curios', label: 'Mounts, Pets & Toys', classes: [12, 13, 15, 20], face: 'ability_mount_ridinghorse' },
+  { id: 'curios', label: 'Mounts & Toys', classes: [12, 13, 15, 20], face: 'ability_mount_ridinghorse', dropSubs: { 15: [2] } },
 ];
 
 export function catLabel(catId) {
@@ -78,6 +78,13 @@ export const BASIS_SHORT = { mv: 'posted prices', sa: 'sale-avg prices' };
 export function catItems(bundle, catId, priceBasis = false) {
   const cat = CATEGORIES.find(x => x.id === catId);
   let items = cat && cat.classes ? bundle.items.filter(it => cat.classes.includes(it.c)) : bundle.items;
+  // dropSubs: {class: [subclasses]} carved out of a category (pets left
+  // Mounts & Toys 2026-06-11, ahead of a dedicated Pets category). Gated on
+  // bundle v2+ — category composition feeds seeded boards, so v1 challenge
+  // links must keep reproducing their original rounds.
+  if (cat && cat.dropSubs && bundle.version >= 2) {
+    items = items.filter(it => !(cat.dropSubs[it.c] || []).includes(it.s));
+  }
   if (priceBasis) {
     const basis = priceBasis === 'sa' ? 'sa' : 'mv';
     items = items.filter(it => priceOf(it, basis) >= GAME.priceModeMinGold);

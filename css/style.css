@@ -412,23 +412,29 @@ footer a { color: var(--gold-dim); }
   border-bottom: 1px solid var(--border); padding-bottom: 4px; margin: 14px 0 10px;
 }
 /* Wider frame for the setup modal — the tile grid auto-fills columns, so it
-   stays a tidy 2 rows today and absorbs ~10 categories without redesign. */
+   stays one tidy row today and absorbs ~10 categories without redesign.
+   .cat-block is a plain block on purpose: inside a wrapping column flexbox
+   the auto-fill grid's intrinsic height is computed at one-column width,
+   which left ~500px of phantom space under the tiles. */
 .setup-modal { width: min(600px, 94%); }
+.cat-block { margin-bottom: 14px; }
+.cat-label { color: var(--text-dim); font-size: .9rem; margin-bottom: 8px; }
 .cat-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  grid-auto-rows: min-content; align-items: start; gap: 8px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
 }
 .cat-tile {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 10px 6px; background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 10px; color: var(--text); cursor: pointer; font-size: .78rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 3px; min-height: 88px; padding: 8px 4px 6px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); cursor: pointer; font-size: .68rem;
   text-align: center; line-height: 1.25; transition: border-color .1s ease, background .1s ease;
 }
-.cat-tile img { width: 36px; height: 36px; border-radius: 6px; }
+.cat-tile img { width: 34px; height: 34px; border-radius: 6px; }
 .cat-tile:hover { border-color: var(--gold-dim); background: var(--bg-card-hover); }
 .cat-tile.active { border-color: var(--gold); background: rgba(240, 198, 64, .08); }
 .cat-tile:disabled { opacity: .4; cursor: default; }
-.cat-tile .cat-count { color: var(--text-dim); font-size: .7rem; }
+.cat-tile .cat-count { color: var(--text-dim); font-size: .6rem; }
 .cat-tile:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .feedback-text {
   width: 100%; box-sizing: border-box; resize: vertical; min-height: 110px;

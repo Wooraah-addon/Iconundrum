@@ -54,9 +54,11 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   }
   fillCats();
 
+  // Plain block wrapper, NOT .form-row: an auto-fill grid inside a wrapping
+  // column flexbox gets its intrinsic height computed at one-column width
+  // (5 tiles stacked ≈ 510px of phantom space). Block layout sizes it right.
   const rows = [
-    section('The board'),
-    el('div', { class: 'form-row stack' }, el('label', {}, 'Category'), catGrid),
+    el('div', { class: 'cat-block' }, el('div', { class: 'cat-label' }, 'Category'), catGrid),
   ];
 
   // --- price basis (Value & Higher/Lower) ---
