@@ -28,13 +28,14 @@ export function openSoundSettings() {
     const tile = el('button', {
       class: 'pack-tile' + (p.id === current ? ' active' : '') + (locked ? ' locked' : ''),
       type: 'button',
-      disabled: locked || undefined,
       title: locked ? 'Locked — unlocks through achievements' : p.desc,
     },
       el('span', { class: 'pack-name' }, locked ? icon('lock') : null, ' ', p.label),
       el('span', { class: 'pack-desc' }, locked ? 'Locked' : p.desc),
     );
-    if (!locked) {
+    if (locked) {
+      tile.disabled = true;
+    } else {
       sound.warmPack(p.id);
       tile.onclick = () => selectPack(p.id);
     }
