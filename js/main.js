@@ -193,10 +193,21 @@ function cfgSummary(cfg) {
   return bits.join(' · ');
 }
 
+// F52: drop an old challenge off the home screen — clear the banner and
+// strip the link params so a refresh doesn't bring it back. Scoped to the
+// solo challenge banner; live lobby invites are dismissed by other means.
+function dismissChallenge() {
+  stopLobbyWatch();
+  document.getElementById('challenge-banner').innerHTML = '';
+  history.replaceState(null, '', location.pathname);
+}
+
 function showChallengeBanner(cfg) {
   const banner = document.getElementById('challenge-banner');
   banner.innerHTML = '';
-  banner.append(el('div', { class: 'notice' },
+  banner.append(el('div', { class: 'notice has-dismiss' },
+    el('button', { class: 'notice-dismiss', title: 'Dismiss this challenge',
+      'aria-label': 'Dismiss this challenge', onclick: dismissChallenge }, '✕'),
     el('div', { html: `<b>You've been challenged!</b> Game code <b>${escapeHtml(cfg.seed)}</b><br>${cfgSummary(cfg)}<br>Same rounds for everyone who opens this link.` }),
     profile.hasPlayedChallenge(fire.challengeKey(cfg))
       ? el('div', { html: `<br><b>You've played this board before</b> — replays are for fun, only your first run posted to the leaderboard.` })

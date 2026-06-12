@@ -450,8 +450,15 @@ footer a { color: var(--gold-dim); }
 .notice {
   background: rgba(240, 198, 64, .08); border: 1px solid var(--gold-dim);
   border-radius: 8px; padding: 10px 14px; font-size: .85rem; color: var(--text-dim);
-  margin-bottom: 14px;
+  margin-bottom: 14px; position: relative;
 }
+.notice.has-dismiss { padding-right: 32px; }
+.notice-dismiss {
+  position: absolute; top: 6px; right: 8px; background: none;
+  border: 1px solid transparent; border-radius: 6px; color: var(--text-dim);
+  padding: 0 7px; cursor: pointer; font-size: .85rem; line-height: 1.5;
+}
+.notice-dismiss:hover { color: var(--gold); border-color: var(--gold-dim); }
 
 /* ---- Logo ---- */
 /* default z-index keeps the logo banner below the coin (z-index:1) so the coin
