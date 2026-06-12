@@ -47,7 +47,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
     rankedNote.className = `ranked-note ${ranked ? 'is-ranked' : 'is-custom'}`;
     rankedNote.textContent = ranked
       ? 'Default ruleset — default settings required for global leaderboard ranking'
-      : 'Custom settings — this game competes on its own challenge link only, not the global ranked boards.';
+      : 'Custom game — scores on this game’s own board only, not the global leaderboards.';
   }
 
   // --- control builders that register a reset hook + refresh the ranked note
