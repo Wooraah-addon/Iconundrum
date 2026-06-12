@@ -383,7 +383,9 @@ async function onFinish(result) {
   // celebrate the hero number as the count-up lands (the fanfare is parked,
   // so the visual carries it).
   if (pb) setTimeout(() => celebrate(document.getElementById('summary-score'), 1.7), 760);
-  wireSummaryActions();
+  // Wiring failures must never block the score save below (that's how B10
+  // ate a day of scores) — log and carry on.
+  try { wireSummaryActions(); } catch (e) { console.warn('summary wiring failed:', e); }
 
   // Scoring outcome — always spell out whether the run posted and, if not,
   // why (replay / offline / custom-not-ranked), so a missing leaderboard
@@ -460,7 +462,11 @@ function wireSummaryActions() {
   document.querySelectorAll('.lb-tab').forEach(tab => {
     tab.onclick = () => loadBoards(tab.dataset.board);
   });
-  document.getElementById('lb-refresh').onclick = () => { sound.play('click'); loadBoards(boardTab); };
+  // Null-guarded: this exact line missing its element crashed onFinish and
+  // silently killed EVERY score save from v0.6.10 to v0.7.12 (B10). A
+  // cosmetic control must never sit between the player and their save.
+  const refresh = document.getElementById('lb-refresh');
+  if (refresh) refresh.onclick = () => { sound.play('click'); loadBoards(boardTab); };
 }
 
 let boardTab = 'challenge'; // which board the summary screen is showing
