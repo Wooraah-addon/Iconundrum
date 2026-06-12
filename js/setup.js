@@ -193,6 +193,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
   const modal = el('div', { class: 'modal panel setup-modal' },
     el('h3', { class: 'modal-title' }, MODE_LABELS[modeId]),
     ...rows,
+    el('div', { class: 'divider' }),
     codeRow,
     el('div', { class: 'action-row' },
       el('button', { class: 'btn', onclick: () => { play('click'); close(); onSolo(cfgNow()); } }, 'Play solo'),

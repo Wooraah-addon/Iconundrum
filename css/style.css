@@ -458,6 +458,14 @@ footer a { color: var(--gold-dim); }
 .sound-toggle { z-index: 2; }
 .game-header .sound-toggle { position: static; }
 
+/* Reusable gold filigree divider — a fading rule with a centred gem, one SVG
+   asset (encoded like the favicon: raw <>, %23 for #). For section breaks. */
+.divider {
+  height: 12px; margin: 18px auto; max-width: 340px;
+  background: center / contain no-repeat
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 12'><defs><linearGradient id='gl'><stop offset='0' stop-color='%23b8964a' stop-opacity='0'/><stop offset='1' stop-color='%23b8964a'/></linearGradient><linearGradient id='gr'><stop offset='0' stop-color='%23b8964a'/><stop offset='1' stop-color='%23b8964a' stop-opacity='0'/></linearGradient></defs><line x1='8' y1='6' x2='146' y2='6' stroke='url(%23gl)'/><line x1='174' y1='6' x2='312' y2='6' stroke='url(%23gr)'/><rect x='156' y='2' width='8' height='8' transform='rotate(45 160 6)' fill='%23f0c640'/></svg>");
+}
+
 /* ---- Setup modal ---- */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 40;
