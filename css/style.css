@@ -19,6 +19,10 @@
   --border: #4a3a6a;
   --gold: #f0c640;
   --gold-dim: #b8964a;
+  /* The minted-gold gradient stops (buttons, PB banner) — one source, was
+     three hand-rolled copies. The timer bar keeps its own gold→amber ramp. */
+  --gold-1: #f3d35e;
+  --gold-2: #d4a72c;
   --text: #e8e2f4;
   --text-dim: #9d92b5;
   --font-display: 'Cinzel', Georgia, "Times New Roman", serif;
@@ -31,6 +35,13 @@
   --q-legendary: #ff8000;
   --q-artifact: #e6cc80;
   --q-heirloom: #00ccff;
+  /* Type scale (modular ~1.2) + spacing steps. The vocabulary for new rules;
+     the existing per-component literals are retrofitted incrementally (a blind
+     mass-collapse risks reflow on a live build). */
+  --fs-xs: .75rem; --fs-sm: .85rem; --fs-base: 1rem; --fs-lg: 1.2rem;
+  --fs-xl: 1.6rem; --fs-2xl: 2.2rem; --fs-display: 3.2rem;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-5: 22px; --space-6: 28px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,7 +69,7 @@ body {
 /* ---- Wordmark ---- */
 .wordmark {
   text-align: center;
-  font-size: clamp(2rem, 8vw, 3.2rem);
+  font-size: clamp(2rem, 8vw, var(--fs-display));
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text);
@@ -105,7 +116,7 @@ body {
 }
 .mode-card:hover { transform: translateY(-2px); border-color: var(--gold-dim); border-left-color: var(--gold); background: var(--bg-card-hover); }
 .mode-glyph { grid-row: 1 / 3; align-self: center; width: 34px; height: 34px; color: var(--gold); }
-.mode-card h3 { grid-column: 2; color: var(--gold); margin-bottom: 4px; font-size: 1.2rem; font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; }
+.mode-card h3 { grid-column: 2; color: var(--gold); margin-bottom: 4px; font-size: var(--fs-lg); font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; }
 .mode-card p { grid-column: 2; color: var(--text-dim); font-size: .85rem; line-height: 1.35; }
 
 /* Roadmap packs — demoted to a quiet chip strip, not full cards. */
@@ -157,7 +168,7 @@ input.invalid { border-color: var(--red); }
 input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 
 .btn {
-  background: linear-gradient(180deg, #f3d35e, #d4a72c);
+  background: linear-gradient(180deg, var(--gold-1), var(--gold-2));
   color: #2a1d0a;
   font-weight: 700;
   border: none;
@@ -355,7 +366,7 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .summary-score { text-align: center; font-size: 2.4rem; font-weight: 700; color: var(--gold); margin: 8px 0; font-family: var(--font-display); text-shadow: 0 0 16px rgba(240, 198, 64, .25); }
 .summary-sub { text-align: center; color: var(--text-dim); margin-bottom: 14px; }
 .pb-banner {
-  text-align: center; color: #1a1226; background: linear-gradient(90deg, #f3d35e, #d4a72c);
+  text-align: center; color: #1a1226; background: linear-gradient(90deg, var(--gold-1), var(--gold-2));
   border-radius: 8px; padding: 8px; font-weight: 700; margin-bottom: 14px;
 }
 .round-pills { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
