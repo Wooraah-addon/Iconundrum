@@ -72,17 +72,27 @@ export function cfgSig(cfg) {
 
 // The all-time board is RANKED: it only admits the mode's default
 // competitive ruleset — otherwise a 20-round game tops a 5-round game on
-// score ceiling alone. Category, seed and price basis don't move the
-// ceiling, so they all rank; rounds/timer/scoring/hard must be default.
-// Defined on the sig so saved games can be classified from their challenge
-// key alone (no schema change).
+// score ceiling alone — AND the full Everything pool (user decision
+// 2026-06-12, supersedes the v0.6.1 any-category rule: themed pools skew
+// difficulty even when the ceiling is unchanged — a Mounts-only HL chain
+// plays easier than the open pool). Seed and price basis still rank.
+// Defined on the stored challenge key so saved games classify retroactively
+// (no schema change).
 export function isRankedSig(mode, sig) {
   const base = cfgSig(makeCfg(mode, { seed: 'x', v: 1 }));
   return sig === base || sig === base + 'bsa';
 }
 
+// Classify a stored game by its full challenge key:
+// mode_pack.cat_seed_vN_sig (no token contains '_').
+export function isRankedKey(mode, ck) {
+  const parts = String(ck).split('_');
+  return parts.length >= 5 && parts[1] === 'items.all'
+    && isRankedSig(mode, parts[parts.length - 1]);
+}
+
 export function isRanked(cfg) {
-  return isRankedSig(cfg.mode, cfgSig(cfg));
+  return cfg.cat === 'all' && isRankedSig(cfg.mode, cfgSig(cfg));
 }
 
 export function buildUrl(cfg, absolute = true) {

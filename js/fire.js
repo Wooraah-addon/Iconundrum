@@ -4,7 +4,7 @@
 // deployed yet — every call here degrades gracefully.
 
 import { firebaseConfig } from './config.js';
-import { cfgSig, isRankedSig } from './cfg.js';
+import { cfgSig, isRankedKey } from './cfg.js';
 
 let db = null;
 let fs = null; // firestore module namespace
@@ -110,17 +110,18 @@ export async function challengeBoard(ck, topN = 20) {
   }
 }
 
-// All-time top scores for a mode — RANKED: default-ruleset games only,
-// classified by the settings sig parsed off each game's challenge key
-// (last _-token; the sig has no underscores). Derived data, so no schema,
-// rules or index change, and it covers every game ever saved. Revisit with
-// a stored ranked flag + (mode, ranked, score DESC) composite index when
-// volume outgrows the capped fetch. Same index-then-fallback pattern.
+// All-time top scores for a mode — RANKED: default ruleset + Everything
+// category only, classified from each game's stored challenge key
+// (isRankedKey). Derived data, so no schema, rules or index change, and it
+// covers every game ever saved — including reclassifying old category games
+// off the board retroactively. Revisit with a stored ranked flag +
+// (mode, ranked, score DESC) composite index when volume outgrows the
+// capped fetch. Same index-then-fallback pattern.
 export async function allTimeBoard(mode, topN = 20) {
   if (!(await ensureInit())) return null;
   const games = fs.collection(db, 'games');
   const ranked = rows => bestPerPlayer(rows
-    .filter(r => r.ck && isRankedSig(mode, r.ck.split('_').pop()))
+    .filter(r => isRankedKey(mode, r.ck))
     .sort((a, b) => b.score - a.score))
     .slice(0, topN);
   try {
