@@ -95,7 +95,8 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
       const attrs = {
         type: 'button',
         class: `cat-tile${state.cat === c.id ? ' active' : ''}`,
-        onclick: () => { if (state.cat !== c.id) { play('click'); state.cat = c.id; fillCats(); } },
+        // Category moves ranked eligibility too (v0.7.13: only 'all' ranks)
+        onclick: () => { if (state.cat !== c.id) { play('click'); state.cat = c.id; fillCats(); refreshRankedNote(); } },
       };
       if (!viable) attrs.disabled = 'disabled';
       catGrid.append(el('button', attrs,
