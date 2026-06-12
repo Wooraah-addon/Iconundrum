@@ -52,9 +52,9 @@ const SAMPLE_GAIN = {
   // Generic fallbacks for any future pack key left untuned below.
   jackpot: 0.4, fanfare: 0.4, gameover: 0.45,
   'horde/correct': 0.70, 'horde/wrong': 0.69, 'horde/confirm': 0.63,
-  'horde/start': 0.70, 'horde/gameover': 0.59, 'horde/jackpot': 0.36, 'horde/fanfare': 0.36,
+  'horde/start': 0.70, 'horde/gameover': 0.59, 'horde/jackpot': 0.55, 'horde/fanfare': 0.36,
   'alliance/correct': 0.52, 'alliance/wrong': 0.32, 'alliance/confirm': 0.40,
-  'alliance/start': 0.57, 'alliance/gameover': 0.32, 'alliance/jackpot': 0.36, 'alliance/fanfare': 0.36,
+  'alliance/start': 0.57, 'alliance/gameover': 0.32, 'alliance/jackpot': 0.55, 'alliance/fanfare': 0.36,
   'mrrgl/correct': 0.55, 'mrrgl/wrong': 0.70, 'mrrgl/start': 0.70,
   'mrrgl/gameover': 0.70, 'mrrgl/jackpot': 0.39, 'mrrgl/fanfare': 0.39,
 };
