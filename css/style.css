@@ -224,9 +224,13 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
   width: 144px; height: 144px;
   border: 3px solid var(--gold-dim);
   border-radius: 14px;
-  box-shadow: 0 0 28px rgba(240, 198, 64, .18);
-  image-rendering: auto;
+  /* Source icons are 56px (the CDN's max) shown at 144px, so they're soft.
+     Can't get sharper pixels — instead make the upscale read as a *framed
+     artifact*: a crisp dark edge grounds it off the bg, and a touch of
+     contrast/saturation lifts the painted detail. */
+  box-shadow: 0 0 28px rgba(240, 198, 64, .18), 0 1px 3px rgba(0, 0, 0, .55);
   background: #181022;
+  filter: saturate(1.06) contrast(1.05);
 }
 .question-prompt { text-align: center; color: var(--text-dim); margin-bottom: 16px; }
 .question-prompt strong { color: var(--text); }
