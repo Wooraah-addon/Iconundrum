@@ -4,7 +4,7 @@
 // Deliberately separate from the dev tracker: wider-user feedback shouldn't
 // merge into the curated work queue (it can get spammy).
 
-import { el, toast } from './ui.js';
+import { el, toast, icon } from './ui.js';
 import { play } from './sound.js';
 import * as fire from './fire.js';
 import * as profile from './profile.js';
@@ -62,7 +62,7 @@ export function openFeedback(type) {
   };
 
   const modal = el('div', { class: 'modal panel' },
-    el('h3', { class: 'modal-title' }, isBug ? '🐞 Report a bug' : '💡 Suggest a feature'),
+    el('h3', { class: 'modal-title' }, icon(isBug ? 'bug' : 'bulb'), isBug ? ' Report a bug' : ' Suggest a feature'),
     row('Game mode', modeSelect),
     row('Context', ctxSelect),
     el('div', { class: 'form-row stack' },

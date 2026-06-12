@@ -5,7 +5,7 @@
 import { CATEGORIES, catItems } from './data.js';
 import { makeCfg, buildUrl, DEFAULTS, LIMITS, isRanked } from './cfg.js';
 import { newSeed } from './rng.js';
-import { el, toast, copyText, pulseCopied } from './ui.js';
+import { el, toast, copyText, pulseCopied, icon } from './ui.js';
 import { play } from './sound.js';
 
 const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Higher or Lower' };
@@ -197,7 +197,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
     codeRow,
     el('div', { class: 'action-row' },
       el('button', { class: 'btn', onclick: () => { play('click'); close(); onSolo(cfgNow()); } }, 'Play solo'),
-      el('button', { class: 'btn', onclick: () => { play('click'); close(); onLobby(cfgNow()); } }, '👥 Create lobby'),
+      el('button', { class: 'btn', onclick: () => { play('click'); close(); onLobby(cfgNow()); } }, icon('users'), ' Create lobby'),
       el('button', { class: 'btn secondary', onclick: close }, 'Cancel'),
     ),
   );

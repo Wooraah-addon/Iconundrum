@@ -14,6 +14,20 @@ export function showScreen(id) {
 export const escapeHtml = s => String(s).replace(/[&<>"']/g,
   c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// Inline SVG icon from the #ic-<name> sprite (defined in index.html) — a
+// coherent single-colour set replacing load-bearing emoji. currentColor +
+// sized via the .ic class, so it tints and scales with the text it sits in.
+const SVG_NS = 'http://www.w3.org/2000/svg';
+export function icon(name, extraClass = '') {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', `ic ic-${name}${extraClass ? ' ' + extraClass : ''}`);
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(SVG_NS, 'use');
+  use.setAttribute('href', `#ic-${name}`);
+  svg.appendChild(use);
+  return svg;
+}
+
 export function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {

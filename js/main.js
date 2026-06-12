@@ -106,11 +106,15 @@ function setupHome() {
     joinInput.addEventListener('keydown', e => { if (e.key === 'Enter') joinByCode(joinInput.value); });
   }
 
+  const setSoundIcon = (btn, muted) => {
+    const u = btn.querySelector('use');
+    if (u) u.setAttribute('href', muted ? '#ic-sound-off' : '#ic-sound-on');
+  };
   document.querySelectorAll('.sound-toggle').forEach(btn => {
-    btn.textContent = sound.isMuted() ? '🔇' : '🔊';
+    setSoundIcon(btn, sound.isMuted());
     btn.addEventListener('click', () => {
       const muted = sound.toggleMuted();
-      document.querySelectorAll('.sound-toggle').forEach(b => (b.textContent = muted ? '🔇' : '🔊'));
+      document.querySelectorAll('.sound-toggle').forEach(b => setSoundIcon(b, muted));
       if (!muted) sound.play('coin');
     });
   });

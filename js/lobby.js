@@ -10,7 +10,7 @@
 // screen. Higher/Lower uses the synced start only — it's untimed and
 // you-ride-till-you-die, so per-round pacing doesn't apply.
 
-import { el, showScreen, toast, copyText, pulseCopied } from './ui.js';
+import { el, showScreen, toast, copyText, pulseCopied, icon } from './ui.js';
 import { buildUrl } from './cfg.js';
 import { play } from './sound.js';
 import * as fire from './fire.js';
@@ -55,7 +55,7 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
         const ok = await fire.startReadyCheck(cfg.seed, playerName);
         if (!ok) toast('Ready check failed — check your connection');
       },
-    }, '📣 Ready check'));
+    }, icon('megaphone'), ' Ready check'));
     actions.append(el('button', {
       class: 'btn',
       onclick: async () => {
@@ -63,7 +63,7 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
         const ok = await fire.launchLobby(cfg.seed, Date.now() + COUNTDOWN_MS + LAUNCH_BUFFER_MS);
         if (!ok) toast('Launch failed — check your connection');
       },
-    }, '🚀 Launch game'));
+    }, icon('rocket'), ' Launch game'));
   }
 
   // Everyone can walk: unsubscribe, drop off the roster (best-effort,
@@ -332,7 +332,7 @@ export function buildSyncFooter(sync, { last, onHostNext, onLocalNext }) {
     btn.addEventListener('click', () => { btn.disabled = true; play('click'); onHostNext(); });
     wrap.append(btn);
   } else {
-    const note = el('div', { class: 'lb-note' }, '⏳ The host starts the next round…');
+    const note = el('div', { class: 'lb-note' }, icon('hourglass'), ' The host starts the next round…');
     wrap.append(note);
     const delay = Math.max(1000, sync.failsafeAt() - Date.now());
     setTimeout(() => {
@@ -353,7 +353,7 @@ function renderRoster(rosterEl, lobby, playerName, onKick = null) {
   const ready = lobby.ready || {};
   for (const name of lobby.players || []) {
     rosterEl.append(el('li', { class: name === playerName ? 'me' : '' },
-      name === lobby.host ? `👑 ${name}` : name,
+      name === lobby.host ? el('span', {}, icon('crown'), ' ' + name) : name,
       name in ready
         ? el('span', { class: ready[name] ? 'ready-yes' : 'ready-no' }, ready[name] ? ' ✓' : ' ✗')
         : null,

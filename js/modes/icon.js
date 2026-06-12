@@ -13,7 +13,7 @@
 
 import { rngFor, sample, shuffled } from '../rng.js';
 import { iconUrl, catItems, preloadIcons } from '../data.js';
-import { el, startTimer, renderReveal } from '../ui.js';
+import { el, startTimer, renderReveal, icon } from '../ui.js';
 import { play } from '../sound.js';
 import { buildSyncFooter, revealHoldMs } from '../lobby.js';
 
@@ -193,7 +193,7 @@ export function start(ctx) {
       const hold = synced() ? revealHoldMs(ctx.sync.roundStartMs, cfg.timer * 1000, Date.now()) : 0;
       let waitEl = null;
       if (hold > 600) {
-        waitEl = el('div', { class: 'lb-note round-wait' }, '🔒 Locked in — revealed when the round ends.');
+        waitEl = el('div', { class: 'lb-note round-wait' }, icon('lock'), ' Locked in — revealed when the round ends.');
         wrap.append(waitEl);
       }
       setTimeout(() => {

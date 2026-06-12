@@ -12,7 +12,7 @@
 
 import { rngFor, shuffled } from '../rng.js';
 import { iconUrl, fmtGoldLong, catItems, priceOf, preloadIcons } from '../data.js';
-import { el } from '../ui.js';
+import { el, icon } from '../ui.js';
 import { play } from '../sound.js';
 import { celebrate } from '../fx.js';
 
@@ -245,7 +245,7 @@ function renderRace(container, sync) {
       el('tbody', {}, ...rows.map(r =>
         el('tr', { class: r.name === sync.playerName ? 'me' : '' },
           el('td', {}, String(r.rank)),
-          el('td', { class: 'race-state' }, r.dead ? '💀' : '▶'),
+          el('td', { class: 'race-state' }, r.dead ? icon('skull') : '▶'),
           el('td', {}, r.name),
           el('td', { class: 'num' }, String(r.score)),
         )))));

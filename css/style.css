@@ -46,6 +46,14 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Inline icon set (sprite in index.html). Stroke lives here, not on the
+   <defs> (presentation attrs there don't cross the <use> boundary). */
+.ic {
+  width: 1em; height: 1em; display: inline-block; vertical-align: -.14em; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
 body {
   /* Centre stays exactly --bg (matches the logo's baked-in background, so no
      seam shows around the PNG); only the edges darken for a subtle vignette. */
