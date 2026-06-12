@@ -210,13 +210,19 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .timer-track {
   height: 8px; background: #181022; border-radius: 4px; overflow: hidden; margin-bottom: 18px;
   border: 1px solid var(--border);
+  /* Faint tick segments show through the spent (empty) portion — a gauge
+     draining, not a plain progress meter. */
+  background-image: repeating-linear-gradient(90deg, transparent 0 23px, rgba(240, 198, 64, .07) 23px 24px);
 }
 .timer-bar {
   height: 100%; width: 100%;
   background: linear-gradient(90deg, var(--gold), #e0883a);
+  /* Hot leading edge — a bright cap at the bar's receding head reads like a
+     burning fuse. (Inset, so the track's overflow:hidden doesn't clip it.) */
+  box-shadow: inset -4px 0 6px rgba(255, 250, 232, .55);
   transition: width .1s linear;
 }
-.timer-bar.urgent { background: var(--red); }
+.timer-bar.urgent { background: var(--red); box-shadow: inset -4px 0 7px rgba(255, 226, 226, .75); }
 
 /* ---- Question area ---- */
 .question-icon-wrap { text-align: center; margin: 10px 0 22px; }
