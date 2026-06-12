@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Changelog — Iconundrum</title>
-  <meta name="description" content="What's new in Iconundrum, the WoW icon guessing game.">
+  <meta name="description" content="What's new in Iconundrum, the WoW item guessing game.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23221733'/><text x='50' y='72' font-size='64' text-anchor='middle' fill='%23f0c640' font-family='Georgia'>%3F</text></svg>">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -29,327 +29,66 @@
       <h2 style="color:var(--gold); margin-bottom:14px">Changelog</h2>
 
       <div class="cl-entry">
-        <h3>v0.8.3 — Help &amp; FAQ <span class="cl-date">12 June 2026</span></h3>
+        <h3>v0.8 — Sound packs &amp; a clearer name <span class="cl-date">June 2026</span></h3>
         <ul>
-          <li>New <b>FAQ page</b> (linked in the footer) answering the common questions — the modes, what "ranked" means, why a score did or didn't post, playing with friends, and where the data comes from.</li>
+          <li><b>Faction sound packs</b> — tap the sliders icon by the speaker (top-right) and pick <b>Alliance</b> (human peasant — "Right-o!") or <b>Horde</b> (orc peon — "Work, work."); the big moments get WoW voice lines, while <b>Classic</b> keeps the original sounds. Preview buttons, a <b>streamer-safe</b> option, and a third pack… locked for now. Mrrrgl?</li>
+          <li><b>"Guess the Icon" is now "Guess the Item"</b> — clearer for naming the item from its icon, and it leaves room for a future Guess the Spell. Nothing about play changes; scores and leaderboards carry over.</li>
+          <li>A small <b>×</b> to <b>dismiss</b> an old challenge from your home screen (the link still works if you want it back).</li>
+          <li>A new <b>FAQ page</b> (linked in the footer) covering the modes, what "ranked" means, and how scores post.</li>
         </ul>
       </div>
 
       <div class="cl-entry">
-        <h3>v0.8.2 — Dismiss a challenge <span class="cl-date">12 June 2026</span></h3>
+        <h3>v0.7 — Bigger pools, a proper race &amp; a craft pass <span class="cl-date">June 2026</span></h3>
         <ul>
-          <li>A challenge banner on your home screen now has a small <b>×</b> to <b>dismiss it</b> — clear away an old challenge you're done with for a tidy home screen. The original link still works if you want it back.</li>
+          <li><b>Higher or Lower is now a multiplayer race</b> — launch it from a lobby and everyone rides the <em>same</em> chain at their own pace, with live standings and a 💀 when a streak ends. Fall early and you spectate to the finish. The default game is now <b>10 rounds</b>.</li>
+          <li><b>A cleaner item pool (v2):</b> every multi-rank crafted item is gone (no more "okay, but <em>which rank</em>?"), ~140 weak entries culled, fresh EU prices throughout — and <b>smarter, wider wrong answers</b> so you can't learn the usual suspects. Old challenge links still play their original pool.</li>
+          <li>The category picker became a <b>grid of icon tiles</b> with flagship faces and clearer names; the near-empty Recipes category retired.</li>
+          <li><b>Honest leaderboards:</b> ranked now means default rules <em>and</em> the Everything category; the end-of-game screen always tells you whether (and why) your score posted; and there's a <b>Reset to defaults</b> button. Plus a fix for a bug that briefly stopped scores saving.</li>
+          <li><b>Auctioneer Drezbit</b> heckles your Value guesses — 114 lines, keyed to how far off you were.</li>
+          <li>A <b>craft pass</b> throughout: the Cinzel display typeface, the gold logo in-game, a sharpened home screen, one coherent gold icon set, button feel and depth, score count-ups and little celebrations. All of it respects "reduced motion".</li>
         </ul>
       </div>
 
       <div class="cl-entry">
-        <h3>v0.8.1 — Guess the Item <span class="cl-date">12 June 2026</span></h3>
+        <h3>v0.6 — Game night: lobbies, leaderboards &amp; feedback <span class="cl-date">June 2026</span></h3>
         <ul>
-          <li><b>"Guess the Icon" is now "Guess the Item"</b> — a clearer name for naming the item from its icon (and it leaves room for a future Guess the Spell, which has icons of its own). Nothing about how you play changes, and all your scores and leaderboards carry over untouched.</li>
+          <li><b>Ready checks</b>, <b>one-click join</b> by game code, a join box on the home screen, and proper <b>link previews</b> in Discord and Twitch chat.</li>
+          <li><b>Fairer lobbies:</b> your result stays hidden until the round ends for <em>everyone</em> (no peeking off a friend's screen), hosts can remove players, and it's one entry per device.</li>
+          <li><b>Livelier standings</b> — the points you scored each round and ▲▼ movement in the rankings — plus a leaderboard refresh so late scores still show up.</li>
+          <li><b>Ranked all-time boards</b> (default ruleset only) and <b>one ranked shot per board</b>, so a memorized replay can't farm the leaderboard.</li>
+          <li><b>Extra lives</b> for Higher or Lower, quick-entry value buttons, and a personal-record strip on the home screen.</li>
+          <li><b>Report a bug / Suggest a feature</b> buttons, keyboard play and accessibility polish, and behind-the-scenes score and lobby hardening.</li>
         </ul>
       </div>
 
       <div class="cl-entry">
-        <h3>v0.8.0 — Faction sound packs <span class="cl-date">12 June 2026</span></h3>
+        <h3>v0.5 — Price basis &amp; sharing <span class="cl-date">June 2026</span></h3>
         <ul>
-          <li>New <b>sound packs</b> — tap the sliders icon by the speaker, top-right. Pick <b>Alliance</b> (human peasant — "Right-o!") or <b>Horde</b> (orc peon — "Work, work.") and the big moments get WoW-flavoured voice lines. The original sounds stay as <b>Classic</b>.</li>
-          <li><b>Try-it buttons</b> in the panel so you can preview a pack before you commit, and a <b>Streamer-safe</b> option that keeps things quieter with no loud victory stingers.</li>
-          <li>There's a <b>third pack</b>, locked for now. Mrrrgl?</li>
+          <li>Choose what you're guessing in Value and Higher or Lower: the <b>sale average</b> (what items actually sell for, the default) or the <b>market average</b> (what they're posted for) — each keeps its own board. Value guesses take shorthand (<code>25k</code>, <code>1.5m</code>), and reveals tell you how far off you were.</li>
+          <li>A <b>what's-new strip</b> on the home screen, so you can see the latest without leaving.</li>
         </ul>
       </div>
 
       <div class="cl-entry">
-        <h3>v0.7.14 — Craft pass <span class="cl-date">12 June 2026</span></h3>
+        <h3>v0.3–0.4 — Multiplayer foundations <span class="cl-date">June 2026</span></h3>
         <ul>
-          <li>The multiplayer countdown now lands on a big green <b>GO!</b> instead of cutting straight in.</li>
-          <li>Buttons feel <b>minted and pressable</b> — a struck-gold edge and a real press; copying a link gives the button a gold pulse so the share registers at your fingertip.</li>
-          <li>More depth throughout: <b>panels lift off the background</b>, a gold filigree divider marks section breaks, the question icon sits in a proper frame, and the timer reads as a draining gauge with a hot leading edge.</li>
-          <li>The Higher/Lower <b>VS</b> and the signature <b>?</b> got a little shine.</li>
-          <li>Cleaner icons everywhere — the scattered emoji are now <b>one coherent gold icon set</b> that looks the same on every device.</li>
+          <li>Create a <b>live lobby</b> from any setup screen — friends join via the link and appear in the roster in real time. A synced countdown drops everyone into the identical board, the host paces the rounds, and standings shuffle between them. Lobby links live on afterwards as regular challenge links.</li>
         </ul>
       </div>
 
       <div class="cl-entry">
-        <h3>v0.7.13 — Ranked means Everything <span class="cl-date">12 June 2026</span></h3>
+        <h3>v0.1–0.2 — Launch <span class="cl-date">June 2026</span></h3>
         <ul>
-          <li>The global ranked leaderboards now require the <b>Everything category</b> on top of default rules — themed pools (a Mounts-only Higher/Lower chain, say) play easier than the open pool, so they compete on their own challenge boards instead. Applies to past games too.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.12 — Scores save again <span class="cl-date">12 June 2026</span></h3>
-        <ul>
-          <li><b>Fixed: scores weren't saving.</b> A bug that slipped in yesterday evening (v0.6.10) silently stopped <em>every</em> finished game from posting to the leaderboards. Games played since then couldn't be recovered — sorry, your legendary runs live on in your heart (and your local personal best). Leaderboards are back to normal now.</li>
-          <li>The end-of-game screen now <b>always tells you whether your score posted</b> — and if it didn't, exactly why (replay, custom settings, connection trouble).</li>
-          <li>New in setup: a <b>Reset to defaults</b> button, plus a note showing whether your settings qualify for the global ranked leaderboards.</li>
-          <li>More celebration where it's earned: a gold <b>coin-burst</b> on Value jackpots, new personal bests and Higher/Lower milestone streaks; the final score <b>counts up</b>; correct answers bounce, wrong ones shake; the HL streak counter grows and glows as your run builds.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.11 — A little more depth <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>A soft vignette now deepens the edges of the home screen — subtle atmosphere, nothing flashy. Respects "reduced motion".</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.10 — A proper typeface <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Headings, mode names, and the big score numbers now wear <b>Cinzel</b> — an engraved, Warcraft-flavoured display face — instead of the default system serif. Small touch, more crafted feel.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.9 — Home screen, sharpened <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>The three playable modes are now front and centre — each with its own <b>gold emblem</b> and a clearer layout — while the upcoming packs sit in a tidy "Coming soon" strip instead of competing for attention.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.8 — The auctioneer found new material <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>The goblin auctioneer's repertoire grew from 24 lines to <b>114</b> — sharper, meaner, and he won't repeat himself twice in a row.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.7 — One logo to rule them all <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>The in-game header now wears the <b>proper gold logo</b> instead of plain text — matching the home screen. Still your way back to the main menu.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.6 — The auctioneer has opinions <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li><b>Goblin heckles:</b> Guess the Value reveals now come with commentary from <b>Auctioneer Drezbit</b>, keyed to how far off you were. Nail the price and he gets suspicious. Miss by 10× and… well, you'll see.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.5 — Setup screen tidied <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Fixed the <b>big empty gap</b> under the category tiles and made all tiles the same size with smaller labels — the whole setup now fits one clean screen.</li>
-          <li><b>Mounts & Toys</b> (renamed): battle pets have moved out, ahead of a proper Pets category later. They're still in Everything.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.4 — Sharper categories, honest leaderboards <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Category tiles re-iconed and renamed: <b>Everything</b> (gold coins), <b>Weapons & Armor</b> (sword), <b>Trade Goods & Gems</b> (Peacebloom), <b>Consumables & Enchants</b> (potion), <b>Mounts, Pets & Toys</b> (riding horse). The near-empty Recipes category is retired from the picker (old recipe links still work).</li>
-          <li>After a <b>custom-rules game</b>, the All-time tab now explains your game competes on its challenge link only — instead of a misleading "No scores yet".</li>
-          <li>Your own just-finished score now always appears on your challenge board, even if the server is a beat behind.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.3 — Category tiles get faces <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Each category tile now wears its <b>most iconic item</b>: Orb of Deception for Everything, Teebu's Blazing Longsword for Transmog, <b>Peacebloom</b> for Trade Goods, Savory Deviate Delight for Consumables, Sky Golem for Curios.</li>
-          <li>The setup window is wider and the tile grid auto-fits — ready for more categories as new packs land.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.2 — A cleaner item pool <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li><b>New item pool (v2):</b> every multi-rank crafted item is gone — no more "okay, but <em>which rank</em>?" in the price modes — along with ~140 weak entries (obscure recipes, near-identical card sets, lookalike floods). Fresh EU prices throughout.</li>
-          <li><b>Smarter wrong answers:</b> Guess the Icon now draws its decoys from a much wider pool, and the same decoy won't haunt every round of a game. (Farewell, Silverleaf.)</li>
-          <li>Old challenge links keep playing on the exact pool and decoys they were made with — only new games use v2.</li>
-          <li>Heads up: the <b>Recipes & Patterns category</b> shrank to a handful of items in the cleanup, so it's unavailable for now.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7.1 — A prettier setup screen <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>The category dropdown is now a <b>grid of icon tiles</b> — see each pool's flagship item and item count at a glance, tap to pick.</li>
-          <li>Setup options grouped under <b>The board</b> (what you play) and <b>The rules</b> (how it scores).</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.7 — Higher/Lower multiplayer: the race <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li><b>Default game length is now 10 rounds</b> (was 5) for Guess the Icon and Guess the Value. The ranked all-time boards follow the default ruleset, so they make a fresh start on 10 rounds — day-one 5-round boards live on via their challenge links.</li>
-          <li><b>Higher or Lower is now a proper multiplayer race.</b> Launch it from a lobby and everyone rides the <em>same</em> chain at their own pace — with <b>live standings under the cards</b>: every rider's streak, 💀 when someone falls.</li>
-          <li>Fall early and you <b>spectate the race live</b> until the last rider goes down — then everyone lands on the final board together. (Or skip ahead whenever you like.)</li>
-          <li>Extra-lives games race too.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.11 — Fairer lobbies <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li><b>No more answer leaks:</b> in lobby games, your right/wrong result (colours, sounds, the answer card) now stays hidden until the round timer runs out for <em>everyone</em>. Answer early and you'll see "🔒 Locked in" until the reveal. No more reading the answer off a friend's (or streamer's) screen.</li>
-          <li><b>Hosts can remove players</b> — a ✕ next to each name in the lobby roster.</li>
-          <li><b>One entry per device per lobby:</b> rejoining under a different name just brings you back as your original name — no double-dipping for extra guesses.</li>
-          <li>Bonus fix: if you <b>refresh mid-lobby</b>, you now walk straight back in instead of being told your own name is taken.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.10 — Leaderboard refresh + clearer sharing <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Post-game leaderboards got a <b>↻ refresh button</b>, and after a lobby game the board <b>refreshes itself</b> a few seconds later — so everyone's score shows up even if you finished first.</li>
-          <li>Guess the Value now <b>says you can type in the box</b> — some players thought the +1k/+10k buttons were the only way in.</li>
-          <li>Clearer sharing: the lobby's <b>Copy invite link</b> button is now the prominent one, and the setup screen explains its challenge link is for <b>solo/async play</b>, not lobby invites.</li>
-          <li>The home screen's <b>name and game-code boxes</b> are now visually separate — less crowded, clearer what each does.</li>
-          <li>Small fixes: expired never-started lobbies now say so (instead of "already started"), and Higher/Lower's H/L hotkeys ignore typing in text boxes.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.9 — Livelier multiplayer standings <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Between rounds in a lobby, the standings now show <b>the points you scored that round</b> (+N) next to your total — not just the running score.</li>
-          <li>And <b>green ▲ / red ▼ arrows</b> show who climbed or slipped in the rankings after each round. Watch the board shuffle live as everyone's answers land.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.8 — Tell us what you think <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>New <b>Report a bug</b> and <b>Suggest a feature</b> buttons on the home screen — a quick form, no account needed, goes straight to the developer.</li>
-          <li>Turned the <b>ready-check chime down</b> — it was too loud (thanks to the stream crew for flagging it).</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.7 — Lobby links wait for the host <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Open a lobby invite before the host has started it and you'll now see a <b>"waiting for the host"</b> screen and join automatically the moment it opens — instead of being dropped into a solo game by mistake.</li>
-          <li>Hosts: share the <b>Copy lobby link</b> button from the lobby screen for this (the setup "challenge link" is still there for solo/async play).</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.6 — One-click join &amp; keyboard play <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Joining by <b>game code</b> now drops you straight into the lobby in one click (it used to need a second tap — thanks to everyone on stream who flagged it).</li>
-          <li><b>Keyboard controls:</b> press 1–4 to pick an answer in Guess the Icon, and H / L (or ↑ / ↓) to call Higher or Lower — quicker, and fairer when speed counts.</li>
-          <li>Accessibility polish: visible focus outlines for keyboard users, clearer item-name contrast, and full respect for "reduce motion" settings.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.5 — Game codes &amp; sturdier boards <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Got a game code from a host? There's now a <b>Join box</b> right on the home screen — type the code and you're in, no need for the full link.</li>
-          <li>Links shared in Discord and Twitch chat now show a proper <b>preview card</b> instead of a bare URL.</li>
-          <li>Behind the scenes: tighter leaderboard protection (per-mode score limits), sturdier lobbies, smoother icon loading so a slow connection doesn't cost you points, and a security fix on lobby names.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.4 — Extra lives <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Higher or Lower can now be played with <b>extra lives</b> — pick 2, 3 or 4 hearts in setup and a wrong call costs a heart instead of the run. Hearts show under the cards while you play.</li>
-          <li>Standard sudden-death stays the ranked game: lives runs keep their own challenge boards but don't touch the all-time board.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.3 — Polish <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>The home-screen record is clearer: total games and favourite mode on one line, your <b>high scores on default settings</b> on the next — matching what the ranked board counts, so a 20-round marathon doesn't masquerade as your best.</li>
-          <li>A little more life: drifting gold motes behind the home screen, button and card micro-motion, a pulse on the timer's final seconds, reveals that pop. All of it stands down if your system asks for reduced motion.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.2 — One shot per board <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Scores post the <b>first time</b> you play a board — replaying a challenge link is still fun, but a memorized run doesn't go to any leaderboard. The challenge banner tells you when you're revisiting a board you've already played.</li>
-          <li>Leaderboards now show each player once (their posted score), instead of one name filling half the table.</li>
-          <li>The lobby has a <b>Main Menu</b> button — leaving takes you off the roster, and if the host walks, waiting players are told instead of staring at a dead lobby. (In-game, clicking the Iconundrum wordmark up top has always been the way home.)</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6.1 — Ranked all-time boards <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>The all-time leaderboard is now <b>ranked</b>: it only lists games played on each mode's standard ruleset (5 rounds, default timer, standard scoring), so a 20-round marathon can't out-point a 5-round game on volume alone. Any category and either price basis still count — they don't change the score ceiling.</li>
-          <li>Custom-rules games are marked on the results screen and compete on their challenge link's board, exactly as before. Nothing about challenge boards changed.</li>
-          <li>Hard mode is <b>benched</b> hours after launch — ten seconds to type an item name was goblin cruelty, not difficulty. It'll be back once the pacing is fair. Existing hard-mode links keep working.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.6 — Ready check <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Lobby <b>ready checks</b> — the host pings everyone before launching, the real WoW ready-check chime plays, and ticks and crosses appear in the roster as players answer. Not required to launch — just very WoW.</li>
-          <li><b>Hard mode</b> for Guess the Icon: no choices — type the item name. Spelling is forgiving (case and punctuation never count, one typo slides on long names), your pick locks into the challenge link, and hard games keep their own leaderboard.</li>
-          <li><b>Quick-entry buttons</b> on value guesses: tap +1k / +10k / +100k / +1m to build your guess — no fighting the phone keyboard.</li>
-          <li><b>Your record</b> on the home screen: games played, best score per mode, favourite mode. Stored on your device only — nothing leaves it.</li>
-          <li>Mobile polish: Higher-or-Lower cards now sit compactly side-by-icon on small screens, and the value entry no longer overflows narrow phones.</li>
-          <li>The logo went on a diet (194KB → 73KB) — the home page loads that bit faster.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.5.1 — Little things <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>What's-new strip on the home screen — the latest changelog entry, one click to expand, no trip to the changelog page needed.</li>
-          <li>The post-game "All modes" button now says "Main Menu", because that's what it is.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.5 — Pick your price basis <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Value and Higher-or-Lower games now let you choose what you're guessing: the <b>sale average</b> (TSM — what items actually sell for, the new default) or the <b>market average</b> (what they're posted for). Your pick shows in setup and in-game, locks into the challenge link, and each basis keeps its own leaderboard. Old links keep working exactly as before.</li>
-          <li>Value guesses take shorthand now — <code>25k</code>, <code>1.5m</code>, and <code>25,000</code> all work.</li>
-          <li>Reveals tell you how far off you were ("18% low"), and Higher-or-Lower shows the price gap ("2.3× higher").</li>
-          <li>Fixed: a wildly-off value guess was reported as "No guess" — it now gets the "Way off" it deserves.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.4 — Synced rounds <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>In multiplayer Icon and Value games, the host now controls the pace: the "Start next round" button unlocks a few seconds after everyone's timer has run out, and all players flip to the next round together.</li>
-          <li>Rolling standings between rounds — watch the leaderboard shuffle as scores land.</li>
-          <li>If the host wanders off, players can drop to their own pace after a minute.</li>
-          <li>Lobbies that were never launched expire after 20 minutes — their links turn into regular challenge links instead of an eternal waiting room.</li>
-          <li>Higher or Lower lobbies keep the synced start, then it's every goblin for themselves — last streak standing.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.3 — Multiplayer lobbies <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Create a live lobby from any game's setup screen — friends join via the lobby link and appear in the roster in real time.</li>
-          <li>Host launches when ready; everyone gets a synced 10-second countdown into the identical board.</li>
-          <li>Lobby links keep working after game night as regular challenge links.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.2 — Make it yours <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Pre-game setup: pick a category (Transmog, Trade Goods, Consumables, Recipes, Mounts &amp; Curios — or Everything), rounds, and timer.</li>
-          <li>Scoring options: speed bonus on/off, value-guess strictness (Casual / Goblin / Tycoon), Higher-or-Lower call tightness.</li>
-          <li>Game codes: copy your challenge link <em>before</em> playing, then compete on the same board.</li>
-          <li>Sounds (with mute toggle) and the proper logo.</li>
-        </ul>
-      </div>
-
-      <div class="cl-entry">
-        <h3>v0.1 — Launch <span class="cl-date">11 June 2026</span></h3>
-        <ul>
-          <li>Three modes: Guess the Icon, Guess the Value, Higher or Lower.</li>
-          <li>600-item pool built from live EU auction-house data, with real market stats on every reveal.</li>
-          <li>Challenge links: one URL, same rounds for everyone, shared leaderboard. Per-challenge and all-time boards.</li>
+          <li>Three modes — <b>Guess the Item</b>, <b>Guess the Value</b>, <b>Higher or Lower</b> — on a 600-item pool built from live EU auction-house data, with real market stats on every reveal.</li>
+          <li><b>Challenge links</b> give everyone the identical rounds and a shared leaderboard (per-challenge and all-time), and pre-game setup lets you pick category, rounds, timer and scoring.</li>
         </ul>
       </div>
     </div>
 
     <div class="action-row" style="margin-bottom:24px">
       <a class="btn" href="./">Play Iconundrum</a>
+      <a class="btn secondary" href="faq.html">FAQ</a>
     </div>
   </div>
 
