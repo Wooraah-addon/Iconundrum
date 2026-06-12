@@ -8,7 +8,7 @@ community game nights.
 
 ## Modes (v0)
 
-- **Guess the Icon** — name the item from its icon. Four choices, ten seconds,
+- **Guess the Item** — name the item from its icon. Four choices, ten seconds,
   speed scores extra.
 - **Guess the Value** — Price Is Right, goblin edition: free-entry gold guess,
   closest wins. Exact (±1%) hits the 5,000-point jackpot.

@@ -11,7 +11,7 @@ import * as profile from './profile.js';
 
 const MODE_OPTS = [
   ['general', 'General / not mode-specific'],
-  ['icon', 'Guess the Icon'],
+  ['icon', 'Guess the Item'],
   ['value', 'Guess the Value'],
   ['hl', 'Higher or Lower'],
 ];

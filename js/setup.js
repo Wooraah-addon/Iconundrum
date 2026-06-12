@@ -8,7 +8,7 @@ import { newSeed } from './rng.js';
 import { el, toast, copyText, pulseCopied, icon } from './ui.js';
 import { play } from './sound.js';
 
-const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Higher or Lower' };
+const MODE_LABELS = { icon: 'Guess the Item', value: 'Guess the Value', hl: 'Higher or Lower' };
 
 // Minimum pool sizes for a category to be offered.
 const MIN_ICON = 40;

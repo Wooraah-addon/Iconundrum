@@ -22,7 +22,7 @@ import * as modeHl from './modes/hl.js';
 import { initCoin } from './coin.js';
 
 const MODES = { icon: modeIcon, value: modeValue, hl: modeHl };
-const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Higher or Lower' };
+const MODE_LABELS = { icon: 'Guess the Item', value: 'Guess the Value', hl: 'Higher or Lower' };
 
 let bundle = null;
 let game = null; // { cfg, result }
