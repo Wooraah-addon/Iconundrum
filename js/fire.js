@@ -35,9 +35,16 @@ export function challengeKey(cfg) {
   return `${cfg.mode}_${cfg.pack}.${cfg.cat}_${cfg.seed}_v${cfg.v}_${cfgSig(cfg)}`;
 }
 
+// Why the last saveGame returned null — Firebase error code ('permission-denied',
+// 'resource-exhausted', …) or 'offline'. Surfaced in the end-of-game status so
+// a failed post is diagnosable from the summary screen, no DevTools needed.
+let lastError = null;
+export function lastSaveError() { return lastError; }
+
 // Write the completed game. Returns the doc id or null.
 export async function saveGame({ cfg, player, score, rounds }) {
-  if (!(await ensureInit())) return null;
+  lastError = null;
+  if (!(await ensureInit())) { lastError = 'offline'; return null; }
   try {
     const doc = {
       ck: challengeKey(cfg),
@@ -50,6 +57,7 @@ export async function saveGame({ cfg, player, score, rounds }) {
     const ref = await fs.addDoc(fs.collection(db, 'games'), doc);
     return ref.id;
   } catch (e) {
+    lastError = (e && (e.code || e.message)) || 'unknown';
     console.warn('saveGame failed (rules deployed?):', e);
     return null;
   }

@@ -410,7 +410,15 @@ async function onFinish(result) {
         ? '✓ Score saved — posted to this challenge’s board and the global ranked leaderboard.'
         : '✓ Score saved to this challenge’s board. Custom settings, so it doesn’t count on the global ranked leaderboard — use “Reset to defaults” in setup to compete there.');
     } else {
-      setStatus('warn', 'Couldn’t reach the leaderboards — your score is saved on this device only, nothing was lost. Check your connection and play a fresh board to post.');
+      // Name the failure: rules drift and quota exhaustion need the dev,
+      // connection problems need the player — don't make anyone guess.
+      const why = fire.lastSaveError();
+      const hint = why === 'permission-denied'
+        ? 'the server refused the save — the game’s security rules need republishing (a dev-side fix, nothing wrong on your end)'
+        : why === 'resource-exhausted'
+          ? 'the game’s free-tier daily quota is used up — scores post again after the daily reset'
+          : 'couldn’t reach the leaderboards — check your connection';
+      setStatus('warn', `Score not posted: ${hint}. Your run still counts on this device (error: ${why || 'unknown'}).`);
     }
   }
   loadBoards('challenge');
