@@ -32,8 +32,8 @@ const NAMES = ['click', 'coin', 'correct', 'wrong', 'jackpot', 'tick', 'gameover
 // random. Keys absent here (click/coin/tick) fall through to synth. mrrgl ships
 // LOCKED — the unlock flag is written by the achievement system (F12/F54).
 const PACKS = {
-  alliance: { correct: 3, wrong: 4, jackpot: 1, gameover: 1, fanfare: 1, start: 1, confirm: 1 },
-  horde: { correct: 3, wrong: 3, jackpot: 1, gameover: 1, fanfare: 1, start: 1, confirm: 1 },
+  alliance: { correct: 18, wrong: 19, jackpot: 1, gameover: 1, fanfare: 1, start: 1, confirm: 1 },
+  horde: { correct: 15, wrong: 16, jackpot: 1, gameover: 1, fanfare: 1, start: 1, confirm: 1 },
   mrrgl: { correct: 1, wrong: 1, jackpot: 1, gameover: 1, fanfare: 1, start: 1 },
 };
 
@@ -48,16 +48,17 @@ export const PACK_META = [
 // Per-sample playback gain. Keyed by "pack/name" first, then by name, default
 // 0.5. Levels were measured with ffmpeg volumedetect and matched to the
 // readycheck reference (mean -12.4 dB @ 0.3 — the level vetted on stream after
-// B8). Voice pools record quiet so they sit high; one gain per pool covers all
-// its variants (clips from the same emote set are level-matched). Re-measure if
-// any sample is resourced.
+// B8). The multi-race correct/wrong pools are ffmpeg loudnorm'd to a uniform
+// ~-19 dB so one gain per pool sits them evenly; 0.55 keeps these (frequent,
+// every-answer) voice lines just under the readycheck level. Re-measure if any
+// sample is resourced.
 const SAMPLE_GAIN = {
   readycheck: 0.3,
   // Generic fallbacks for any future pack key left untuned below.
   jackpot: 0.4, fanfare: 0.4, gameover: 0.45,
-  'horde/correct': 0.70, 'horde/wrong': 0.70, 'horde/confirm': 0.63,
+  'horde/correct': 0.55, 'horde/wrong': 0.55, 'horde/confirm': 0.63,
   'horde/start': 0.70, 'horde/gameover': 0.59, 'horde/jackpot': 0.55, 'horde/fanfare': 0.38,
-  'alliance/correct': 0.70, 'alliance/wrong': 0.62, 'alliance/confirm': 0.40,
+  'alliance/correct': 0.55, 'alliance/wrong': 0.55, 'alliance/confirm': 0.40,
   'alliance/start': 0.57, 'alliance/gameover': 0.32, 'alliance/jackpot': 0.55, 'alliance/fanfare': 0.38,
   'mrrgl/correct': 0.55, 'mrrgl/wrong': 0.70, 'mrrgl/start': 0.70,
   'mrrgl/gameover': 0.70, 'mrrgl/jackpot': 0.39, 'mrrgl/fanfare': 0.39,
