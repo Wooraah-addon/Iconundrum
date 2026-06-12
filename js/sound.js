@@ -1,8 +1,10 @@
 // Sound engine. Web Audio synthesis is the permanent DEFAULT and fallback.
 // Optional themed sample packs (Alliance / Horde, plus a locked Mrrgl pack)
-// layer real .ogg voice lines over the meaningful cues. Resolution order is
-// pack sample -> shared sample (assets/sounds/<name>.ogg) -> synth. So the
-// packs are a removable layer on top of the synth floor, never a replacement.
+// layer real .ogg voice lines over the meaningful cues. High-frequency cues
+// (correct/wrong) are POOLS of variant clips picked at random with a
+// no-immediate-repeat guard, so a worker pack doesn't become a soundboard.
+// Resolution order is pack sample -> shared sample -> synth; the packs are a
+// removable layer on the synth floor, never a replacement.
 //
 // ESCAPE HATCH: SOUNDS_GENERIC_ONLY (below) forces synth for everything in one
 // line; deleting assets/sounds/<pack>/ does the same physically. Either reverts
@@ -25,36 +27,38 @@ const SOUNDS_GENERIC_ONLY = false;
 // the default experience is byte-for-byte unchanged.
 const NAMES = ['click', 'coin', 'correct', 'wrong', 'jackpot', 'tick', 'gameover', 'fanfare', 'readycheck', 'start', 'confirm'];
 
-// Packs supply samples only for these keys; everything else (click/coin/tick)
-// falls through to the shared sample or the synth. mrrgl ships LOCKED — the
-// unlock flag is written by the achievement system (tracker F12/F54).
+// Packs supply samples per key as a VARIANT COUNT: 1 = a single file
+// `<pack>/<key>.ogg`; N = a pool `<pack>/<key>1.ogg`..`<key>N.ogg` picked at
+// random. Keys absent here (click/coin/tick) fall through to synth. mrrgl ships
+// LOCKED — the unlock flag is written by the achievement system (F12/F54).
 const PACKS = {
-  alliance: ['correct', 'wrong', 'jackpot', 'gameover', 'fanfare', 'start', 'confirm'],
-  horde: ['correct', 'wrong', 'jackpot', 'gameover', 'fanfare', 'start', 'confirm'],
-  mrrgl: ['correct', 'wrong', 'jackpot', 'gameover', 'fanfare', 'start'],
+  alliance: { correct: 3, wrong: 4, jackpot: 1, gameover: 1, fanfare: 1, start: 1, confirm: 1 },
+  horde: { correct: 3, wrong: 3, jackpot: 1, gameover: 1, fanfare: 1, start: 1, confirm: 1 },
+  mrrgl: { correct: 1, wrong: 1, jackpot: 1, gameover: 1, fanfare: 1, start: 1 },
 };
 
 // UI metadata for the pack selector. id '' = the default synth set.
 export const PACK_META = [
   { id: '', label: 'Classic', desc: 'The original Iconundrum sounds.' },
-  { id: 'alliance', label: 'Alliance', desc: 'Human peasant — "Right-o!"' },
-  { id: 'horde', label: 'Horde', desc: 'Orc peon — "Work, work."' },
+  { id: 'alliance', label: 'Alliance', desc: 'Human — congratulations & groans' },
+  { id: 'horde', label: 'Horde', desc: 'Orc — congratulations & groans' },
   { id: 'mrrgl', label: 'Mrrgl', desc: '???', locked: true },
 ];
 
 // Per-sample playback gain. Keyed by "pack/name" first, then by name, default
 // 0.5. Levels were measured with ffmpeg volumedetect and matched to the
 // readycheck reference (mean -12.4 dB @ 0.3 — the level vetted on stream after
-// B8). Voice lines record quiet so they sit higher; the PvP-victory / murloc
-// stingers run hot so they sit lower. Re-measure if any sample is resourced.
+// B8). Voice pools record quiet so they sit high; one gain per pool covers all
+// its variants (clips from the same emote set are level-matched). Re-measure if
+// any sample is resourced.
 const SAMPLE_GAIN = {
   readycheck: 0.3,
   // Generic fallbacks for any future pack key left untuned below.
   jackpot: 0.4, fanfare: 0.4, gameover: 0.45,
-  'horde/correct': 0.70, 'horde/wrong': 0.69, 'horde/confirm': 0.63,
-  'horde/start': 0.70, 'horde/gameover': 0.59, 'horde/jackpot': 0.55, 'horde/fanfare': 0.36,
-  'alliance/correct': 0.52, 'alliance/wrong': 0.32, 'alliance/confirm': 0.40,
-  'alliance/start': 0.57, 'alliance/gameover': 0.32, 'alliance/jackpot': 0.55, 'alliance/fanfare': 0.36,
+  'horde/correct': 0.70, 'horde/wrong': 0.70, 'horde/confirm': 0.63,
+  'horde/start': 0.70, 'horde/gameover': 0.59, 'horde/jackpot': 0.55, 'horde/fanfare': 0.38,
+  'alliance/correct': 0.70, 'alliance/wrong': 0.62, 'alliance/confirm': 0.40,
+  'alliance/start': 0.57, 'alliance/gameover': 0.32, 'alliance/jackpot': 0.55, 'alliance/fanfare': 0.38,
   'mrrgl/correct': 0.55, 'mrrgl/wrong': 0.70, 'mrrgl/start': 0.70,
   'mrrgl/gameover': 0.70, 'mrrgl/jackpot': 0.39, 'mrrgl/fanfare': 0.39,
 };
@@ -76,9 +80,10 @@ let ctx = null;
 let muted = read(MUTE_KEY) === '1';
 let streamerSafe = read(SAFE_KEY) === '1';
 let pack = initPack();
-const buffers = new Map(); // bufKey -> AudioBuffer (real sample) once loaded
-const tried = new Set();   // bufKeys already fetched (don't refetch on 404)
+const samples = new Map();    // bufKey -> AudioBuffer[] (1+ variants) once loaded
+const tried = new Set();      // file paths already fetched (don't refetch on 404)
 const lastPlayed = new Map(); // name -> ms timestamp (cooldowns)
+const lastVariant = new Map(); // bufKey -> last variant index (no immediate repeat)
 
 function read(k) { try { return localStorage.getItem(k); } catch { return null; } }
 function write(k, v) { try { localStorage.setItem(k, v); } catch { /* private mode */ } }
@@ -102,34 +107,44 @@ function ac() {
 }
 
 function bufKey(p, name) { return p ? `${p}/${name}` : name; }
-function samplePath(p, name) { return p ? `assets/sounds/${p}/${name}.ogg` : `assets/sounds/${name}.ogg`; }
+function packHas(p, name) { return !!(p && PACKS[p] && name in PACKS[p]); }
 
-// Fetch a sample once (first user gesture / pack switch). 404s are expected
-// until a pack ships — synth covers everything meanwhile.
-function loadSample(p, name) {
+// Fetch one sample file once (idx 0 = single `name.ogg`; idx>=1 = `nameN.ogg`).
+// 404s are expected until a pack ships — synth covers everything meanwhile.
+function loadFile(p, name, idx) {
+  const dir = p ? `${p}/` : '';
+  const path = `assets/sounds/${dir}${name}${idx > 0 ? idx : ''}.ogg`;
+  if (tried.has(path)) return;
+  tried.add(path);
   const key = bufKey(p, name);
-  if (tried.has(key)) return;
-  tried.add(key);
-  fetch(samplePath(p, name))
+  fetch(path)
     .then(r => (r.ok ? r.arrayBuffer() : Promise.reject()))
     .then(buf => ac().decodeAudioData(buf))
-    .then(decoded => buffers.set(key, decoded))
+    .then(decoded => { if (!samples.has(key)) samples.set(key, []); samples.get(key).push(decoded); })
     .catch(() => {});
+}
+
+function loadKey(p, name) {
+  const count = packHas(p, name) ? PACKS[p][name] : 1;
+  if (count <= 1) loadFile(p, name, 0);
+  else for (let i = 1; i <= count; i++) loadFile(p, name, i);
+}
+
+function loadPack(p) {
+  if (!PACKS[p]) return;
+  for (const name of Object.keys(PACKS[p])) loadKey(p, name);
 }
 
 let preloaded = false;
 export function preload() {
   if (preloaded) return;
   preloaded = true;
-  for (const name of NAMES) loadSample('', name); // shared samples (today: readycheck)
-  if (pack && PACKS[pack]) for (const name of PACKS[pack]) loadSample(pack, name);
+  for (const name of NAMES) loadFile('', name, 0); // shared samples (today: readycheck)
+  if (pack) loadPack(pack);
 }
 
 // Warm a specific pack's samples ahead of a preview (sound-test panel).
-export function warmPack(id) {
-  if (!PACKS[id]) return;
-  for (const name of PACKS[id]) loadSample(id, name);
-}
+export function warmPack(id) { loadPack(id); }
 
 export function isMuted() { return muted; }
 export function toggleMuted() { muted = !muted; write(MUTE_KEY, muted ? '1' : '0'); return muted; }
@@ -141,7 +156,7 @@ export function setPack(id) {
   if (id && !isPackUnlocked(id)) return pack;   // refuse a locked pack
   pack = id;
   write(PACK_KEY, id);
-  if (id && PACKS[id]) for (const name of PACKS[id]) loadSample(id, name);
+  if (id) loadPack(id);
   return pack;
 }
 
@@ -154,16 +169,30 @@ function offCooldown(name) {
   return Date.now() - (lastPlayed.get(name) || 0) >= cd;
 }
 
-// Returns a loaded buffer key for (pack, name): pack sample first, then the
+// Pick a loaded variant for a pool key, avoiding an immediate repeat.
+function pickVariant(key) {
+  const list = samples.get(key);
+  if (!list || !list.length) return null;
+  if (list.length === 1) return list[0];
+  const last = lastVariant.get(key);
+  let i;
+  do { i = Math.floor(Math.random() * list.length); } while (i === last);
+  lastVariant.set(key, i);
+  return list[i];
+}
+
+// Resolve (pack, name) to a buffer + its gain key: pack pool first, then the
 // shared sample. Warms a missing pack sample for next time (preview path).
-function sampleKey(p, name) {
-  if (p && PACKS[p] && PACKS[p].includes(name)) {
+function sampleFor(p, name) {
+  if (packHas(p, name)) {
     const k = bufKey(p, name);
-    if (buffers.has(k)) return k;
-    loadSample(p, name);
+    const buf = pickVariant(k);
+    if (buf) return { buf, gainKey: k };
+    loadKey(p, name);
   }
   const rk = bufKey('', name);
-  return buffers.has(rk) ? rk : null;
+  const rbuf = pickVariant(rk);
+  return rbuf ? { buf: rbuf, gainKey: rk } : null;
 }
 
 // play(name, opts?) — opts.pack forces a pack (sound-test preview), '' = default;
@@ -174,24 +203,24 @@ export function play(name, opts = {}) {
     if (SOUNDS_GENERIC_ONLY) return synth(name);
     const usePack = opts.pack !== undefined ? opts.pack : pack;
     const sampleAllowed = !(streamerSafe && LOUD.has(name));
-    const key = sampleAllowed ? sampleKey(usePack, name) : null;
-    if (key && (opts.force || offCooldown(name))) {
+    const s = sampleAllowed ? sampleFor(usePack, name) : null;
+    if (s && (opts.force || offCooldown(name))) {
       lastPlayed.set(name, Date.now());
-      playBuffer(key, name);
+      playBuffer(s.buf, s.gainKey, name);
     } else {
       synth(name); // graceful fallback — feedback without the repeated voice line
     }
   } catch { /* audio is never load-bearing */ }
 }
 
-function playBuffer(key, name) {
+function playBuffer(buf, gainKey, name) {
   const c = ac();
   const src = c.createBufferSource();
   const g = c.createGain();
-  let gain = SAMPLE_GAIN[key] ?? SAMPLE_GAIN[name] ?? 0.5;
+  let gain = SAMPLE_GAIN[gainKey] ?? SAMPLE_GAIN[name] ?? 0.5;
   if (streamerSafe) gain *= 0.7;
   g.gain.value = gain;
-  src.buffer = buffers.get(key);
+  src.buffer = buf;
   src.connect(g).connect(c.destination);
   src.start();
 }
