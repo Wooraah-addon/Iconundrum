@@ -130,10 +130,10 @@ body {
 .mode-card h3 { grid-column: 2; color: var(--gold); margin-bottom: 4px; font-size: var(--fs-lg); font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; }
 .mode-card p { grid-column: 2; color: var(--text-dim); font-size: .85rem; line-height: 1.35; }
 
-/* Memory Match — styled like the other mode cards (gold title + icon); just
-   nudged down a touch to read as slightly set apart from the competitive three.
-   Its "just for fun, no leaderboard" copy carries the distinction. */
-.casual-card { margin-top: 4px; }
+/* Memory Match — styled like the other mode cards (gold title + icon). Sits
+   just below the competitive grid; its top margin matches the 12px grid gap so
+   the spacing is even. Its "just for fun, no leaderboard" copy is the only cue. */
+.casual-card { margin-top: 12px; }
 
 .mem-setup { text-align: left; }
 .mem-title { color: var(--gold); margin-bottom: 8px; font-family: var(--font-display); font-weight: 700; }
