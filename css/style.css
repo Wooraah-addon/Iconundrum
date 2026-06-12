@@ -692,6 +692,11 @@ table.standings td, table.standings th { padding: 6px 6px; }
   .timer-bar.urgent { animation: urgentpulse 1s ease-in-out infinite; }
   @keyframes urgentpulse { 50% { filter: brightness(1.4); } }
   .pb-banner { animation: popin .3s ease; }
+  /* Copy/share acknowledged at the button: a quick gold ring-pulse. */
+  .btn.copied { animation: copypulse .6s ease; }
+  @keyframes copypulse {
+    35% { box-shadow: 0 0 0 4px rgba(240, 198, 64, .45), 0 0 18px rgba(240, 198, 64, .55); }
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   /* Cut the remaining one-shot animations that live outside the

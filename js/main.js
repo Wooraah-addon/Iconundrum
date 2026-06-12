@@ -7,7 +7,7 @@
 import { loadBundle, catLabel, BASIS_SHORT } from './data.js';
 import { newSeed } from './rng.js';
 import { makeCfg, cfgFromParams, buildUrl, isRanked } from './cfg.js';
-import { showScreen, el, toast, copyText, escapeHtml } from './ui.js';
+import { showScreen, el, toast, copyText, escapeHtml, pulseCopied } from './ui.js';
 import { celebrate, countUp } from './fx.js';
 import { openSetup } from './setup.js';
 import { openFeedback } from './feedback.js';
@@ -438,15 +438,19 @@ function wireSummaryActions() {
   const { cfg, result } = game;
   const link = buildUrl(cfg);
 
-  document.getElementById('btn-copy-link').onclick = async () => {
+  document.getElementById('btn-copy-link').onclick = async e => {
     sound.play('click');
-    toast(await copyText(link) ? 'Challenge link copied!' : link);
+    const ok = await copyText(link);
+    if (ok) pulseCopied(e.currentTarget);
+    toast(ok ? 'Challenge link copied!' : link);
   };
-  document.getElementById('btn-share-result').onclick = async () => {
+  document.getElementById('btn-share-result').onclick = async e => {
     sound.play('click');
     const scoreTxt = cfg.mode === 'hl' ? `streak of ${result.score}` : `${result.score.toLocaleString()} pts`;
     const txt = `Iconundrum — ${MODE_LABELS[cfg.mode]}: ${scoreTxt}. Think you can beat me? ${link}`;
-    toast(await copyText(txt) ? 'Result copied — paste it anywhere' : txt);
+    const ok = await copyText(txt);
+    if (ok) pulseCopied(e.currentTarget);
+    toast(ok ? 'Result copied — paste it anywhere' : txt);
   };
   document.getElementById('btn-play-again').onclick = () => {
     sound.play('click');

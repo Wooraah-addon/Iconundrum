@@ -97,6 +97,18 @@ export function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+// Acknowledge a copy at the point of click — a brief gold ring-pulse on the
+// button itself, on top of the toast. Sharing is the growth loop, so the
+// action should feel registered where the finger is, not just at the screen
+// edge. Motion-gated (the .copied animation lives behind no-preference).
+export function pulseCopied(btn) {
+  if (!btn) return;
+  btn.classList.remove('copied');
+  void btn.offsetWidth; // restart the pulse on a repeat click
+  btn.classList.add('copied');
+  setTimeout(() => btn.classList.remove('copied'), 650);
+}
+
 export async function copyText(text) {
   try {
     await navigator.clipboard.writeText(text);

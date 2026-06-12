@@ -5,7 +5,7 @@
 import { CATEGORIES, catItems } from './data.js';
 import { makeCfg, buildUrl, DEFAULTS, LIMITS, isRanked } from './cfg.js';
 import { newSeed } from './rng.js';
-import { el, toast, copyText } from './ui.js';
+import { el, toast, copyText, pulseCopied } from './ui.js';
 import { play } from './sound.js';
 
 const MODE_LABELS = { icon: 'Guess the Icon', value: 'Guess the Value', hl: 'Higher or Lower' };
@@ -178,9 +178,11 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
       el('span', {}, 'Game code: ', el('b', { class: 'game-code' }, seed)),
       el('button', {
         class: 'btn secondary small',
-        onclick: async () => {
+        onclick: async e => {
           play('click');
-          toast(await copyText(buildUrl(cfgNow())) ? 'Challenge link copied — friends play it solo, anytime' : buildUrl(cfgNow()));
+          const ok = await copyText(buildUrl(cfgNow()));
+          if (ok) pulseCopied(e.currentTarget);
+          toast(ok ? 'Challenge link copied — friends play it solo, anytime' : buildUrl(cfgNow()));
         },
       }, 'Copy challenge link'),
     ),

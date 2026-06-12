@@ -10,7 +10,7 @@
 // screen. Higher/Lower uses the synced start only — it's untimed and
 // you-ride-till-you-die, so per-round pacing doesn't apply.
 
-import { el, showScreen, toast, copyText } from './ui.js';
+import { el, showScreen, toast, copyText, pulseCopied } from './ui.js';
 import { buildUrl } from './cfg.js';
 import { play } from './sound.js';
 import * as fire from './fire.js';
@@ -37,12 +37,14 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
   readyBox.hidden = true;
   status.textContent = isHost ? 'Share the link, then launch when everyone’s in.' : 'Waiting for the host to launch…';
 
-  document.getElementById('lobby-copy').onclick = async () => {
+  document.getElementById('lobby-copy').onclick = async e => {
     play('click');
     // ?lobby=1 marks this as a multiplayer invite: if a clicker arrives before
     // the lobby is open they wait for the host instead of starting a solo game.
     const link = buildUrl(cfg) + '&lobby=1';
-    toast(await copyText(link) ? 'Lobby link copied — anyone who opens it can join' : link);
+    const ok = await copyText(link);
+    if (ok) pulseCopied(e.currentTarget);
+    toast(ok ? 'Lobby link copied — anyone who opens it can join' : link);
   };
 
   if (isHost) {
