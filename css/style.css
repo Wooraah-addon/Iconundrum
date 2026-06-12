@@ -562,6 +562,8 @@ input[type="range"] { accent-color: var(--gold); flex: 1; min-width: 140px; }
   0% { transform: scale(1.35); opacity: .4; }
   30% { transform: scale(1); opacity: 1; }
 }
+/* Final "GO!" — green, bigger, brighter glow than the numbers. */
+.count-num.go { color: var(--green); font-size: 8.5rem; text-shadow: 0 0 55px rgba(76, 175, 80, .65); }
 
 /* ---- Changelog page ---- */
 .cl-entry { margin-bottom: 22px; }

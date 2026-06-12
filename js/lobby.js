@@ -381,9 +381,22 @@ function runCountdown(launchAtMs, go) {
     const left = target - Date.now();
     if (left <= 0) {
       clearInterval(h);
-      overlay.hidden = true;
+      // Climactic "GO!" frame — the highest-anticipation instant in
+      // multiplayer shouldn't just cut to the game. Hold it a beat, then switch.
+      const label = overlay.querySelector('.count-label');
+      if (label) label.textContent = '';
+      num.textContent = 'GO!';
+      num.classList.add('go');
+      num.classList.remove('pop');
+      void num.offsetWidth; // restart the pop on the GO frame
+      num.classList.add('pop');
       play('correct');
-      go();
+      setTimeout(() => {
+        overlay.hidden = true;
+        num.classList.remove('go');
+        if (label) label.textContent = 'Get ready…';
+        go();
+      }, 480);
       return;
     }
     const sec = Math.ceil(left / 1000);
