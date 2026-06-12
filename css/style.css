@@ -300,7 +300,13 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 .hl-card .iname { font-weight: 600; font-size: .92rem; min-height: 2.5em; display: flex; align-items: center; }
 .hl-card .iprice { color: var(--gold); font-weight: 700; font-size: 1.05rem; }
 .hl-card .ihidden { color: var(--text-dim); font-size: 1.3rem; font-weight: 800; }
-.hl-vs { align-self: center; color: var(--text-dim); font-weight: 800; }
+/* The "VS" is the whole mode's confrontation — give it the display face and a
+   gold glow so the two cards read as a duel, not two list items. */
+.hl-vs {
+  align-self: center; color: var(--gold-dim); font-weight: 700;
+  font-family: var(--font-display); font-size: 1.25rem; letter-spacing: .06em;
+  text-shadow: 0 0 12px rgba(240, 198, 64, .3);
+}
 .hl-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
 .hl-keyhint { text-align: center; color: var(--text-dim); font-size: .75rem; margin-top: 8px; }
 @media (hover: none) { .hl-keyhint { display: none; } }
