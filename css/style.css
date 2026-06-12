@@ -95,6 +95,9 @@ body {
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
+  /* Sit ON the dark field, not drawn flat on it: a soft drop-shadow for lift
+     + a 1px gold inner top-highlight (WoW UI is layered, not flat). */
+  box-shadow: 0 2px 16px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(240, 198, 64, .06);
 }
 
 /* Three playable modes — prominent full-width rows, glyph left of the text,
