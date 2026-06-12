@@ -703,6 +703,17 @@ table.standings td, table.standings th { padding: 6px 6px; }
   @keyframes copypulse {
     35% { box-shadow: 0 0 0 4px rgba(240, 198, 64, .45), 0 0 18px rgba(240, 198, 64, .55); }
   }
+  /* The signature "?" carries a slow gold shimmer — a light band drifts across
+     the gold fill every 6s. Premium, not gaudy. (Mainly the in-game header
+     fallback + the home wordmark fallback; the home usually shows the logo PNG.) */
+  .wordmark .qmark, .wordmark-small .qmark {
+    background: linear-gradient(100deg, var(--gold) 38%, #fff7d6 50%, var(--gold) 62%);
+    background-size: 280% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer { from { background-position: 140% 0; } to { background-position: -140% 0; } }
 }
 @media (prefers-reduced-motion: reduce) {
   /* Cut the remaining one-shot animations that live outside the
