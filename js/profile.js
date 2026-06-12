@@ -78,3 +78,19 @@ export function recordLobbyJoin(seed, name) {
   (p.lobbies = p.lobbies || {})[seed] = name;
   save(p);
 }
+
+// Memory Match local bests (F60) — best = fewest moves, then fastest time, per
+// board size. Device-local only; this mode has no leaderboard by design.
+export function getMemoryBest(size) {
+  return (load().memory || {})[size] || null;
+}
+
+export function recordMemoryResult(size, moves, timeMs) {
+  const p = load();
+  const m = p.memory = p.memory || {};
+  const prev = m[size] || null;
+  const best = !prev || moves < prev.moves || (moves === prev.moves && timeMs < prev.timeMs);
+  if (best) m[size] = { moves, timeMs };
+  save(p);
+  return { best, prev };
+}

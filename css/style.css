@@ -130,6 +130,45 @@ body {
 .mode-card h3 { grid-column: 2; color: var(--gold); margin-bottom: 4px; font-size: var(--fs-lg); font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; }
 .mode-card p { grid-column: 2; color: var(--text-dim); font-size: .85rem; line-height: 1.35; }
 
+/* Memory Match — a casual mode set apart from the three competitive ones with
+   a violet accent (the logo's medallion tone) instead of gold. */
+.casual-card { border-left-color: #6e5bc9; margin-top: 4px; }
+.casual-card:hover { border-color: #6e5bc9; border-left-color: #9c86ff; }
+.casual-card .mode-glyph { color: #b9a6ff; }
+.casual-card h3 { color: #c7b7ff; }
+
+.mem-setup { text-align: left; }
+.mem-title { color: var(--gold); margin-bottom: 8px; font-family: var(--font-display); font-weight: 700; }
+.mem-size-row { display: grid; gap: 10px; }
+.mem-size { display: grid; gap: 2px; text-align: left; padding: 12px 16px; }
+.mem-size-label { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lg); color: var(--gold); }
+.mem-size-sub { font-size: .8rem; color: var(--text-dim); }
+.mem-size-best { font-size: .75rem; color: var(--text-dim); }
+
+.memory-board { display: grid; gap: 10px; margin: 4px auto 0; width: 100%; max-width: 460px; }
+.memory-board.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.memory-board.cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); max-width: 560px; }
+
+/* Square tiles via the padding-bottom hack — reliable everywhere, no
+   dependence on aspect-ratio resolving against absolutely-positioned faces. */
+.mem-card { position: relative; width: 100%; height: 0; padding: 0 0 100%; border: none; background: none; cursor: pointer; perspective: 600px; }
+.mem-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .35s ease; }
+.mem-card.flipped .mem-inner, .mem-card.matched .mem-inner { transform: rotateY(180deg); }
+.mem-face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px; border: 1px solid var(--border); overflow: hidden;
+}
+.mem-back { background: var(--bg-card); border-color: var(--gold-dim); color: var(--gold-dim); font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; }
+.mem-front { transform: rotateY(180deg); background: #181022; }
+.mem-front img { width: 100%; height: 100%; object-fit: cover; }
+.mem-card.matched { cursor: default; }
+.mem-card.matched .mem-front { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold), 0 0 12px rgba(240, 198, 64, .3); }
+.mem-card:not(.flipped):not(.matched):hover { transform: translateY(-2px); }
+.mem-win { text-align: center; margin-top: 16px; }
+.mem-win-time { color: var(--text-dim); margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) { .mem-inner { transition: none; } }
+
 /* Roadmap packs — demoted to a quiet chip strip, not full cards. */
 .soon-strip {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;

@@ -20,6 +20,7 @@ import * as modeIcon from './modes/icon.js';
 import * as modeValue from './modes/value.js';
 import * as modeHl from './modes/hl.js';
 import { initCoin } from './coin.js';
+import { initMemory, openMemory } from './memory.js';
 
 const MODES = { icon: modeIcon, value: modeValue, hl: modeHl };
 const MODE_LABELS = { icon: 'Guess the Item', value: 'Guess the Value', hl: 'Higher or Lower' };
@@ -52,6 +53,7 @@ async function boot() {
   }
 
   document.getElementById('price-date').textContent = bundle.priceDate;
+  initMemory(bundle);
   setupHome();
   loadWhatsNew(); // fire-and-forget — home shouldn't wait on it
 
@@ -92,6 +94,10 @@ function setupHome() {
       });
     });
   });
+
+  // Memory Match — a casual, standalone pairs game (no name/leaderboard needed).
+  const memCard = document.getElementById('mode-memory');
+  if (memCard) memCard.addEventListener('click', () => { sound.preload(); sound.play('click'); openMemory(); });
 
   // Interactive home toy: a tumbling gold coin that drifts, dodges the cursor,
   // and can be clicked to "pocket" it. Not counted (see coin.js).
