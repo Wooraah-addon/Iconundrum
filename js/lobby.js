@@ -94,7 +94,7 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
           el('span', {}, 'Ready check!'),
           el('button', {
             class: 'btn small',
-            onclick: () => { play('click'); fire.setReady(cfg.seed, playerName, true); readyBox.hidden = true; },
+            onclick: () => { play('confirm'); fire.setReady(cfg.seed, playerName, true); readyBox.hidden = true; },
           }, '✓ Ready'),
           el('button', {
             class: 'btn secondary small',

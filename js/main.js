@@ -11,6 +11,7 @@ import { showScreen, el, toast, copyText, escapeHtml, pulseCopied } from './ui.j
 import { celebrate, countUp } from './fx.js';
 import { openSetup } from './setup.js';
 import { openFeedback } from './feedback.js';
+import { openSoundSettings } from './soundsettings.js';
 import * as lobby from './lobby.js';
 import * as sound from './sound.js';
 import * as profile from './profile.js';
@@ -118,6 +119,9 @@ function setupHome() {
       if (!muted) sound.play('coin');
     });
   });
+
+  const soundSettingsBtn = document.getElementById('sound-settings-btn');
+  if (soundSettingsBtn) soundSettingsBtn.addEventListener('click', () => { sound.play('click'); openSoundSettings(); });
 
   const bugBtn = document.getElementById('btn-report-bug');
   const sugBtn = document.getElementById('btn-suggest');
@@ -344,6 +348,9 @@ function startGame(cfg, sync = null) {
   document.getElementById('game-title').textContent = cfgSummary(cfg);
   document.getElementById('timer-track').style.display = '';
   showScreen('screen-game');
+  // Game-begin cue. Synced games already get the climactic "GO!" beat from the
+  // countdown, so only solo starts speak here. Silent in the default synth pack.
+  if (!sync) sound.play('start');
 
   MODES[cfg.mode].start({
     bundle, cfg, sync,

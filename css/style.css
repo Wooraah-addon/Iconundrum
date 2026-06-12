@@ -467,12 +467,19 @@ footer a { color: var(--gold-dim); }
   font-size: 1rem; padding: 6px 9px; cursor: pointer; line-height: 1;
 }
 .sound-toggle:hover { border-color: var(--gold-dim); }
+/* Sound-settings cog — sits just left of the home mute button. */
+.sound-settings {
+  position: absolute; top: 14px; right: 52px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 9px; cursor: pointer; line-height: 1; z-index: 2;
+}
+.sound-settings:hover { border-color: var(--gold-dim); }
 #screen-home { position: relative; z-index: 0; } /* stacking context to scope the coin layering */
 /* Coin layering (all positive z — a negative-z layer flickers under the
    compositor when animated): logo stays at default (below the coin), while
    every other home block is lifted above it, so the coin shows over the logo
    banner but hides behind the menu panels & stats. */
-#screen-home > *:not(.coin):not(.logo-wrap):not(.sound-toggle) { position: relative; z-index: 2; }
+#screen-home > *:not(.coin):not(.logo-wrap):not(.sound-toggle):not(.sound-settings) { position: relative; z-index: 2; }
 .sound-toggle { z-index: 2; }
 .game-header .sound-toggle { position: static; }
 
@@ -505,6 +512,23 @@ footer a { color: var(--gold-dim); }
 }
 /* Stacked form row (label above a full-width control) — used by the textarea. */
 .form-row.stack { flex-direction: column; align-items: stretch; }
+
+/* ---- Sound settings modal (pack selector / test / streamer-safe) ---- */
+.pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+.pack-tile {
+  display: flex; flex-direction: column; gap: 2px; text-align: left;
+  background: #181022; border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); padding: 9px 11px; cursor: pointer;
+}
+.pack-tile:hover:not(:disabled) { border-color: var(--gold-dim); }
+.pack-tile.active { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+.pack-tile.locked { cursor: default; opacity: .55; }
+.pack-name { color: var(--gold); font-size: .92rem; display: flex; align-items: center; gap: 2px; }
+.pack-name .ic { width: 13px; height: 13px; }
+.pack-desc { color: var(--text-dim); font-size: .76rem; }
+.snd-test-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.snd-safe-row { display: flex; align-items: flex-start; gap: 9px; margin-top: 14px; cursor: pointer; }
+.snd-safe-row input { margin-top: 3px; }
 
 /* Reset-to-defaults + live ranked-eligibility note (F55). The note flips
    green (counts on the ranked boards) ↔ gold-dim (custom, own board only) as
