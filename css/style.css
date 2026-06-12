@@ -130,12 +130,10 @@ body {
 .mode-card h3 { grid-column: 2; color: var(--gold); margin-bottom: 4px; font-size: var(--fs-lg); font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; }
 .mode-card p { grid-column: 2; color: var(--text-dim); font-size: .85rem; line-height: 1.35; }
 
-/* Memory Match — a casual mode set apart from the three competitive ones with
-   a violet accent (the logo's medallion tone) instead of gold. */
-.casual-card { border-left-color: #6e5bc9; margin-top: 4px; }
-.casual-card:hover { border-color: #6e5bc9; border-left-color: #9c86ff; }
-.casual-card .mode-glyph { color: #b9a6ff; }
-.casual-card h3 { color: #c7b7ff; }
+/* Memory Match — styled like the other mode cards (gold title + icon); just
+   nudged down a touch to read as slightly set apart from the competitive three.
+   Its "just for fun, no leaderboard" copy carries the distinction. */
+.casual-card { margin-top: 4px; }
 
 .mem-setup { text-align: left; }
 .mem-title { color: var(--gold); margin-bottom: 8px; font-family: var(--font-display); font-weight: 700; }
