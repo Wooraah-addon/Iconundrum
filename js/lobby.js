@@ -26,6 +26,7 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
   let sync = null;
   let counting = false;
   let readyAtSeen = null;
+  let latestCount = 1; // newest roster size, for the LMS 2-player launch gate
   const roster = document.getElementById('lobby-roster');
   const status = document.getElementById('lobby-status');
   const actions = document.getElementById('lobby-actions');
@@ -60,6 +61,12 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
       class: 'btn',
       onclick: async () => {
         play('click');
+        // Last Man Standing is an elimination between players — a one-player
+        // launch has nobody to eliminate. Race/solo modes are fine at one.
+        if (cfg.style === 'lms' && latestCount < 2) {
+          toast('Last Man Standing needs at least 2 players — wait for someone to join.');
+          return;
+        }
         const ok = await fire.launchLobby(cfg.seed, Date.now() + COUNTDOWN_MS + LAUNCH_BUFFER_MS);
         if (!ok) toast('Launch failed — check your connection');
       },
@@ -124,6 +131,7 @@ export async function enterLobby({ cfg, playerName, isHost, onStart }) {
       showScreen('screen-home');
       return;
     }
+    latestCount = (doc.players || []).length;
     renderRoster(roster, doc, playerName, isHost ? name => {
       play('click');
       fire.leaveLobby(cfg.seed, name);
@@ -164,6 +172,42 @@ export function revealHoldMs(roundStartMs, timerMs, now) {
 export function raceRows(scores, fin = {}) {
   return Object.entries(scores || {}).sort((a, b) => b[1] - a[1])
     .map(([name, score], i) => ({ name, score, rank: i + 1, dead: name in (fin || {}) }));
+}
+
+// F62 Last Man Standing: who's still in (no `fin` entry). `fin` maps an
+// eliminated player to the round they went out. Pure.
+export function lmsAlive(players, fin = {}) {
+  return (players || []).filter(p => !(p in (fin || {})));
+}
+
+// F62 round verdict, computed identically by every client at the shared
+// decision instant from the settled alive count:
+//   'win'     — one player left: the champion (game over)
+//   'playoff' — nobody left: a same-round wipe of the last survivors, who
+//               revive to sudden death (only ≥2 can reach 0 from a live game)
+//   'end'     — round cap hit with a crowd still in: rank by streak
+//   'advance' — the chain rolls on
+// Pure; tested.
+export function lmsDecision(aliveCount, round, cap = 60) {
+  if (aliveCount === 1) return 'win';
+  if (round >= cap) return 'end';
+  if (aliveCount === 0) return 'playoff';
+  return 'advance';
+}
+
+// F62 final standings: the lone survivor (or, at the cap, the highest streak)
+// takes 1st; the eliminated follow in reverse death order (later out = higher
+// place), streak breaking same-round ties. Pure; tested.
+export function lmsPlacements(players, scores = {}, fin = {}) {
+  const sc = scores || {}, fn = fin || {};
+  const alive = (players || []).filter(p => !(p in fn))
+    .sort((a, b) => (sc[b] || 0) - (sc[a] || 0));
+  const dead = (players || []).filter(p => p in fn)
+    .sort((a, b) => fn[b] - fn[a] || (sc[b] || 0) - (sc[a] || 0));
+  return [...alive, ...dead].map((name, i) => ({
+    name, place: i + 1, streak: sc[name] || 0,
+    out: name in fn, outRound: name in fn ? fn[name] : null,
+  }));
 }
 
 // player→rank (1-based) from a scores map, sorted by score desc. Pure.
@@ -245,6 +289,24 @@ function makeSync({ cfg, playerName, isHost, launchAt }) {
       const fin = (lastDoc && lastDoc.fin) || {};
       return players.length > 0 && players.every(p => p in fin);
     },
+
+    // ---- Last Man Standing (F62): synchronized elimination. `fin` here maps
+    // an out player → the round they were eliminated; alive = not in `fin`.
+    lmsAliveCount() {
+      return lmsAlive(lastDoc ? lastDoc.players : [], lastDoc ? lastDoc.fin : {}).length;
+    },
+    // The most recent round anyone was eliminated on. The playoff revive keys
+    // off this rather than the live round counter, so a mis-timed read that
+    // advanced past a same-round wipe still revives the right cohort.
+    lastOutRound() {
+      const vals = Object.values((lastDoc && lastDoc.fin) || {});
+      return vals.length ? Math.max(...vals) : -1;
+    },
+    lmsPlacements() {
+      return lmsPlacements(lastDoc ? lastDoc.players : [], lastDoc ? lastDoc.scores : {}, lastDoc ? lastDoc.fin : {});
+    },
+    markOut(round) { fire.setLobbyFin(cfg.seed, playerName, round); },
+    reviveMe() { fire.clearLobbyFin(cfg.seed, playerName); },
 
     // Host: advance locally at once, then tell everyone else.
     hostAdvance(nextIdx) {

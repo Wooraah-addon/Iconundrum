@@ -8,6 +8,12 @@ export const DEFAULTS = {
   value: { rounds: 10, timer: 20, curve: 2 },
   hl: { sep: 125 },
 };
+
+// F62 Last Man Standing: seconds to make each synchronized call. Baked into
+// the cfg (not a setup slider) so the sync driver's reveal-hold and the mode's
+// own timer share one source of truth — they MUST match or the held reveal
+// drifts from the round timer.
+export const LMS_TIMER = 12;
 // 2026-06-11: default rounds 5 → 10 (user request). NOTE: the ranked ruleset
 // is derived from these defaults (isRankedSig), so the all-time icon/value
 // boards restarted on the r10 ruleset that day — day-one r5 games keep their
@@ -56,6 +62,13 @@ export function makeCfg(mode, opts = {}) {
     // Extra lives (2-4 total) survive wrong calls. Default 1 = the only
     // ranked variant; absent from pre-lives links so old sigs are untouched.
     cfg.lives = Number.isInteger(opts.lives) && opts.lives >= 2 && opts.lives <= 4 ? opts.lives : 1;
+    // F62 multiplayer game style: 'race' (F39 own-pace, the default and the
+    // only solo/ranked shape) or 'lms' (Last Man Standing — host-paced
+    // synchronized elimination, lobby-only, never ranked). 'lms' adds a sig
+    // marker (its own board) and bakes the per-call timer the sync driver gates
+    // on. Absent from pre-F62 links so old sigs/boards are untouched.
+    cfg.style = opts.style === 'lms' ? 'lms' : 'race';
+    if (cfg.style === 'lms') cfg.timer = LMS_TIMER;
   }
   return cfg;
 }
@@ -67,7 +80,7 @@ export function cfgSig(cfg) {
   if (cfg.mode === 'icon') return `r${cfg.rounds}t${cfg.timer}sp${cfg.speed}${cfg.hard ? 'h1' : ''}`;
   const b = cfg.basis === 'sa' ? 'bsa' : '';
   if (cfg.mode === 'value') return `r${cfg.rounds}t${cfg.timer}k${cfg.curve}${b}`;
-  return `sep${cfg.sep}${cfg.lives > 1 ? `hp${cfg.lives}` : ''}${b}`;
+  return `sep${cfg.sep}${cfg.lives > 1 ? `hp${cfg.lives}` : ''}${cfg.style === 'lms' ? 'lms' : ''}${b}`;
 }
 
 // The all-time board is RANKED: it only admits the mode's default
@@ -99,7 +112,7 @@ export function buildUrl(cfg, absolute = true) {
   const p = new URLSearchParams({ mode: cfg.mode, pack: cfg.pack, cat: cfg.cat, seed: cfg.seed, v: String(cfg.v) });
   if (cfg.mode === 'icon') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('sp', cfg.speed); if (cfg.hard) p.set('h', 1); }
   else if (cfg.mode === 'value') { p.set('r', cfg.rounds); p.set('t', cfg.timer); p.set('k', cfg.curve); p.set('b', cfg.basis); }
-  else { p.set('sep', cfg.sep); p.set('b', cfg.basis); if (cfg.lives > 1) p.set('hp', cfg.lives); }
+  else { p.set('sep', cfg.sep); p.set('b', cfg.basis); if (cfg.lives > 1) p.set('hp', cfg.lives); if (cfg.style === 'lms') p.set('style', 'lms'); }
   const path = `${location.pathname}?${p}`;
   return absolute ? `${location.origin}${path}` : path;
 }
@@ -123,5 +136,6 @@ export function cfgFromParams(params) {
     sep: int('sep'),
     basis: params.get('b'),
     lives: int('hp'),
+    style: params.get('style'),
   });
 }

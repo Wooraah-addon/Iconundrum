@@ -147,11 +147,24 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
       () => String(state.curve), v => (state.curve = parseInt(v, 10))));
   }
   if (modeId === 'hl') {
+    // F62 game style: Race (own-pace, the only solo/ranked shape) vs Last Man
+    // Standing (synced elimination — lobby-only). The hint appears under it
+    // when LMS is picked; the ranked note flips to custom automatically.
+    const lmsHint = el('div', { class: 'lb-note', style: 'margin:-8px 0 12px; text-align:left' },
+      'Last Man Standing is a live lobby game (2+ players): everyone faces the same card each round, a wrong call costs a life, last one standing wins. “Play solo” still runs the classic endless chain.');
+    const syncHint = () => { lmsHint.style.display = (state.style || 'race') === 'lms' ? '' : 'none'; };
+    rows.push(selectRow('Game style',
+      [['race', 'Race — your own pace, beat the streak'],
+       ['lms', 'Last Man Standing — synced elimination (lobby)']],
+      () => state.style || 'race', v => { state.style = v; syncHint(); }));
+    resetters.push(syncHint);
+    rows.push(lmsHint);
+    syncHint();
     rows.push(selectRow('Difficulty',
       [['125', 'Goblin — clear price gaps (≥1.25×)'], ['110', 'Tycoon — tight calls (≥1.10×)']],
       () => String(state.sep), v => (state.sep = parseInt(v, 10))));
     rows.push(selectRow('Lives',
-      [['1', '1 — sudden death (ranked)'], ['2', '2 ♥ — one mistake forgiven'], ['3', '3 ♥'], ['4', '4 ♥']],
+      [['1', '1 — sudden death'], ['2', '2 ♥ — one mistake forgiven'], ['3', '3 ♥'], ['4', '4 ♥']],
       () => String(state.lives ?? 1), v => (state.lives = parseInt(v, 10))));
   }
 
@@ -160,6 +173,7 @@ export function openSetup(modeId, bundle, { onSolo, onLobby }) {
     play('click');
     Object.assign(state, defaultState(modeId));
     delete state.lives; // not in DEFAULTS.hl — makeCfg defaults it back to 1
+    delete state.style; // not in DEFAULTS.hl — makeCfg defaults it back to 'race'
     resetters.forEach(fn => fn());
     fillCats();
     refreshRankedNote();

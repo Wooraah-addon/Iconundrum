@@ -389,6 +389,12 @@ input:focus-visible { outline: 2px solid var(--gold-dim); outline-offset: 1px; }
 }
 .hl-race { max-width: 420px; margin: 18px auto 0; }
 .hl-race .race-state { width: 2em; text-align: center; }
+/* F62 LMS: neutral lock on the call buttons (answer colours come at reveal,
+   like icon-mode .choice.picked) + the final placement table. */
+.hl-buttons .btn.picked { border-color: var(--gold-dim); box-shadow: 0 0 0 2px rgba(240, 198, 64, .25) inset; }
+table.lms-place { max-width: 340px; }
+table.lms-place .lms-rank { width: 2.2em; text-align: center; }
+table.lms-place .lms-rank .ic-crown { color: var(--gold); vertical-align: -2px; }
 .hl-hearts { text-align: center; font-size: 1.3rem; letter-spacing: .18em; margin-top: 10px; line-height: 1; }
 .hl-hearts .full { color: var(--red); text-shadow: 0 0 8px rgba(224, 82, 82, .5); }
 .hl-hearts .spent { color: #3a2a4a; }

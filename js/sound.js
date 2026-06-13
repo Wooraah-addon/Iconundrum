@@ -1,5 +1,5 @@
 // Sound engine. Web Audio synthesis is the permanent DEFAULT and fallback.
-// Optional themed sample packs (Alliance / Horde, plus a locked Mrrgl pack)
+// Optional themed sample packs (Alliance / Horde, plus a locked secret pack)
 // layer real .ogg voice lines over the meaningful cues. High-frequency cues
 // (correct/wrong) are POOLS of variant clips picked at random with a
 // no-immediate-repeat guard, so a worker pack doesn't become a soundboard.
@@ -42,7 +42,7 @@ export const PACK_META = [
   { id: '', label: 'Classic', desc: 'The original Iconundrum sounds.' },
   { id: 'alliance', label: 'Alliance', desc: 'Human — congratulations & groans' },
   { id: 'horde', label: 'Horde', desc: 'Orc — congratulations & groans' },
-  { id: 'mrrgl', label: 'Mrrgl', desc: '???', locked: true },
+  { id: 'mrrgl', label: '????', desc: '???', locked: true },
 ];
 
 // Per-sample playback gain. Keyed by "pack/name" first, then by name, default

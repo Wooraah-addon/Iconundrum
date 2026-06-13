@@ -286,6 +286,20 @@ export async function setLobbyFin(code, player, streak) {
   }
 }
 
+// F62 Last Man Standing playoff: revive this player by deleting their `fin`
+// entry (a simultaneous wipe of the last survivors sends them to sudden
+// death). The rules let `fin` shrink, so no rules change — same field as F39.
+export async function clearLobbyFin(code, player) {
+  if (!(await ensureInit())) return false;
+  try {
+    await fs.updateDoc(fs.doc(db, 'lobbies', code), new fs.FieldPath('fin', player), fs.deleteField());
+    return true;
+  } catch (e) {
+    console.warn('clearLobbyFin failed:', e);
+    return false;
+  }
+}
+
 // Player's running total for the rolling standings (FieldPath handles
 // names with spaces). One write per player per round — bounded and cheap.
 export async function updateLobbyScore(code, player, total) {

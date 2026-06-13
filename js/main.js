@@ -193,6 +193,7 @@ function cfgSummary(cfg) {
   }
   if (cfg.mode === 'value') bits.push(`${cfg.rounds} rounds`, `${cfg.timer}s`, { 1: 'casual', 2: 'goblin', 4: 'tycoon' }[cfg.curve] + ' scoring', BASIS_SHORT[cfg.basis || 'mv']);
   if (cfg.mode === 'hl') {
+    if (cfg.style === 'lms') bits.push('Last Man Standing');
     bits.push(cfg.sep === 110 ? 'tycoon calls' : 'goblin calls', BASIS_SHORT[cfg.basis || 'mv']);
     if (cfg.lives > 1) bits.push(`${cfg.lives} lives`);
   }
