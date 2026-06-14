@@ -254,7 +254,7 @@ function startLMS(ctx) {
   const sync = ctx.sync;
   const basis = cfg.basis || 'mv';
   const timerSecs = cfg.timer || 12;   // baked by makeCfg (LMS_TIMER)
-  const REVEAL_PAUSE = 4500;           // ms after timer end: reveal + fin-write propagation margin + drama
+  const REVEAL_PAUSE = 6000;           // ms after timer end: reveal + fin-write propagation margin + stream breathing room
   const FAILSAFE_EXTRA = 8000;         // a vanished pacer ends the round this long past the decision instant
   const CAP = 60;                      // the lobby `round` field is rules-capped at 60
 
@@ -410,7 +410,7 @@ function startLMS(ctx) {
       // expired, so a fast caller can't leak the answer to the rest of the table.
       const hold = revealHoldMs(sync.roundStartMs, timerSecs * 1000, Date.now());
       let waitEl = null;
-      if (hold > 600) {
+      if (hold > 0 && saidHigher !== null) {
         waitEl = el('div', { class: 'lb-note round-wait' }, icon('lock'), ' Locked in — revealed when the round ends.');
         ctx.content.append(waitEl);
       }

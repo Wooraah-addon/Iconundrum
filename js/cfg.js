@@ -5,7 +5,7 @@
 
 export const DEFAULTS = {
   icon: { rounds: 10, timer: 10, speed: 1 },
-  value: { rounds: 10, timer: 20, curve: 2 },
+  value: { rounds: 10, timer: 12, curve: 2 },
   hl: { sep: 125 },
 };
 
