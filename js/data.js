@@ -4,7 +4,7 @@ import { GAME } from './config.js';
 
 let bundle = null;
 
-const CURRENT_VERSION = 3;
+const CURRENT_VERSION = 4;
 
 // Loads the bundle for the requested content version (from a challenge link).
 // Old versions are kept deployed alongside new ones (items_v1.json,
