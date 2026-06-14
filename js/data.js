@@ -4,7 +4,7 @@ import { GAME } from './config.js';
 
 let bundle = null;
 
-const CURRENT_VERSION = 2;
+const CURRENT_VERSION = 3;
 
 // Loads the bundle for the requested content version (from a challenge link).
 // Old versions are kept deployed alongside new ones (items_v1.json,
@@ -51,7 +51,7 @@ export const CATEGORIES = [
   { id: 'gear', label: 'Weapons & Armor', classes: [2, 4], face: 'inv_sword_22' },
   { id: 'trade', label: 'Trade Goods & Gems', classes: [1, 3, 7], face: 'inv_misc_flower_02' },
   { id: 'consume', label: 'Consumables & Enchants', classes: [0, 8], face: 'inv_potion_95' },
-  { id: 'recipes', label: 'Recipes & Patterns', classes: [9], face: 'inv_scroll_03', hidden: true },
+  { id: 'recipes', label: 'Recipes & Patterns', classes: [9], face: 'inv_scroll_03', hidden: true, noIcon: true },
   { id: 'curios', label: 'Mounts & Toys', classes: [12, 13, 15, 20], face: 'ability_mount_ridinghorse', dropSubs: { 15: [2] } },
 ];
 
